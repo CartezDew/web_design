@@ -23,6 +23,7 @@ import clipCultureShot from '../assets/websites/clip_culture.webp'
 import bdsShot from '../assets/websites/BDS_talent_Group.webp'
 import classProjectShot from '../assets/websites/class_project.webp'
 import consultationMeeting from '../assets/websites/consulting_meeting.webp'
+import websiteShowcase from '../assets/websites/website_images.webp'
 
 const portfolio = [
   {
@@ -611,6 +612,12 @@ function App() {
             <div className="section-heading">
               <p className="kicker">What I do</p>
               <h2>Useful design.<br />Solid engineering.</h2>
+              <img
+                className="services-showcase"
+                src={websiteShowcase}
+                alt="Cartez Dewberry website displayed responsively on a laptop and mobile phone"
+                loading="lazy"
+              />
             </div>
             <div className="service-list">
               {services.map((service) => {
