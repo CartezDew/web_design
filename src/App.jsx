@@ -25,6 +25,9 @@ import bdsShot from '../assets/websites/BDS_talent_Group.webp'
 import classProjectShot from '../assets/websites/class_project.webp'
 import consultationMeeting from '../assets/websites/consulting_meeting.webp'
 import websiteShowcase from '../assets/websites/website_images.webp'
+import Reveal from './Reveal'
+
+const CARD_HOVER = { y: -6, transition: { duration: 0.25, ease: 'easeOut' } }
 
 const portfolio = [
   {
@@ -212,6 +215,14 @@ const packages = [
     description: 'A larger, more tailored experience with business and marketing integrations.',
     features: ['Up to 10 pages', 'Advanced forms', 'Third-party integrations', 'Enhanced components', 'Launch assistance'],
   },
+]
+
+const agenda = [
+  { time: '00–05', title: 'Business + goals', detail: 'Your mission, audience, and definition of success.' },
+  { time: '05–15', title: 'Website scope', detail: 'Pages, services, functionality, and customer journey.' },
+  { time: '15–20', title: 'Brand + content', detail: 'Logo, colors, tagline, copy, and high-quality imagery.' },
+  { time: '20–25', title: 'Technical needs', detail: 'Domain, email, forms, analytics, and integrations.' },
+  { time: '25–30', title: 'Budget + next steps', detail: 'Recommended package, timeline, and deliverables.' },
 ]
 
 const faqs = [
@@ -985,7 +996,7 @@ function App() {
 
         <section className="services-section" id="services">
           <div className="services section-shell">
-            <div className="section-heading">
+            <Reveal className="section-heading">
               <p className="kicker">What I do</p>
               <h2>Useful design.<br />Solid engineering.</h2>
               <img
@@ -994,15 +1005,18 @@ function App() {
                 alt="Cartez Dewberry website displayed responsively on a laptop and mobile phone"
                 loading="lazy"
               />
-            </div>
+            </Reveal>
             <div className="service-list">
-              {services.map((service) => {
+              {services.map((service, index) => {
                 const isOpen = openService === service.number
                 const detailId = `service-detail-${service.number}`
                 return (
-                  <article
+                  <Reveal
+                    as="article"
                     className={isOpen ? 'service-row is-open' : 'service-row'}
                     id={`service-${service.number}`}
+                    delay={Math.min(index, 4) * 0.06}
+                    distance={18}
                     key={service.number}
                   >
                     <span>{service.number}</span>
@@ -1043,7 +1057,7 @@ function App() {
                         </div>
                       </div>
                     </div>
-                  </article>
+                  </Reveal>
                 )
               })}
             </div>
@@ -1052,7 +1066,7 @@ function App() {
 
         <section className="work" id="work">
           <div className="section-shell">
-            <div className="work-heading">
+            <Reveal className="work-heading">
               <div>
                 <p className="kicker kicker--light">Portfolio</p>
                 <h2>Websites I’ve<br />built.</h2>
@@ -1061,7 +1075,7 @@ function App() {
                 A selection of live projects—product platforms, dashboards, and small-business marketing sites—each
                 built responsive, fast, and tailored to the brand.
               </p>
-            </div>
+            </Reveal>
             <div
               className={portfolioPaused ? 'portfolio-grid is-paused' : 'portfolio-grid'}
               ref={portfolioRef}
@@ -1121,11 +1135,11 @@ function App() {
 
         <section className="about-section" id="about">
           <div className="about section-shell">
-            <div className="portrait-wrap">
+            <Reveal className="portrait-wrap">
               <div className="portrait-accent">BUILT<br />WITH<br />PURPOSE</div>
               <img src={headshot} alt="Cartez Dewberry, software engineer and founder" />
-            </div>
-            <div className="about-copy">
+            </Reveal>
+            <Reveal className="about-copy" delay={0.1}>
               <p className="kicker">About me</p>
               <h2>I bring a builder’s mindset to every project.</h2>
               <p className="about-lead">
@@ -1144,22 +1158,28 @@ function App() {
               <a className="linkedin-link" href="https://www.linkedin.com/in/cartez-dewberry/" target="_blank" rel="noreferrer">
                 <Linkedin size={18} /> Connect on LinkedIn <ExternalLink size={15} />
               </a>
-            </div>
+            </Reveal>
           </div>
         </section>
 
         <section className="pricing-section" id="pricing">
           <div className="pricing section-shell">
-            <div className="pricing-intro">
+            <Reveal className="pricing-intro">
               <div>
                 <p className="kicker">Straightforward pricing</p>
                 <h2>Start where you are.<br />Build what you need.</h2>
               </div>
               <p>Every project is quoted by scope, page count, and complexity. These packages are practical starting points—not open-ended promises.</p>
-            </div>
+            </Reveal>
             <div className="pricing-grid">
-              {packages.map((item) => (
-                <article className={item.featured ? 'price-card price-card--featured' : 'price-card'} key={item.name}>
+              {packages.map((item, index) => (
+                <Reveal
+                  as="article"
+                  className={item.featured ? 'price-card price-card--featured' : 'price-card'}
+                  delay={index * 0.09}
+                  hover={CARD_HOVER}
+                  key={item.name}
+                >
                   {item.featured && <span className="popular">Most popular</span>}
                   <p className="plan-name">{item.name}</p>
                   <p className="price"><small>Starting at</small>{item.price}</p>
@@ -1178,19 +1198,19 @@ function App() {
                   >
                     Choose {item.name}
                   </button>
-                </article>
+                </Reveal>
               ))}
             </div>
-            <div className="custom-note">
+            <Reveal className="custom-note" distance={18}>
               <span>Need e-commerce, authentication, APIs, or a custom dashboard?</span>
               <strong>Custom projects start at $2,500.</strong>
-            </div>
+            </Reveal>
           </div>
         </section>
 
         <section className="faq-section" id="faq">
           <div className="faq section-shell">
-            <div className="faq-intro">
+            <Reveal className="faq-intro">
               <p className="kicker">Good to know</p>
               <h2>Questions, answered<br />in plain language.</h2>
               <p>
@@ -1198,17 +1218,23 @@ function App() {
                 the requested scope, content, integrations, or revision needs change.
               </p>
               <a className="text-link" href="#consultation">Still have a question? Book a free call <ChevronRight size={17} /></a>
-            </div>
+            </Reveal>
             <div className="faq-list">
               {faqs.map((item, index) => (
-                <details className="faq-item" key={item.question}>
+                <Reveal
+                  as="details"
+                  className="faq-item"
+                  delay={Math.min(index, 5) * 0.05}
+                  distance={14}
+                  key={item.question}
+                >
                   <summary>
                     <span>{String(index + 1).padStart(2, '0')}</span>
                     <strong>{item.question}</strong>
                     <ChevronDown size={19} aria-hidden="true" />
                   </summary>
                   <p>{item.answer}</p>
-                </details>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -1216,23 +1242,31 @@ function App() {
 
         <section className="prep-section">
           <div className="prep section-shell">
-            <div>
+            <ol className="agenda">
+              {agenda.map((item, index) => (
+                <Reveal as="li" delay={index * 0.07} distance={14} key={item.time}>
+                  <span>{item.time}</span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    <p>{item.detail}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </ol>
+            <Reveal className="prep-intro">
               <p className="kicker">Before we build</p>
               <h2>A productive<br />30-minute call.</h2>
-            </div>
-            <ol className="agenda">
-              <li><span>00–05</span><div><strong>Business + goals</strong><p>Your mission, audience, and definition of success.</p></div></li>
-              <li><span>05–15</span><div><strong>Website scope</strong><p>Pages, services, functionality, and customer journey.</p></div></li>
-              <li><span>15–20</span><div><strong>Brand + content</strong><p>Logo, colors, tagline, copy, and high-quality imagery.</p></div></li>
-              <li><span>20–25</span><div><strong>Technical needs</strong><p>Domain, email, forms, analytics, and integrations.</p></div></li>
-              <li><span>25–30</span><div><strong>Budget + next steps</strong><p>Recommended package, timeline, and deliverables.</p></div></li>
-            </ol>
+              <p className="prep-summary">
+                A focused conversation with a clear purpose—so we leave knowing what to build, why it matters, and
+                what happens next.
+              </p>
+            </Reveal>
           </div>
         </section>
 
         <section className="consultation" id="consultation">
           <div className="section-shell consultation-grid">
-            <div className="consultation-copy">
+            <Reveal className="consultation-copy">
               <p className="kicker kicker--light">Free consultation</p>
               <h2>Let’s talk about your idea.</h2>
               <p>
@@ -1246,9 +1280,9 @@ function App() {
                   loading="lazy"
                 />
               </div>
-            </div>
+            </Reveal>
 
-            <form className="booking-card" onSubmit={handleConsultationSubmit}>
+            <Reveal as="form" className="booking-card" delay={0.1} onSubmit={handleConsultationSubmit}>
               {consultationSubmitted ? (
                 <div className="booking-success" role="status">
                   <span><Check size={26} /></span>
@@ -1363,13 +1397,13 @@ function App() {
                   </button>
                 </>
               )}
-            </form>
+            </Reveal>
           </div>
         </section>
 
         <section className="onboarding" id="onboarding">
           <div className="section-shell onboarding-grid">
-            <div className="form-intro">
+            <Reveal className="form-intro">
               <p className="kicker kicker--light">Project intake</p>
               <h2>Tell me what you’re building.</h2>
               <p>Share what you know now. We’ll clarify the rest together during your discovery call.</p>
@@ -1387,27 +1421,29 @@ function App() {
                   <p>Consider a branded address such as info@yourcompany.com or yourname@yourcompany.com. We can discuss setup on our call.</p>
                 </div>
               </div>
-            </div>
+            </Reveal>
 
-            <form className="intake-form" onSubmit={handleSubmit}>
+            <Reveal as="form" className="intake-form" delay={0.1} onSubmit={handleSubmit}>
               {renderIntakeWizard('inline-')}
-            </form>
+            </Reveal>
           </div>
         </section>
 
         <section className="contact-section" id="contact">
           <div className="contact section-shell">
-            <p className="kicker">Ready when you are</p>
-            <h2>You bring the idea.<br /><em>I’ll build the experience.</em></h2>
-            <p className="contact-intro">
+            <Reveal as="p" className="kicker" distance={14}>Ready when you are</Reveal>
+            <Reveal as="h2" delay={0.08}>
+              You bring the idea.<br /><em>I’ll build the experience.</em>
+            </Reveal>
+            <Reveal as="p" className="contact-intro" delay={0.16}>
               Have a business, brand, or idea you’re ready to put online? Let’s turn it into a clean, responsive
               website that looks professional, feels like you, and gives your visitors a reason to take action.
-            </p>
-            <div className="contact-actions">
+            </Reveal>
+            <Reveal className="contact-actions" delay={0.24} distance={18}>
               <a className="button button--dark" href="#onboarding">Start a Project <ArrowRight size={18} /></a>
               <a className="button button--ghost" href="#consultation">Let’s Talk</a>
-            </div>
-            <div className="contact-secondary">
+            </Reveal>
+            <Reveal className="contact-secondary" delay={0.32} distance={18}>
               <p>
                 <strong>Not sure exactly what you need yet? That’s okay.</strong>
                 We can start with a conversation and figure out the right direction together.
@@ -1417,7 +1453,7 @@ function App() {
                 <a href="tel:+14043541272"><Phone size={20} /> 404-354-1272</a>
                 <a href="https://www.linkedin.com/in/cartez-dewberry/" target="_blank" rel="noreferrer"><Linkedin size={20} /> LinkedIn</a>
               </div>
-            </div>
+            </Reveal>
           </div>
         </section>
       </main>
