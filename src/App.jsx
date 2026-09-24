@@ -3,6 +3,7 @@ import {
   ArrowRight,
   CalendarDays,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CreditCard,
@@ -190,6 +191,7 @@ const packages = [
     name: 'Launch',
     price: '$300',
     hours: 'Up to 10 hours',
+    timeline: 'About 3–4 days',
     description: 'A focused online presence for a new venture or simple service business.',
     features: ['1–3 standard pages', 'Responsive custom design', 'Basic SEO setup', 'Domain connection', 'One revision round'],
   },
@@ -197,6 +199,7 @@ const packages = [
     name: 'Business',
     price: '$750',
     hours: 'Up to 20 hours',
+    timeline: 'About 1 week',
     description: 'A complete marketing site built to explain your value and capture leads.',
     features: ['Up to 5 pages', 'Lead capture form', 'Analytics integration', 'Custom page layouts', 'Two revision rounds'],
     featured: true,
@@ -205,8 +208,48 @@ const packages = [
     name: 'Professional',
     price: '$1,500',
     hours: 'Up to 35 hours',
+    timeline: 'About 2 weeks',
     description: 'A larger, more tailored experience with business and marketing integrations.',
     features: ['Up to 10 pages', 'Advanced forms', 'Third-party integrations', 'Enhanced components', 'Launch assistance'],
+  },
+]
+
+const faqs = [
+  {
+    question: 'What does the website process look like?',
+    answer: 'First, you complete the project intake and share your goals, audience, desired pages, features, brand materials, and inspiration. We then hold a discovery call, confirm the scope and estimate, create the design, build and test the site, complete revisions, and launch it. You will know what is happening at each stage.',
+  },
+  {
+    question: 'How long will my project take?',
+    answer: 'Estimated timelines are 3–4 days for Launch, 1 week for Business, and 2 weeks for Professional. These are planning estimates—not guaranteed completion dates. Timing can change based on the final scope, custom features, integrations, content readiness, revision speed, and how quickly feedback is provided.',
+  },
+  {
+    question: 'How does pricing work?',
+    answer: 'Package prices are starting points based on the listed hours and features. After the intake and discovery call, you receive a scope that explains the deliverables and estimated cost. E-commerce, authentication, APIs, dashboards, large content migrations, or other custom functionality may require a custom quote. No out-of-scope work is added without your approval.',
+  },
+  {
+    question: 'What should I share during the initial project intake?',
+    answer: 'Share your business goals, services, audience, logo, colors, copy, photos, desired features, and any current website. Images or links to websites you enjoy are especially helpful. The more inspiration references you provide—and the more clearly you explain what you like about each one—the better the final design can match your vision.',
+  },
+  {
+    question: 'What are SEO and AEO?',
+    answer: 'SEO (Search Engine Optimization) helps search engines such as Google understand and rank your website. AEO (Answer Engine Optimization) structures your content so AI tools and answer engines—such as ChatGPT, Claude, Gemini, and Perplexity—can understand, cite, and recommend your business. A strong website should account for both.',
+  },
+  {
+    question: 'What is an API integration?',
+    answer: 'An API lets different software systems communicate. An integration can connect your website to tools such as Stripe payments, Google Maps, calendars, email platforms, CRMs, inventory systems, or booking software so information moves automatically instead of being copied by hand.',
+  },
+  {
+    question: 'What are MCP servers and AI agents?',
+    answer: 'MCP (Model Context Protocol) is a secure way to connect AI tools to approved business data and actions. An AI agent can then answer customer questions, search internal information, help with workflows, or perform specific tasks within the permissions you define.',
+  },
+  {
+    question: 'Will I be able to update the website myself?',
+    answer: 'That depends on the project. I can build an admin dashboard, connect a content management system, use Shopify for products, or provide training for common updates. We will choose the simplest approach that fits how often your content changes.',
+  },
+  {
+    question: 'What do I need to provide before work starts?',
+    answer: 'At minimum, provide a clear point of contact, your business information, goals, service or product details, and timely feedback. Having your logo, copy, photos, account access, and inspiration ready usually shortens the timeline. If those materials are not ready, content and branding support can be added to the scope.',
   },
 ]
 
@@ -299,6 +342,188 @@ const getEasternDateOffset = (days) => {
   return `${year}-${month}-${day}`
 }
 
+const parseDateString = (dateString) => new Date(`${dateString}T12:00:00`)
+
+const toDateString = (date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function ConsultationCalendar({ value, min, max, onSelect, onOpenChange }) {
+  const minDate = parseDateString(min)
+  const maxDate = parseDateString(max)
+  const initialDate = value ? parseDateString(value) : minDate
+  const [isOpen, setIsOpen] = useState(false)
+  const [visibleMonth, setVisibleMonth] = useState(
+    () => new Date(initialDate.getFullYear(), initialDate.getMonth(), 1),
+  )
+  const calendarRef = useRef(null)
+  const setCalendarOpen = (open) => {
+    setIsOpen(open)
+    onOpenChange(open)
+  }
+
+  useEffect(() => {
+    if (!isOpen) return undefined
+
+    const closeOnOutsideClick = (event) => {
+      if (!calendarRef.current?.contains(event.target)) setCalendarOpen(false)
+    }
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setCalendarOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [isOpen])
+
+  const year = visibleMonth.getFullYear()
+  const month = visibleMonth.getMonth()
+  const monthStart = new Date(year, month, 1)
+  const gridStart = new Date(year, month, 1 - monthStart.getDay())
+  const days = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(gridStart)
+    date.setDate(gridStart.getDate() + index)
+    return date
+  })
+  const minMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1)
+  const maxMonth = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1)
+  const canGoPrevious = visibleMonth > minMonth
+  const canGoNext = visibleMonth < maxMonth
+  const today = getEasternToday()
+
+  const moveMonth = (amount) => {
+    setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1))
+  }
+
+  const handleDayKeyDown = (event, dateString) => {
+    const offsets = {
+      ArrowLeft: -1,
+      ArrowRight: 1,
+      ArrowUp: -7,
+      ArrowDown: 7,
+    }
+    const offset = offsets[event.key]
+    if (!offset) return
+
+    event.preventDefault()
+    const nextDate = parseDateString(dateString)
+    nextDate.setDate(nextDate.getDate() + offset)
+    const nextString = toDateString(nextDate)
+    calendarRef.current?.querySelector(`[data-date="${nextString}"]:not(:disabled)`)?.focus()
+  }
+
+  const selectedLabel = value
+    ? parseDateString(value).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : 'Choose a date'
+
+  return (
+    <div className="custom-date-picker" ref={calendarRef}>
+      <button
+        key={value || 'empty'}
+        className={value ? 'date-picker-trigger has-value' : 'date-picker-trigger'}
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        onClick={() => setCalendarOpen(!isOpen)}
+      >
+        <span>
+          <small>Select a date</small>
+          <strong>{selectedLabel}</strong>
+        </span>
+        <CalendarDays size={20} aria-hidden="true" />
+      </button>
+
+      {isOpen && (
+        <div className="calendar-popover" role="dialog" aria-label="Choose a consultation date">
+          <div className="calendar-header">
+            <div>
+              <span>Available dates</span>
+              <strong>
+                {visibleMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </strong>
+            </div>
+            <div className="calendar-nav">
+              <button
+                type="button"
+                aria-label="Previous month"
+                disabled={!canGoPrevious}
+                onClick={() => moveMonth(-1)}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                aria-label="Next month"
+                disabled={!canGoNext}
+                onClick={() => moveMonth(1)}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="calendar-weekdays" aria-hidden="true">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="calendar-grid" role="grid" aria-label="Calendar days">
+            {days.map((date) => {
+              const dateString = toDateString(date)
+              const isOutsideMonth = date.getMonth() !== month
+              const isDisabled = date < minDate || date > maxDate
+              const isSelected = dateString === value
+              const isToday = dateString === today
+              const classNames = [
+                'calendar-day',
+                isOutsideMonth ? 'is-outside' : '',
+                isSelected ? 'is-selected' : '',
+                isToday ? 'is-today' : '',
+              ].filter(Boolean).join(' ')
+
+              return (
+                <button
+                  className={classNames}
+                  type="button"
+                  role="gridcell"
+                  aria-label={date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                  aria-selected={isSelected}
+                  disabled={isDisabled}
+                  data-date={dateString}
+                  onKeyDown={(event) => handleDayKeyDown(event, dateString)}
+                  onClick={() => {
+                    onSelect(dateString)
+                    setCalendarOpen(false)
+                  }}
+                >
+                  <span>{date.getDate()}</span>
+                  {isToday && <i>Today</i>}
+                </button>
+              )
+            })}
+          </div>
+          <p className="calendar-help">Choose any available date within the next 60 days.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const CONSULTATION_WINDOW_DAYS = 60
 
 const formatMinutes = (minutes) => {
@@ -331,8 +556,10 @@ const getConsultationSlots = (dateString) => {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [openService, setOpenService] = useState(null)
   const [tickerPaused, setTickerPaused] = useState(false)
+  const headerRef = useRef(null)
 
   const openServiceFromTicker = (number) => {
     setOpenService(number)
@@ -345,6 +572,8 @@ function App() {
   const [step, setStep] = useState(0)
   const [formData, setFormData] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [packageModalOpen, setPackageModalOpen] = useState(false)
+  const [selectedPackage, setSelectedPackage] = useState(null)
   const [consultation, setConsultation] = useState({
     date: '',
     time: '',
@@ -352,8 +581,10 @@ function App() {
     lastName: '',
     email: '',
   })
+  const [consultationDateOpen, setConsultationDateOpen] = useState(false)
   const [consultationSubmitted, setConsultationSubmitted] = useState(false)
   const portfolioRef = useRef(null)
+  const modalCloseRef = useRef(null)
 
   const totalSteps = formSteps.length
 
@@ -383,10 +614,11 @@ function App() {
     setSubmitted(true)
   }
 
-  const renderField = (field) => {
+  const renderField = (field, idPrefix = '') => {
+    const fieldId = `${idPrefix}${field.name}`
     const shared = {
       name: field.name,
-      id: field.name,
+      id: fieldId,
       value: formData[field.name] || '',
       onChange: handleChange,
       placeholder: field.placeholder,
@@ -409,7 +641,7 @@ function App() {
     }
 
     return (
-      <label key={field.name}>
+      <label htmlFor={fieldId} key={field.name}>
         {field.label}
         {field.required && <span className="req">*</span>}
         {control}
@@ -417,8 +649,112 @@ function App() {
     )
   }
 
-  const closeMenu = () => setMenuOpen(false)
+  const renderIntakeWizard = (idPrefix) => (
+    submitted ? (
+      <div className="form-complete" role="status">
+        <span className="form-complete-badge"><Check size={28} /></span>
+        <h3>Thank you — your brief is complete.</h3>
+        <p>I have everything I need to prepare for our call. Live submissions will be enabled once the backend is connected.</p>
+        <p className="form-fineprint">No out-of-scope work is performed without your approval. Third-party fees are billed separately.</p>
+      </div>
+    ) : (
+      <>
+        <div className="form-progress">
+          <div className="form-progress-head">
+            <span>Step {step + 1} of {totalSteps}</span>
+            <span>{Math.round((step / (totalSteps - 1)) * 100)}% complete</span>
+          </div>
+          <ol className="stepper">
+            {formSteps.map((stepItem, index) => (
+              <li
+                key={stepItem.number}
+                className={`stepper-item${index === step ? ' is-active' : ''}${index < step ? ' is-done' : ''}`}
+              >
+                <span className="stepper-dot">
+                  {index < step ? <Check size={15} /> : stepItem.number}
+                </span>
+                <span className="stepper-label">{stepItem.title}</span>
+              </li>
+            ))}
+          </ol>
+          <div className="form-progress-bar">
+            <span style={{ width: `${(step / (totalSteps - 1)) * 100}%` }} />
+          </div>
+        </div>
+
+        <div className="form-step">
+          <p className="form-step-kicker">{formSteps[step].number} · {formSteps[step].title}</p>
+          <p className="form-step-intro">{formSteps[step].intro}</p>
+          <div className="field-grid">
+            {formSteps[step].gridFields.map((field) => renderField(field, idPrefix))}
+          </div>
+          {formSteps[step].fields.map((field) => renderField(field, idPrefix))}
+        </div>
+
+        <div className="form-nav">
+          {step > 0 ? (
+            <button type="button" className="button button--ghost" onClick={goBack}>
+              <ChevronLeft size={18} /> Back
+            </button>
+          ) : (
+            <span className="form-nav-hint">Open-ended questions are optional—skip anything that doesn’t apply.</span>
+          )}
+          {step < totalSteps - 1 ? (
+            <button type="button" className="button button--accent" onClick={goNext} disabled={!isStepValid(step)}>
+              Continue <ArrowRight size={18} />
+            </button>
+          ) : (
+            <button type="submit" className="button button--accent" disabled={!isStepValid(step)}>
+              Complete project brief <ArrowRight size={18} />
+            </button>
+          )}
+        </div>
+      </>
+    )
+  )
+
+  const openPackageModal = (item) => {
+    setSelectedPackage(item)
+    setStep(0)
+    setSubmitted(false)
+    setFormData((current) => ({
+      ...current,
+      package: `${item.name} — ${item.price}+`,
+    }))
+    setPackageModalOpen(true)
+  }
+
+  const closePackageModal = () => setPackageModalOpen(false)
+
+  const closeMenu = () => {
+    setMenuOpen(false)
+    setAboutOpen(false)
+  }
   const consultationSlots = getConsultationSlots(consultation.date)
+
+  useEffect(() => {
+    if (!aboutOpen && !menuOpen) return undefined
+
+    const closeOnOutsideClick = (event) => {
+      if (!headerRef.current?.contains(event.target)) {
+        setAboutOpen(false)
+        setMenuOpen(false)
+      }
+    }
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setAboutOpen(false)
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [aboutOpen, menuOpen])
 
   const handleConsultationChange = (event) => {
     const { name, value } = event.target
@@ -465,6 +801,25 @@ function App() {
   }
 
   useEffect(() => {
+    if (!packageModalOpen) return undefined
+
+    const previouslyFocused = document.activeElement
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') closePackageModal()
+    }
+
+    document.body.classList.add('has-package-modal')
+    document.addEventListener('keydown', handleKeyDown)
+    window.requestAnimationFrame(() => modalCloseRef.current?.focus())
+
+    return () => {
+      document.body.classList.remove('has-package-modal')
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused?.focus()
+    }
+  }, [packageModalOpen])
+
+  useEffect(() => {
     const carousel = portfolioRef.current
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!carousel || reducedMotion || portfolioPaused) return undefined
@@ -496,7 +851,12 @@ function App() {
 
   return (
     <>
-      <header className="site-header">
+      <header
+        className="site-header"
+        ref={headerRef}
+        inert={packageModalOpen || undefined}
+        aria-hidden={packageModalOpen || undefined}
+      >
         <a className="wordmark" href="#top" aria-label="Cartez Dewberry home">
           C<span>/</span>D
         </a>
@@ -505,20 +865,36 @@ function App() {
           type="button"
           aria-label="Toggle navigation"
           aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => {
+            setMenuOpen((open) => !open)
+            setAboutOpen(false)
+          }}
         >
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
         <nav className={menuOpen ? 'nav-links nav-links--open' : 'nav-links'} aria-label="Main navigation">
           <a href="#services" onClick={closeMenu}>Services</a>
           <a href="#work" onClick={closeMenu}>Work</a>
-          <a href="#about" onClick={closeMenu}>About</a>
+          <div className={aboutOpen ? 'nav-dropdown is-open' : 'nav-dropdown'}>
+            <button
+              type="button"
+              aria-haspopup="true"
+              aria-expanded={aboutOpen}
+              onClick={() => setAboutOpen((open) => !open)}
+            >
+              About <ChevronDown size={14} aria-hidden="true" />
+            </button>
+            <div className="nav-submenu">
+              <a href="#about" onClick={closeMenu}>My Bio</a>
+              <a href="#faq" onClick={closeMenu}>FAQ</a>
+            </div>
+          </div>
           <a href="#pricing" onClick={closeMenu}>Pricing</a>
           <a className="nav-cta" href="#consultation" onClick={closeMenu}>Book a free call</a>
         </nav>
       </header>
 
-      <main id="top">
+      <main id="top" inert={packageModalOpen || undefined} aria-hidden={packageModalOpen || undefined}>
         <section className="hero-section">
           <div className="hero section-shell">
             <div className="hero-copy">
@@ -788,17 +1164,52 @@ function App() {
                   <p className="plan-name">{item.name}</p>
                   <p className="price"><small>Starting at</small>{item.price}</p>
                   <p className="hours">{item.hours}</p>
+                  <p className="package-timeline">
+                    <CalendarDays size={15} aria-hidden="true" /> Estimated: {item.timeline}
+                  </p>
                   <p className="plan-description">{item.description}</p>
                   <ul>
                     {item.features.map((feature) => <li key={feature}><Check size={16} /> {feature}</li>)}
                   </ul>
-                  <a className="button button--outline" href="#onboarding">Choose {item.name}</a>
+                  <button
+                    className="button button--outline"
+                    type="button"
+                    onClick={() => openPackageModal(item)}
+                  >
+                    Choose {item.name}
+                  </button>
                 </article>
               ))}
             </div>
             <div className="custom-note">
               <span>Need e-commerce, authentication, APIs, or a custom dashboard?</span>
               <strong>Custom projects start at $2,500.</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="faq-section" id="faq">
+          <div className="faq section-shell">
+            <div className="faq-intro">
+              <p className="kicker">Good to know</p>
+              <h2>Questions, answered<br />in plain language.</h2>
+              <p>
+                Clear expectations make better projects. Timelines and prices are estimates and may change when
+                the requested scope, content, integrations, or revision needs change.
+              </p>
+              <a className="text-link" href="#consultation">Still have a question? Book a free call <ChevronRight size={17} /></a>
+            </div>
+            <div className="faq-list">
+              {faqs.map((item, index) => (
+                <details className="faq-item" key={item.question}>
+                  <summary>
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <strong>{item.question}</strong>
+                    <ChevronDown size={19} aria-hidden="true" />
+                  </summary>
+                  <p>{item.answer}</p>
+                </details>
+              ))}
             </div>
           </div>
         </section>
@@ -864,39 +1275,39 @@ function App() {
                     </div>
                   </div>
 
-                  <label className="booking-date">
-                    Select a date
-                      <input
-                        type="date"
-                        name="date"
-                        min={getEasternToday()}
-                        max={getEasternDateOffset(CONSULTATION_WINDOW_DAYS)}
-                        value={consultation.date}
-                        onChange={handleConsultationChange}
-                        required
-                      />
-                  </label>
+                  <ConsultationCalendar
+                    value={consultation.date}
+                    min={getEasternToday()}
+                    max={getEasternDateOffset(CONSULTATION_WINDOW_DAYS)}
+                    onOpenChange={setConsultationDateOpen}
+                    onSelect={(date) => {
+                      setConsultation((current) => ({ ...current, date, time: '' }))
+                      setConsultationSubmitted(false)
+                    }}
+                  />
 
-                  <div className="time-picker">
-                    <p>Available times</p>
-                    {!consultation.date && <span className="booking-empty">Select a date to see available times.</span>}
-                    {consultation.date && consultationSlots.length === 0 && (
-                      <span className="booking-empty">No remaining times today. Please choose another date.</span>
-                    )}
-                    <div className="time-grid">
-                      {consultationSlots.map((time) => (
-                        <button
-                          className={consultation.time === time ? 'time-slot is-selected' : 'time-slot'}
-                          type="button"
-                          aria-pressed={consultation.time === time}
-                          onClick={() => setConsultation((current) => ({ ...current, time }))}
-                          key={time}
-                        >
-                          {time}
-                        </button>
-                      ))}
+                  {!consultationDateOpen && (
+                    <div className="time-picker">
+                      <p>Available times</p>
+                      {!consultation.date && <span className="booking-empty">Select a date to see available times.</span>}
+                      {consultation.date && consultationSlots.length === 0 && (
+                        <span className="booking-empty">No remaining times today. Please choose another date.</span>
+                      )}
+                      <div className="time-grid">
+                        {consultationSlots.map((time) => (
+                          <button
+                            className={consultation.time === time ? 'time-slot is-selected' : 'time-slot'}
+                            type="button"
+                            aria-pressed={consultation.time === time}
+                            onClick={() => setConsultation((current) => ({ ...current, time }))}
+                            key={time}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="booking-contact">
                     <div className="booking-name-row">
@@ -979,89 +1390,92 @@ function App() {
             </div>
 
             <form className="intake-form" onSubmit={handleSubmit}>
-              {submitted ? (
-                <div className="form-complete" role="status">
-                  <span className="form-complete-badge"><Check size={28} /></span>
-                  <h3>Thank you — your brief is complete.</h3>
-                  <p>I have everything I need to prepare for our call. Live submissions will be enabled once the backend is connected.</p>
-                  <p className="form-fineprint">No out-of-scope work is performed without your approval. Third-party fees are billed separately.</p>
-                </div>
-              ) : (
-                <>
-                  <div className="form-progress">
-                    <div className="form-progress-head">
-                      <span>Step {step + 1} of {totalSteps}</span>
-                      <span>{Math.round((step / (totalSteps - 1)) * 100)}% complete</span>
-                    </div>
-                    <ol className="stepper">
-                      {formSteps.map((stepItem, index) => (
-                        <li
-                          key={stepItem.number}
-                          className={`stepper-item${index === step ? ' is-active' : ''}${index < step ? ' is-done' : ''}`}
-                        >
-                          <span className="stepper-dot">
-                            {index < step ? <Check size={15} /> : stepItem.number}
-                          </span>
-                          <span className="stepper-label">{stepItem.title}</span>
-                        </li>
-                      ))}
-                    </ol>
-                    <div className="form-progress-bar">
-                      <span style={{ width: `${(step / (totalSteps - 1)) * 100}%` }} />
-                    </div>
-                  </div>
-
-                  <div className="form-step">
-                    <p className="form-step-kicker">{formSteps[step].number} · {formSteps[step].title}</p>
-                    <p className="form-step-intro">{formSteps[step].intro}</p>
-                    <div className="field-grid">
-                      {formSteps[step].gridFields.map(renderField)}
-                    </div>
-                    {formSteps[step].fields.map(renderField)}
-                  </div>
-
-                  <div className="form-nav">
-                    {step > 0 ? (
-                      <button type="button" className="button button--ghost" onClick={goBack}>
-                        <ChevronLeft size={18} /> Back
-                      </button>
-                    ) : (
-                      <span className="form-nav-hint">Open-ended questions are optional—skip anything that doesn’t apply.</span>
-                    )}
-                    {step < totalSteps - 1 ? (
-                      <button type="button" className="button button--accent" onClick={goNext} disabled={!isStepValid(step)}>
-                        Continue <ArrowRight size={18} />
-                      </button>
-                    ) : (
-                      <button type="submit" className="button button--accent" disabled={!isStepValid(step)}>
-                        Complete project brief <ArrowRight size={18} />
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
+              {renderIntakeWizard('inline-')}
             </form>
           </div>
         </section>
 
         <section className="contact-section" id="contact">
           <div className="contact section-shell">
-            <p className="kicker">Prefer to talk first?</p>
-            <h2>Let’s make your next idea<br /><em>ready for the world.</em></h2>
-            <div className="contact-links">
-              <a href="mailto:info@marc-d.com"><Mail size={20} /> info@marc-d.com</a>
-              <a href="tel:+14043541272"><Phone size={20} /> 404-354-1272</a>
-              <a href="https://www.linkedin.com/in/cartez-dewberry/" target="_blank" rel="noreferrer"><Linkedin size={20} /> LinkedIn</a>
+            <p className="kicker">Ready when you are</p>
+            <h2>You bring the idea.<br /><em>I’ll build the experience.</em></h2>
+            <p className="contact-intro">
+              Have a business, brand, or idea you’re ready to put online? Let’s turn it into a clean, responsive
+              website that looks professional, feels like you, and gives your visitors a reason to take action.
+            </p>
+            <div className="contact-actions">
+              <a className="button button--dark" href="#onboarding">Start a Project <ArrowRight size={18} /></a>
+              <a className="button button--ghost" href="#consultation">Let’s Talk</a>
+            </div>
+            <div className="contact-secondary">
+              <p>
+                <strong>Not sure exactly what you need yet? That’s okay.</strong>
+                We can start with a conversation and figure out the right direction together.
+              </p>
+              <div className="contact-links">
+                <a href="mailto:info@marc-d.com"><Mail size={20} /> info@marc-d.com</a>
+                <a href="tel:+14043541272"><Phone size={20} /> 404-354-1272</a>
+                <a href="https://www.linkedin.com/in/cartez-dewberry/" target="_blank" rel="noreferrer"><Linkedin size={20} /> LinkedIn</a>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer>
-        <a className="wordmark wordmark--footer" href="#top">C<span>/</span>D</a>
-        <p>Custom websites for ambitious small businesses.</p>
-        <p>© {new Date().getFullYear()} Cartez Dewberry</p>
+      <footer inert={packageModalOpen || undefined} aria-hidden={packageModalOpen || undefined}>
+        <div className="footer-brand">
+          <a className="wordmark wordmark--footer" href="#top">C<span>/</span>D</a>
+          <p>Custom websites for ambitious small businesses.</p>
+        </div>
+        <nav className="footer-nav" aria-label="Footer navigation">
+          <a href="#services">Services</a>
+          <a href="#work">Work</a>
+          <a href="#about">My Bio</a>
+          <a href="#faq">FAQ</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <p className="footer-copyright">© {new Date().getFullYear()} Marc-D Group LLC</p>
       </footer>
+
+      {packageModalOpen && selectedPackage && (
+        <div
+          className="package-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closePackageModal()
+          }}
+        >
+          <section
+            className="package-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="package-modal-title"
+            aria-describedby="package-modal-description"
+          >
+            <header className="package-modal-header">
+              <div>
+                <p className="kicker">Selected package · {selectedPackage.price}+</p>
+                <h2 id="package-modal-title">Start your {selectedPackage.name} project.</h2>
+                <p id="package-modal-description">
+                  Complete these four short steps. Your package is already selected.
+                </p>
+              </div>
+              <button
+                className="package-modal-close"
+                type="button"
+                aria-label="Close project intake"
+                onClick={closePackageModal}
+                ref={modalCloseRef}
+              >
+                <X size={22} />
+              </button>
+            </header>
+            <form className="intake-form package-modal-form" onSubmit={handleSubmit}>
+              {renderIntakeWizard('modal-')}
+            </form>
+          </section>
+        </div>
+      )}
     </>
   )
 }
