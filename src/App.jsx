@@ -593,9 +593,11 @@ function App() {
     email: '',
   })
   const [consultationDateOpen, setConsultationDateOpen] = useState(false)
+  const [consultationAttempted, setConsultationAttempted] = useState(false)
   const [consultationSubmitted, setConsultationSubmitted] = useState(false)
   const portfolioRef = useRef(null)
   const modalCloseRef = useRef(null)
+  const consultationErrorRef = useRef(null)
 
   const totalSteps = formSteps.length
 
@@ -770,18 +772,6 @@ function App() {
   const handleConsultationChange = (event) => {
     const { name, value } = event.target
 
-    if (name === 'date' && value) {
-      const minDate = getEasternToday()
-      const maxDate = getEasternDateOffset(CONSULTATION_WINDOW_DAYS)
-      if (value < minDate || value > maxDate) {
-        window.alert(
-          `Please choose a date within the next ${CONSULTATION_WINDOW_DAYS} days (through ${maxDate}).`,
-        )
-        event.target.value = consultation.date
-        return
-      }
-    }
-
     setConsultation((current) => ({
       ...current,
       [name]: value,
@@ -790,24 +780,41 @@ function App() {
     setConsultationSubmitted(false)
   }
 
-  const handleConsultationSubmit = (event) => {
-    event.preventDefault()
+  const getConsultationErrors = () => {
+    const errors = {}
     const minDate = getEasternToday()
     const maxDate = getEasternDateOffset(CONSULTATION_WINDOW_DAYS)
-    if (consultation.date < minDate || consultation.date > maxDate) {
-      window.alert(
-        `Please choose a date within the next ${CONSULTATION_WINDOW_DAYS} days (through ${maxDate}).`,
-      )
+
+    if (!consultation.date) {
+      errors.date = 'Choose a consultation date.'
+    } else if (consultation.date < minDate || consultation.date > maxDate) {
+      errors.date = `Choose a date within the next ${CONSULTATION_WINDOW_DAYS} days.`
+    }
+    if (!consultation.time) errors.time = 'Select an available time.'
+    if (!consultation.firstName.trim()) errors.firstName = 'Enter your first name.'
+    if (!consultation.lastName.trim()) errors.lastName = 'Enter your last name.'
+    if (!consultation.email.trim()) {
+      errors.email = 'Enter your email address.'
+    } else if (!isEmail(consultation.email.trim())) {
+      errors.email = 'Enter a valid email address, such as name@company.com.'
+    }
+
+    return errors
+  }
+
+  const consultationErrors = getConsultationErrors()
+  const consultationIsValid = Object.keys(consultationErrors).length === 0
+
+  const handleConsultationSubmit = (event) => {
+    event.preventDefault()
+    setConsultationAttempted(true)
+
+    if (!consultationIsValid) {
+      window.requestAnimationFrame(() => consultationErrorRef.current?.focus())
       return
     }
-    if (
-      !consultation.date ||
-      !consultation.time ||
-      !consultation.firstName.trim() ||
-      !consultation.lastName.trim() ||
-      !isEmail(consultation.email)
-    ) return
 
+    setConsultationAttempted(false)
     setConsultationSubmitted(true)
   }
 
@@ -1096,7 +1103,7 @@ function App() {
                   rel="noreferrer"
                   key={project.url}
                 >
-                  <div className="portfolio-thumb">
+                  <div className={project.image === marcdShot ? 'portfolio-thumb portfolio-thumb--plain' : 'portfolio-thumb'}>
                     <img src={project.image} alt={`${project.title} landing page`} loading="lazy" />
                     <span className="portfolio-visit"><ExternalLink size={16} /> Visit site</span>
                   </div>
@@ -1118,7 +1125,7 @@ function App() {
                   aria-hidden="true"
                   tabIndex="-1"
                 >
-                  <div className="portfolio-thumb">
+                  <div className={project.image === marcdShot ? 'portfolio-thumb portfolio-thumb--plain' : 'portfolio-thumb'}>
                     <img src={project.image} alt="" loading="lazy" />
                     <span className="portfolio-visit"><ExternalLink size={16} /> Visit site</span>
                   </div>
@@ -1282,7 +1289,13 @@ function App() {
               </div>
             </Reveal>
 
-            <Reveal as="form" className="booking-card" delay={0.1} onSubmit={handleConsultationSubmit}>
+            <Reveal
+              as="form"
+              className="booking-card"
+              delay={0.1}
+              noValidate
+              onSubmit={handleConsultationSubmit}
+            >
               {consultationSubmitted ? (
                 <div className="booking-success" role="status">
                   <span><Check size={26} /></span>
@@ -1294,7 +1307,10 @@ function App() {
                   <button
                     className="button button--ghost"
                     type="button"
-                    onClick={() => setConsultationSubmitted(false)}
+                    onClick={() => {
+                      setConsultationAttempted(false)
+                      setConsultationSubmitted(false)
+                    }}
                   >
                     Choose another time
                   </button>
@@ -1309,6 +1325,22 @@ function App() {
                     </div>
                   </div>
 
+                  {consultationAttempted && !consultationIsValid && (
+                    <div
+                      className="consultation-error-summary"
+                      role="alert"
+                      tabIndex="-1"
+                      ref={consultationErrorRef}
+                    >
+                      <strong>Please complete the highlighted information.</strong>
+                      <ul>
+                        {Object.values(consultationErrors).map((message) => (
+                          <li key={message}>{message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <ConsultationCalendar
                     value={consultation.date}
                     min={getEasternToday()}
@@ -1319,6 +1351,11 @@ function App() {
                       setConsultationSubmitted(false)
                     }}
                   />
+                  {consultationAttempted && consultationErrors.date && (
+                    <span className="consultation-field-error" data-consultation-error>
+                      {consultationErrors.date}
+                    </span>
+                  )}
 
                   {!consultationDateOpen && (
                     <div className="time-picker">
@@ -1340,6 +1377,11 @@ function App() {
                           </button>
                         ))}
                       </div>
+                      {consultationAttempted && consultationErrors.time && (
+                        <span className="consultation-field-error" data-consultation-error>
+                          {consultationErrors.time}
+                        </span>
+                      )}
                     </div>
                   )}
 
@@ -1353,8 +1395,19 @@ function App() {
                           onChange={handleConsultationChange}
                           placeholder="First name"
                           autoComplete="given-name"
+                          aria-invalid={consultationAttempted && Boolean(consultationErrors.firstName)}
+                          aria-describedby={
+                            consultationAttempted && consultationErrors.firstName
+                              ? 'consultation-first-name-error'
+                              : undefined
+                          }
                           required
                         />
+                        {consultationAttempted && consultationErrors.firstName && (
+                          <span className="consultation-field-error" id="consultation-first-name-error">
+                            {consultationErrors.firstName}
+                          </span>
+                        )}
                       </label>
                       <label>
                         Last name
@@ -1364,8 +1417,19 @@ function App() {
                           onChange={handleConsultationChange}
                           placeholder="Last name"
                           autoComplete="family-name"
+                          aria-invalid={consultationAttempted && Boolean(consultationErrors.lastName)}
+                          aria-describedby={
+                            consultationAttempted && consultationErrors.lastName
+                              ? 'consultation-last-name-error'
+                              : undefined
+                          }
                           required
                         />
+                        {consultationAttempted && consultationErrors.lastName && (
+                          <span className="consultation-field-error" id="consultation-last-name-error">
+                            {consultationErrors.lastName}
+                          </span>
+                        )}
                       </label>
                     </div>
                     <label className="booking-email">
@@ -1377,21 +1441,26 @@ function App() {
                         onChange={handleConsultationChange}
                         placeholder="you@company.com"
                         autoComplete="email"
+                        aria-invalid={consultationAttempted && Boolean(consultationErrors.email)}
+                        aria-describedby={
+                          consultationAttempted && consultationErrors.email
+                            ? 'consultation-email-error'
+                            : undefined
+                        }
                         required
                       />
+                      {consultationAttempted && consultationErrors.email && (
+                        <span className="consultation-field-error" id="consultation-email-error">
+                          {consultationErrors.email}
+                        </span>
+                      )}
                     </label>
                   </div>
 
                   <button
                     className="button button--accent booking-submit"
                     type="submit"
-                    disabled={
-                      !consultation.date ||
-                      !consultation.time ||
-                      !consultation.firstName.trim() ||
-                      !consultation.lastName.trim() ||
-                      !isEmail(consultation.email)
-                    }
+                    data-incomplete={!consultationIsValid || undefined}
                   >
                     Request consultation <ArrowRight size={18} />
                   </button>
