@@ -15,6 +15,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Upload,
   X,
 } from 'lucide-react'
 import headshot from '../assets/headshot.webp'
@@ -28,6 +29,11 @@ import websiteShowcase from '../assets/websites/website_images.webp'
 import Reveal from './Reveal'
 
 const CARD_HOVER = { y: -6, transition: { duration: 0.25, ease: 'easeOut' } }
+const MAX_UPLOAD_FILES = 12
+const MAX_FILE_BYTES = 5 * 1024 * 1024
+const MAX_UPLOAD_TOTAL_BYTES = 25 * 1024 * 1024
+const ACCEPTED_UPLOAD_TYPES = 'image/jpeg,image/png,image/webp,application/pdf'
+const ACCEPTED_UPLOAD_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'pdf']
 
 const portfolio = [
   {
@@ -286,12 +292,25 @@ const formSteps = [
     title: 'Website scope',
     intro: 'A rough idea of size and purpose—estimates are perfectly fine.',
     gridFields: [
-      { name: 'pages', label: 'Estimated page count', type: 'select', options: ['1–3 pages', '4–5 pages', '6–10 pages', '10+ pages', 'Not sure yet'] },
-      { name: 'goal', label: 'Primary goal', type: 'select', options: ['Build credibility', 'Generate leads', 'Sell products', 'Book appointments', 'Showcase work', 'Other'] },
+      { name: 'pages', label: 'Estimated page count', type: 'radio', options: ['1–3 pages', '4–5 pages', '6–10 pages', '10+ pages', 'Not sure yet'] },
+      { name: 'goal', label: 'Primary goal', type: 'radio', options: ['Build credibility', 'Generate leads', 'Sell products', 'Book appointments', 'Showcase work', 'Other'] },
     ],
     fields: [
       { name: 'offerings', label: 'Products or services', type: 'textarea', rows: 3, placeholder: 'What are you selling or promoting?' },
       { name: 'features', label: 'Pages or features you expect', type: 'textarea', rows: 3, placeholder: 'Home, About, Services, booking, shop, blog…' },
+      {
+        name: 'inspirationFiles',
+        label: 'Website inspiration files',
+        type: 'file',
+        accept: ACCEPTED_UPLOAD_TYPES,
+        helper: 'Upload up to 12 screenshots or inspiration files in JPEG, PNG, WebP, or PDF format. Maximum 5 MB each.',
+      },
+      {
+        name: 'inspirationLink',
+        label: 'Inspiration download link',
+        placeholder: 'https://drive.google.com/… or https://dropbox.com/…',
+        helper: 'Share a public download or folder URL if your inspiration files are stored elsewhere.',
+      },
     ],
   },
   {
@@ -300,12 +319,17 @@ const formSteps = [
     intro: 'Share anything you already have—leave blank what you don’t.',
     gridFields: [
       { name: 'domain', label: 'Existing or desired domain', placeholder: 'yourcompany.com' },
-      { name: 'launchDate', label: 'Desired launch date', type: 'date' },
+      { name: 'launchDate', label: 'Desired launch date', type: 'project-date' },
     ],
     fields: [
       { name: 'brand', label: 'Brand direction', type: 'textarea', rows: 3, placeholder: 'Colors, tagline, visual style, or links to inspiration' },
-      { name: 'assets', label: 'Available assets', type: 'textarea', rows: 3, placeholder: 'Logo, brand guide, copy, high-resolution images, video…' },
-      { name: 'integrations', label: 'Social, marketing, or business platforms', type: 'textarea', rows: 3, placeholder: 'Instagram, LinkedIn, Mailchimp, HubSpot, Calendly…' },
+      {
+        name: 'integrations',
+        label: 'Business platform links or names',
+        type: 'textarea',
+        rows: 3,
+        placeholder: 'Calendly URL, HubSpot, Mailchimp, booking platform, payment provider…',
+      },
     ],
   },
   {
@@ -317,6 +341,21 @@ const formSteps = [
       { name: 'referral', label: 'How did you hear about me?', placeholder: 'Referral, search, social…' },
     ],
     fields: [
+      {
+        name: 'brandAssets',
+        label: 'Brand images and style guides',
+        type: 'file',
+        accept: ACCEPTED_UPLOAD_TYPES,
+        helper: 'Upload up to 12 logos, photos, screenshots, or PDF brand guides. Maximum 5 MB each.',
+      },
+      {
+        name: 'socialUrls',
+        label: 'Social media and marketing URLs',
+        type: 'textarea',
+        rows: 3,
+        placeholder: 'Paste the full URLs for Instagram, Facebook, LinkedIn, TikTok, Google Business Profile, email campaigns, or other marketing pages.',
+        helper: 'Please include the complete URL for every account or page you want connected.',
+      },
       { name: 'notes', label: 'Anything else I should know?', type: 'textarea', rows: 4, placeholder: 'Questions, constraints, or context' },
     ],
   },
@@ -362,7 +401,17 @@ const toDateString = (date) => {
   return `${year}-${month}-${day}`
 }
 
-function ConsultationCalendar({ value, min, max, onSelect, onOpenChange }) {
+function CustomDatePicker({
+  value,
+  min,
+  max,
+  onSelect,
+  onOpenChange = () => {},
+  triggerLabel = 'Select a date',
+  headerLabel = 'Available dates',
+  dialogLabel = 'Choose a consultation date',
+  helpText = 'Choose any available date within the next 60 days.',
+}) {
   const minDate = parseDateString(min)
   const maxDate = parseDateString(max)
   const initialDate = value ? parseDateString(value) : minDate
@@ -450,17 +499,17 @@ function ConsultationCalendar({ value, min, max, onSelect, onOpenChange }) {
         onClick={() => setCalendarOpen(!isOpen)}
       >
         <span>
-          <small>Select a date</small>
+          <small>{triggerLabel}</small>
           <strong>{selectedLabel}</strong>
         </span>
         <CalendarDays size={20} aria-hidden="true" />
       </button>
 
       {isOpen && (
-        <div className="calendar-popover" role="dialog" aria-label="Choose a consultation date">
+        <div className="calendar-popover" role="dialog" aria-label={dialogLabel}>
           <div className="calendar-header">
             <div>
-              <span>Available dates</span>
+              <span>{headerLabel}</span>
               <strong>
                 {visibleMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </strong>
@@ -528,7 +577,7 @@ function ConsultationCalendar({ value, min, max, onSelect, onOpenChange }) {
               )
             })}
           </div>
-          <p className="calendar-help">Choose any available date within the next 60 days.</p>
+          <p className="calendar-help">{helpText}</p>
         </div>
       )}
     </div>
@@ -536,6 +585,7 @@ function ConsultationCalendar({ value, min, max, onSelect, onOpenChange }) {
 }
 
 const CONSULTATION_WINDOW_DAYS = 60
+const PROJECT_LAUNCH_WINDOW_DAYS = 730
 
 const formatMinutes = (minutes) => {
   const hours = Math.floor(minutes / 60)
@@ -582,7 +632,10 @@ function App() {
   const [portfolioPaused, setPortfolioPaused] = useState(false)
   const [step, setStep] = useState(0)
   const [formData, setFormData] = useState({})
+  const [fileUploads, setFileUploads] = useState({ inspirationFiles: [], brandAssets: [] })
+  const [fileUploadErrors, setFileUploadErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [showNewBriefButton, setShowNewBriefButton] = useState(false)
   const [packageModalOpen, setPackageModalOpen] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [consultation, setConsultation] = useState({
@@ -627,8 +680,164 @@ function App() {
     setSubmitted(true)
   }
 
+  useEffect(() => {
+    if (!submitted) {
+      setShowNewBriefButton(false)
+      return undefined
+    }
+
+    const timer = window.setTimeout(() => setShowNewBriefButton(true), 6000)
+    return () => window.clearTimeout(timer)
+  }, [submitted])
+
+  const startNewBrief = () => {
+    setStep(0)
+    setFormData(
+      packageModalOpen && selectedPackage
+        ? { package: `${selectedPackage.name} — ${selectedPackage.price}+` }
+        : {},
+    )
+    setFileUploads({ inspirationFiles: [], brandAssets: [] })
+    setFileUploadErrors({})
+    setShowNewBriefButton(false)
+    setSubmitted(false)
+  }
+
+  const handleFileUpload = (fieldName, event) => {
+    const incomingFiles = Array.from(event.target.files || [])
+    const existingFiles = fileUploads[fieldName] || []
+    const otherUploadBytes = Object.entries(fileUploads)
+      .filter(([name]) => name !== fieldName)
+      .flatMap(([, files]) => files)
+      .reduce((total, file) => total + file.size, 0)
+    let runningBytes = otherUploadBytes + existingFiles.reduce((total, file) => total + file.size, 0)
+    const acceptedFiles = []
+    const errors = []
+
+    incomingFiles.forEach((file) => {
+      const extension = file.name.split('.').pop()?.toLowerCase()
+      const isAcceptedType =
+        ACCEPTED_UPLOAD_EXTENSIONS.includes(extension) &&
+        (!file.type || ACCEPTED_UPLOAD_TYPES.includes(file.type))
+      const isDuplicate = [...existingFiles, ...acceptedFiles].some(
+        (current) =>
+          current.name === file.name &&
+          current.size === file.size &&
+          current.lastModified === file.lastModified,
+      )
+
+      if (isDuplicate) return
+      if (!isAcceptedType) {
+        errors.push(`${file.name}: use JPEG, PNG, WebP, or PDF.`)
+        return
+      }
+      if (file.size > MAX_FILE_BYTES) {
+        errors.push(`${file.name}: file must be 5 MB or smaller.`)
+        return
+      }
+      if (existingFiles.length + acceptedFiles.length >= MAX_UPLOAD_FILES) {
+        errors.push(`You can upload no more than ${MAX_UPLOAD_FILES} files in this section.`)
+        return
+      }
+      if (runningBytes + file.size > MAX_UPLOAD_TOTAL_BYTES) {
+        errors.push('Your combined intake uploads cannot exceed 25 MB.')
+        return
+      }
+
+      acceptedFiles.push(file)
+      runningBytes += file.size
+    })
+
+    setFileUploads((current) => ({
+      ...current,
+      [fieldName]: [...(current[fieldName] || []), ...acceptedFiles],
+    }))
+    setFileUploadErrors((current) => ({ ...current, [fieldName]: errors }))
+    event.target.value = ''
+  }
+
+  const removeUploadedFile = (fieldName, fileToRemove) => {
+    setFileUploads((current) => ({
+      ...current,
+      [fieldName]: current[fieldName].filter((file) => file !== fileToRemove),
+    }))
+    setFileUploadErrors((current) => ({ ...current, [fieldName]: [] }))
+  }
+
   const renderField = (field, idPrefix = '') => {
     const fieldId = `${idPrefix}${field.name}`
+
+    if (field.type === 'file') {
+      const uploadedFiles = fileUploads[field.name] || []
+      const uploadErrors = fileUploadErrors[field.name] || []
+
+      return (
+        <div className="file-upload-field" key={field.name}>
+          <span className="file-upload-label">{field.label}</span>
+          <label className="file-upload-drop" htmlFor={fieldId}>
+            <Upload size={20} aria-hidden="true" />
+            <span>
+              <strong>Choose files</strong>
+              <small>or add more files</small>
+            </span>
+            <input
+              className="file-upload-input"
+              id={fieldId}
+              name={field.name}
+              type="file"
+              accept={field.accept}
+              multiple
+              onChange={(event) => handleFileUpload(field.name, event)}
+            />
+          </label>
+          <span className="field-helper">
+            {field.helper} Combined project uploads are limited to 25 MB.
+          </span>
+          {uploadErrors.length > 0 && (
+            <div className="file-upload-errors" role="alert">
+              {uploadErrors.map((error) => <span key={error}>{error}</span>)}
+            </div>
+          )}
+          {uploadedFiles.length > 0 && (
+            <ul className="file-upload-list">
+              {uploadedFiles.map((file) => (
+                <li key={`${file.name}-${file.size}-${file.lastModified}`}>
+                  <span>
+                    <strong>{file.name}</strong>
+                    <small>{(file.size / (1024 * 1024)).toFixed(1)} MB</small>
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${file.name}`}
+                    onClick={() => removeUploadedFile(field.name, file)}
+                  >
+                    <X size={15} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )
+    }
+
+    if (field.type === 'project-date') {
+      return (
+        <div className="project-date-field" key={field.name}>
+          <CustomDatePicker
+            value={formData[field.name] || ''}
+            min={getEasternToday()}
+            max={getEasternDateOffset(PROJECT_LAUNCH_WINDOW_DAYS)}
+            triggerLabel={field.label}
+            headerLabel="Plan your launch"
+            dialogLabel="Choose a desired project launch date"
+            helpText="Choose a preferred launch date within the next two years."
+            onSelect={(date) => setFormData((current) => ({ ...current, [field.name]: date }))}
+          />
+        </div>
+      )
+    }
+
     const shared = {
       name: field.name,
       id: fieldId,
@@ -638,6 +847,38 @@ function App() {
     }
 
     let control
+    if (field.type === 'radio') {
+      return (
+        <fieldset className="radio-field" key={field.name}>
+          <legend>
+            {field.label}
+            {field.required && <span className="req">*</span>}
+          </legend>
+          <div className="radio-options">
+            {field.options.map((option) => {
+              const optionId = `${fieldId}-${option.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+              const isSelected = formData[field.name] === option
+
+              return (
+                <label className={isSelected ? 'radio-option is-selected' : 'radio-option'} htmlFor={optionId} key={option}>
+                  <input
+                    id={optionId}
+                    name={field.name}
+                    type="radio"
+                    value={option}
+                    checked={isSelected}
+                    onChange={handleChange}
+                  />
+                  <span className="radio-indicator" aria-hidden="true" />
+                  <span>{option}</span>
+                </label>
+              )
+            })}
+          </div>
+        </fieldset>
+      )
+    }
+
     if (field.type === 'textarea') {
       control = <textarea rows={field.rows || 3} {...shared} />
     } else if (field.type === 'select') {
@@ -658,6 +899,7 @@ function App() {
         {field.label}
         {field.required && <span className="req">*</span>}
         {control}
+        {field.helper && <span className="field-helper">{field.helper}</span>}
       </label>
     )
   }
@@ -669,6 +911,11 @@ function App() {
         <h3>Thank you — your brief is complete.</h3>
         <p>I have everything I need to prepare for our call. Live submissions will be enabled once the backend is connected.</p>
         <p className="form-fineprint">No out-of-scope work is performed without your approval. Third-party fees are billed separately.</p>
+        {showNewBriefButton && (
+          <button className="button new-brief-button" type="button" onClick={startNewBrief}>
+            Submit a new project brief <ArrowRight size={18} />
+          </button>
+        )}
       </div>
     ) : (
       <>
@@ -1142,10 +1389,10 @@ function App() {
 
         <section className="about-section" id="about">
           <div className="about section-shell">
-            <Reveal className="portrait-wrap">
+            <div className="portrait-wrap">
               <div className="portrait-accent">BUILT<br />WITH<br />PURPOSE</div>
               <img src={headshot} alt="Cartez Dewberry, software engineer and founder" />
-            </Reveal>
+            </div>
             <Reveal className="about-copy" delay={0.1}>
               <p className="kicker">About me</p>
               <h2>I bring a builder’s mindset to every project.</h2>
@@ -1341,7 +1588,7 @@ function App() {
                     </div>
                   )}
 
-                  <ConsultationCalendar
+                  <CustomDatePicker
                     value={consultation.date}
                     min={getEasternToday()}
                     max={getEasternDateOffset(CONSULTATION_WINDOW_DAYS)}
