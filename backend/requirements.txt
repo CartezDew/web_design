@@ -1,0 +1,11 @@
+Django==5.2.6
+djangorestframework==3.16.1
+django-cors-headers==4.7.0
+django-environ==0.12.0
+django-storages[google]==1.14.6
+django-anymail[resend]==13.1
+psycopg[binary]==3.2.10
+gunicorn==23.0.0
+whitenoise==6.9.0
+Pillow==11.3.0
+python-magic==0.4.27

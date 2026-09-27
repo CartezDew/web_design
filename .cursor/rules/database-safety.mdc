@@ -1,0 +1,15 @@
+---
+description: Protect production client data and schema from destructive operations
+alwaysApply: true
+---
+
+# Production database safety
+
+- Never run or add `DROP DATABASE`, `DROP SCHEMA`, `TRUNCATE`, Django `flush`, destructive seed/reset commands, or bulk deletion against production.
+- Never replace a migration history, delete committed migrations, or rewrite an applied migration. Add a new forward migration.
+- Never use production credentials in tests, local scripts, fixtures, or AI-generated commands.
+- Treat `DATABASE_URL`, `MIGRATION_DATABASE_URL`, backups, and service-account values as secrets. Never print or commit them.
+- Use the restricted runtime database role for the web process. Use the migration role only during an explicitly approved deployment.
+- Business records use soft deletion. Any permanent deletion or irreversible data migration requires the user's explicit confirmation, a fresh verified backup, and a restore plan.
+- Before a production migration: inspect SQL, run tests, take/verify a backup, and set `ALLOW_PRODUCTION_MIGRATIONS=yes` only for that migration process.
+- Prefer read-only diagnostics. If environment identity is uncertain, stop before any database mutation.

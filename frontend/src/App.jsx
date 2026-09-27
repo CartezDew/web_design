@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { Turnstile } from '@marsidev/react-turnstile'
 import {
   ArrowRight,
   CalendarDays,
@@ -27,6 +28,7 @@ import classProjectShot from '../assets/websites/class_project.webp'
 import consultationMeeting from '../assets/websites/consulting_meeting.webp'
 import websiteShowcase from '../assets/websites/website_images.webp'
 import Reveal from './Reveal'
+import { apiRequest, uploadAsset } from './api'
 
 const CARD_HOVER = { y: -6, transition: { duration: 0.25, ease: 'easeOut' } }
 const MAX_UPLOAD_FILES = 12
@@ -362,6 +364,11 @@ const formSteps = [
 ]
 
 const isEmail = (value) => /.+@.+\..+/.test(value)
+const formatSlotTime = (value) => new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: 'numeric',
+  minute: '2-digit',
+}).format(new Date(value))
 
 const getEasternNow = () => {
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -635,6 +642,9 @@ function App() {
   const [fileUploads, setFileUploads] = useState({ inspirationFiles: [], brandAssets: [] })
   const [fileUploadErrors, setFileUploadErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [formSubmitting, setFormSubmitting] = useState(false)
+  const [formSubmitError, setFormSubmitError] = useState('')
+  const [briefTurnstileToken, setBriefTurnstileToken] = useState('')
   const [showNewBriefButton, setShowNewBriefButton] = useState(false)
   const [packageModalOpen, setPackageModalOpen] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState(null)
@@ -648,6 +658,11 @@ function App() {
   const [consultationDateOpen, setConsultationDateOpen] = useState(false)
   const [consultationAttempted, setConsultationAttempted] = useState(false)
   const [consultationSubmitted, setConsultationSubmitted] = useState(false)
+  const [consultationSubmitting, setConsultationSubmitting] = useState(false)
+  const [consultationSubmitError, setConsultationSubmitError] = useState('')
+  const [consultationTurnstileToken, setConsultationTurnstileToken] = useState('')
+  const [consultationSlots, setConsultationSlots] = useState([])
+  const [consultationSlotsLoading, setConsultationSlotsLoading] = useState(false)
   const portfolioRef = useRef(null)
   const modalCloseRef = useRef(null)
   const consultationErrorRef = useRef(null)
@@ -674,10 +689,52 @@ function App() {
 
   const goBack = () => setStep((current) => Math.max(current - 1, 0))
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     if (!isStepValid(step)) return
-    setSubmitted(true)
+    setFormSubmitting(true)
+    setFormSubmitError('')
+    const idempotencyKey = crypto.randomUUID()
+    try {
+      const brief = await apiRequest('/public/briefs/', {
+        method: 'POST',
+        body: JSON.stringify({
+          company: formData.company,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || '',
+          overview: formData.overview || '',
+          mission: formData.mission || '',
+          success: formData.success || '',
+          pages: formData.pages || '',
+          goal: formData.goal || '',
+          offerings: formData.offerings || '',
+          features: formData.features || '',
+          inspiration_link: formData.inspirationLink || '',
+          domain: formData.domain || '',
+          launch_date: formData.launchDate || null,
+          brand: formData.brand || '',
+          integrations: formData.integrations || '',
+          package: formData.package || '',
+          referral: formData.referral || '',
+          social_urls: formData.socialUrls || '',
+          notes: formData.notes || '',
+          idempotency_key: idempotencyKey,
+          turnstile_token: briefTurnstileToken,
+        }),
+      })
+      for (const file of fileUploads.inspirationFiles) {
+        await uploadAsset({ file, group: 'inspiration', brief: brief.id, idempotencyKey })
+      }
+      for (const file of fileUploads.brandAssets) {
+        await uploadAsset({ file, group: 'brand', brief: brief.id, idempotencyKey })
+      }
+      setSubmitted(true)
+    } catch (error) {
+      setFormSubmitError(error.message)
+    } finally {
+      setFormSubmitting(false)
+    }
   }
 
   useEffect(() => {
@@ -699,6 +756,7 @@ function App() {
     )
     setFileUploads({ inspirationFiles: [], brandAssets: [] })
     setFileUploadErrors({})
+    setFormSubmitError('')
     setShowNewBriefButton(false)
     setSubmitted(false)
   }
@@ -909,7 +967,7 @@ function App() {
       <div className="form-complete" role="status">
         <span className="form-complete-badge"><Check size={28} /></span>
         <h3>Thank you — your brief is complete.</h3>
-        <p>I have everything I need to prepare for our call. Live submissions will be enabled once the backend is connected.</p>
+        <p>Your project brief and files were saved securely. I’ll review everything before our call.</p>
         <p className="form-fineprint">No out-of-scope work is performed without your approval. Third-party fees are billed separately.</p>
         {showNewBriefButton && (
           <button className="button new-brief-button" type="button" onClick={startNewBrief}>
@@ -951,6 +1009,14 @@ function App() {
           {formSteps[step].fields.map((field) => renderField(field, idPrefix))}
         </div>
 
+        {formSubmitError && <div className="file-upload-errors" role="alert"><span>{formSubmitError}</span></div>}
+        {step === totalSteps - 1 && import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+          <Turnstile
+            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+            onSuccess={setBriefTurnstileToken}
+            onExpire={() => setBriefTurnstileToken('')}
+          />
+        )}
         <div className="form-nav">
           {step > 0 ? (
             <button type="button" className="button button--ghost" onClick={goBack}>
@@ -964,8 +1030,8 @@ function App() {
               Continue <ArrowRight size={18} />
             </button>
           ) : (
-            <button type="submit" className="button button--accent" disabled={!isStepValid(step)}>
-              Complete project brief <ArrowRight size={18} />
+            <button type="submit" className="button button--accent" disabled={!isStepValid(step) || formSubmitting}>
+              {formSubmitting ? 'Saving your brief…' : <>Complete project brief <ArrowRight size={18} /></>}
             </button>
           )}
         </div>
@@ -990,7 +1056,25 @@ function App() {
     setMenuOpen(false)
     setAboutOpen(false)
   }
-  const consultationSlots = getConsultationSlots(consultation.date)
+  useEffect(() => {
+    if (!consultation.date || consultationDateOpen) {
+      setConsultationSlots([])
+      return undefined
+    }
+    let active = true
+    setConsultationSlotsLoading(true)
+    apiRequest(`/public/availability/?start=${consultation.date}&days=1`)
+      .then((days) => {
+        if (active) setConsultationSlots(days[0]?.slots || [])
+      })
+      .catch((error) => {
+        if (active) setConsultationSubmitError(error.message)
+      })
+      .finally(() => {
+        if (active) setConsultationSlotsLoading(false)
+      })
+    return () => { active = false }
+  }, [consultation.date, consultationDateOpen])
 
   useEffect(() => {
     if (!aboutOpen && !menuOpen) return undefined
@@ -1052,17 +1136,36 @@ function App() {
   const consultationErrors = getConsultationErrors()
   const consultationIsValid = Object.keys(consultationErrors).length === 0
 
-  const handleConsultationSubmit = (event) => {
+  const handleConsultationSubmit = async (event) => {
     event.preventDefault()
     setConsultationAttempted(true)
+    setConsultationSubmitError('')
 
     if (!consultationIsValid) {
       window.requestAnimationFrame(() => consultationErrorRef.current?.focus())
       return
     }
 
-    setConsultationAttempted(false)
-    setConsultationSubmitted(true)
+    setConsultationSubmitting(true)
+    try {
+      await apiRequest('/public/appointments/', {
+        method: 'POST',
+        body: JSON.stringify({
+          first_name: consultation.firstName.trim(),
+          last_name: consultation.lastName.trim(),
+          email: consultation.email.trim(),
+          starts_at: consultation.time,
+          idempotency_key: crypto.randomUUID(),
+          turnstile_token: consultationTurnstileToken,
+        }),
+      })
+      setConsultationAttempted(false)
+      setConsultationSubmitted(true)
+    } catch (error) {
+      setConsultationSubmitError(error.message)
+    } finally {
+      setConsultationSubmitting(false)
+    }
   }
 
   useEffect(() => {
@@ -1155,6 +1258,7 @@ function App() {
             </div>
           </div>
           <a href="#pricing" onClick={closeMenu}>Pricing</a>
+          <a href="/sign-in" onClick={closeMenu}>Sign In</a>
           <a className="nav-cta" href="#consultation" onClick={closeMenu}>Book a free call</a>
         </nav>
       </header>
@@ -1548,9 +1652,9 @@ function App() {
                   <span><Check size={26} /></span>
                   <h3>Your consultation request is ready.</h3>
                   <p>
-                    {consultation.date} at {consultation.time} ET
+                    {consultation.date} at {formatSlotTime(consultation.time)} ET
                   </p>
-                  <small>Live calendar confirmation will be enabled when the Railway backend is connected.</small>
+                  <small>Your request was saved securely. You’ll receive confirmation by email.</small>
                   <button
                     className="button button--ghost"
                     type="button"
@@ -1607,8 +1711,9 @@ function App() {
                   {!consultationDateOpen && (
                     <div className="time-picker">
                       <p>Available times</p>
+                      {consultationSlotsLoading && <span className="booking-empty">Loading current availability…</span>}
                       {!consultation.date && <span className="booking-empty">Select a date to see available times.</span>}
-                      {consultation.date && consultationSlots.length === 0 && (
+                      {consultation.date && !consultationSlotsLoading && consultationSlots.length === 0 && (
                         <span className="booking-empty">No remaining times today. Please choose another date.</span>
                       )}
                       <div className="time-grid">
@@ -1620,7 +1725,7 @@ function App() {
                             onClick={() => setConsultation((current) => ({ ...current, time }))}
                             key={time}
                           >
-                            {time}
+                            {formatSlotTime(time)}
                           </button>
                         ))}
                       </div>
@@ -1704,12 +1809,21 @@ function App() {
                     </label>
                   </div>
 
+                  {consultationSubmitError && <div className="consultation-error-summary" role="alert">{consultationSubmitError}</div>}
+                  {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                    <Turnstile
+                      siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                      onSuccess={setConsultationTurnstileToken}
+                      onExpire={() => setConsultationTurnstileToken('')}
+                    />
+                  )}
                   <button
                     className="button button--accent booking-submit"
                     type="submit"
+                    disabled={consultationSubmitting}
                     data-incomplete={!consultationIsValid || undefined}
                   >
-                    Request consultation <ArrowRight size={18} />
+                    {consultationSubmitting ? 'Saving request…' : <>Request consultation <ArrowRight size={18} /></>}
                   </button>
                 </>
               )}
@@ -1786,6 +1900,7 @@ function App() {
           <a href="#faq">FAQ</a>
           <a href="#pricing">Pricing</a>
           <a href="#contact">Contact</a>
+          <a href="/sign-in">Sign In</a>
         </nav>
         <p className="footer-copyright">© {new Date().getFullYear()} Marc-D Group LLC</p>
       </footer>
