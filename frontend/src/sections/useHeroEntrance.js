@@ -1,26 +1,31 @@
 import { useEffect, useRef } from "react";
-import {
-  stagger,
-  useAnimate,
-  useInView,
-  useReducedMotion,
-} from "framer-motion";
+import { stagger, useAnimate, useInView } from "framer-motion";
+import { motionEnabled } from "../motion";
 
 const ease = [0.22, 0.61, 0.36, 1];
+const inViewMargin = "0px 0px -5% 0px";
+
+function markEntered(element, key) {
+  if (element) element.dataset[key] = "";
+}
 
 export default function useHeroEntrance() {
   const [scope, animate] = useAnimate();
   const visual = useRef(null);
   const copyPlayed = useRef(false);
   const visualPlayed = useRef(false);
-  const copyInView = useInView(scope, { once: true, amount: 0.1 });
-  const visualInView = useInView(visual, { once: true, amount: 0.2 });
-  const reduceMotion = useReducedMotion();
+  const copyInView = useInView(scope, { once: true, margin: inViewMargin });
+  const visualInView = useInView(visual, { once: true, margin: inViewMargin });
 
-  // Content is visible in the prerendered HTML. Motion is an enhancement after hydration.
+  // Hero.css keeps these parts hidden until the sequence finishes; the sequence's own
+  // inline styles take over while it plays.
   useEffect(() => {
-    if (!copyInView || reduceMotion || copyPlayed.current) return;
+    if (!copyInView || copyPlayed.current) return;
     copyPlayed.current = true;
+    if (!motionEnabled()) {
+      markEntered(scope.current, "copyEntered");
+      return;
+    }
     const controls = animate([
       [
         ".hero-eyebrow",
@@ -49,13 +54,21 @@ export default function useHeroEntrance() {
       ],
       [".trust-row", { opacity: [0, 1] }, { at: 1.05, duration: 0.5 }],
     ]);
-    return () => controls.cancel();
-  }, [copyInView, reduceMotion, animate]);
+    controls.then(() => markEntered(scope.current, "copyEntered"));
+    return () => {
+      controls.complete();
+      markEntered(scope.current, "copyEntered");
+    };
+  }, [copyInView, animate, scope]);
 
   // On phones the illustration enters later, so its sequence waits until it is visible.
   useEffect(() => {
-    if (!visualInView || reduceMotion || visualPlayed.current) return;
+    if (!visualInView || visualPlayed.current) return;
     visualPlayed.current = true;
+    if (!motionEnabled()) {
+      markEntered(visual.current, "visualEntered");
+      return;
+    }
     const controls = animate([
       [
         ".hero-card",
@@ -107,8 +120,12 @@ export default function useHeroEntrance() {
         { at: 1.01, duration: 0.6, ease },
       ],
     ]);
-    return () => controls.cancel();
-  }, [visualInView, reduceMotion, animate]);
+    controls.then(() => markEntered(visual.current, "visualEntered"));
+    return () => {
+      controls.complete();
+      markEntered(visual.current, "visualEntered");
+    };
+  }, [visualInView, animate]);
 
   return [scope, visual];
 }

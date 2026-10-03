@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { FileText, Upload, X, Check } from "lucide-react";
+import {
+  FILE_ACCEPT,
+  FILE_FORMAT_LABEL,
+  uploadContentType,
+} from "../content/uploads";
 import "./FilePicker.css";
 export const FILE_LIMITS = {
   count: 12,
   each: 5 * 1024 * 1024,
   total: 25 * 1024 * 1024,
-};
-const types = {
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  webp: "image/webp",
-  pdf: "application/pdf",
 };
 export function validateFiles(incoming, current = [], existing = []) {
   const accepted = [];
@@ -21,7 +19,6 @@ export function validateFiles(incoming, current = [], existing = []) {
     0,
   );
   for (const file of incoming) {
-    const ext = file.name.split(".").pop().toLowerCase();
     if (
       current.some(
         (i) => i.file.name === file.name && i.file.size === file.size,
@@ -29,8 +26,10 @@ export function validateFiles(incoming, current = [], existing = []) {
       accepted.some((i) => i.name === file.name && i.size === file.size)
     )
       continue;
-    if (!types[ext] || (file.type && types[ext] !== file.type)) {
-      errors.push(`${file.name}: choose JPG, PNG, WebP, or PDF.`);
+    if (!uploadContentType(file)) {
+      errors.push(
+        `${file.name}: choose ${FILE_FORMAT_LABEL}. Images and PDF files only.`,
+      );
       continue;
     }
     if (file.size <= 0 || file.size > FILE_LIMITS.each) {
@@ -55,13 +54,22 @@ export function validateFiles(incoming, current = [], existing = []) {
 }
 function Preview({ file }) {
   const [url, setUrl] = useState("");
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    if (!file.type.startsWith("image/")) return;
+    setFailed(false);
+    setUrl("");
+    const type = uploadContentType(file);
+    // TIFF uploads are valid, but most browsers cannot render a thumbnail.
+    if (!type?.startsWith("image/") || type === "image/tiff") return;
     const value = URL.createObjectURL(file);
     setUrl(value);
     return () => URL.revokeObjectURL(value);
   }, [file]);
-  return url ? <img src={url} alt="" /> : <FileText size={23} />;
+  return url && !failed ? (
+    <img src={url} alt="" onError={() => setFailed(true)} />
+  ) : (
+    <FileText size={23} />
+  );
 }
 export default function FilePicker({
   items,
@@ -114,7 +122,7 @@ export default function FilePicker({
           type="file"
           aria-label="Add images, screenshots, or PDFs"
           multiple
-          accept="image/jpeg,image/png,image/webp,application/pdf"
+          accept={FILE_ACCEPT}
           disabled={disabled}
           onChange={(e) => {
             add(e.target.files);
@@ -123,8 +131,10 @@ export default function FilePicker({
         />
         <Upload size={23} />
         <strong>Drop your files here, or browse</strong>
-        <span>JPG, PNG, WebP, and PDF</span>
+        <span>Images and PDF files only</span>
+        <span>{FILE_FORMAT_LABEL}</span>
         <small>Up to 12 files · 5 MB each · 25 MB total</small>
+        <small>PDFs must open without a password.</small>
       </label>
       <p className="file-usage">
         {items.length + existing.length} of 12 files ·{" "}

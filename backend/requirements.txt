@@ -8,6 +8,7 @@ psycopg[binary]==3.2.10
 gunicorn==23.0.0
 whitenoise==6.9.0
 Pillow==11.3.0
+pypdf==6.19.0
 python-magic==0.4.27
 boto3==1.43.108
 msal==1.39.0

@@ -1,14 +1,12 @@
 """Private Railway uploads, validated before immutable storage and backup."""
 import uuid
-import warnings
-from io import BytesIO
 from urllib.parse import quote
 
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from django.conf import settings
-from PIL import Image
+from api.file_types import ALLOWED, validate_file_contents
 
 
 def client(backup=False):
@@ -44,7 +42,6 @@ def signed_download_url(asset):
 
 
 def validate_uploaded_blob(asset):
-    from api.storage import ALLOWED_TYPES
     storage = client()
     try:
         metadata = storage.head_object(Bucket=settings.S3_BUCKET_NAME, Key=asset.object_name)
@@ -54,7 +51,7 @@ def validate_uploaded_blob(asset):
         raise
     if metadata["ContentLength"] != asset.size or asset.size > settings.MAX_UPLOAD_FILE_BYTES:
         return False, "Uploaded file size does not match the request."
-    if metadata.get("ContentType") != asset.content_type or asset.content_type not in ALLOWED_TYPES:
+    if metadata.get("ContentType") != asset.content_type or asset.content_type not in ALLOWED:
         return False, "Uploaded file type does not match the request."
     response = storage.get_object(Bucket=settings.S3_BUCKET_NAME, Key=asset.object_name,
                                   IfMatch=metadata["ETag"])
@@ -65,21 +62,9 @@ def validate_uploaded_blob(asset):
         stream.close()
     if len(data) != asset.size:
         return False, "Uploaded file size does not match the request."
-    valid = any(data.startswith(signature) for signature in ALLOWED_TYPES[asset.content_type])
-    if asset.content_type == "image/webp":
-        valid = valid and data[8:12] == b"WEBP"
+    valid, message = validate_file_contents(data, asset.content_type)
     if not valid:
-        return False, "File contents do not match the declared type."
-    if asset.content_type.startswith("image/"):
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error", Image.DecompressionBombWarning)
-                with Image.open(BytesIO(data)) as image:
-                    if image.width * image.height > 40_000_000:
-                        raise ValueError("Image dimensions too large")
-                    image.verify()
-        except Exception:
-            return False, "This image cannot be read or has oversized dimensions."
+        return False, message
     # Upload only the verified bytes to a new key. An unexpired client PUT link
     # still targets the pending key, so it cannot replace an accepted file.
     destination = f"files/{asset.pk}/{uuid.uuid4()}"

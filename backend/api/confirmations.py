@@ -20,6 +20,7 @@ from audit.models import AuditEvent
 from intakes.models import ProjectBrief
 from scheduling.models import Appointment, BookingLock
 from scheduling.services import EASTERN
+from communications.email_design import branded_email
 
 
 def confirmation_kind(kind, record):
@@ -33,7 +34,7 @@ def confirmation_link(kind, record):
     return f"{settings.FRONTEND_URL}/confirm?{urlencode({'kind': kind, 'id': record.pk})}#{urlencode({'token': token})}"
 
 
-def brief_summary(brief):
+def brief_details(brief):
     labels = [("name", "Name"), ("email", "Email"), ("phone", "Phone"),
               ("company", "Business"), ("business_type", "Business category"),
               ("service_interest", "Service interest"), ("content_readiness", "Content readiness"), ("overview", "Project idea"), ("mission", "Audience"),
@@ -43,19 +44,25 @@ def brief_summary(brief):
               ("launch_date", "Target launch"), ("brand", "Brand direction"),
               ("integrations", "Integrations"), ("package", "Starting package"),
               ("referral", "Referral"), ("social_urls", "Social URLs"), ("notes", "Notes")]
-    return "\n\n".join(f"{label}: {getattr(brief, field)}" for field, label in labels if getattr(brief, field, ""))
+    return [(label, str(getattr(brief, field))) for field, label in labels if getattr(brief, field, "")]
+
+
+def brief_summary(brief):
+    return "\n\n".join(f"{label}: {value}" for label, value in brief_details(brief))
 
 
 def send_brief_confirmation(brief):
+    link = confirmation_link('brief', brief)
+    greeting = f"Hi {brief.name},"
+    copy = "Thanks for sharing your idea. Your brief is saved, and I’ll review it personally. Please confirm your email to take the next step."
+    note = "This link works for 48 hours. No project or payment commitment—we’ll agree on the details together."
     queue_email("Your project brief is received — confirm your email",
-                f"Hi {brief.name},\n\nThanks for sharing your idea. I have your brief and can review it now. "
-                "Please confirm that this is your email address before I create your project. "
-                "Opening the link lets you review; press Confirm email to finish.\n\n"
-                f"{confirmation_link('brief', brief)}\n\nThis link works for 48 hours. "
-                "Confirming does not commit you to a project or payment. We’ll agree on scope, pricing, "
-                "and timing together before work begins.\n\nYour submitted details:\n\n"
-                f"{brief_summary(brief)}\n\nIf you didn’t send this, no action is needed. "
-                "Questions or corrections? Reply to this email.\n\nCartez", [brief.email])
+                f"{greeting}\n\n{copy}\n\nOpen this link, then press Confirm email:\n{link}\n\n{note}\n\n"
+                "Questions? Reply to this email. If you didn’t send this, no action is needed.\n\nCartez Dewberry\nmarcdbycartez.com",
+                [brief.email], html=branded_email("Your idea is in good hands.",
+                    preheader="Your brief is saved. One quick step: confirm your email.", greeting=greeting,
+                    paragraphs=[copy], action=("Confirm email", link), note=note,
+                    safety="If you didn’t send this request, no action is needed."))
 
 
 def prepare_brief_confirmation(brief):
@@ -120,7 +127,11 @@ class SubmissionConfirmationView(APIView):
             else:
                 queue_email("Project email confirmed",
                             f"{record.name} confirmed {record.email}. The brief is ready for your review.\n"
-                            f"{settings.FRONTEND_URL}/dashboard/briefs", [settings.ADMIN_NOTIFICATION_EMAIL])
+                            f"{settings.FRONTEND_URL}/dashboard/briefs", [settings.ADMIN_NOTIFICATION_EMAIL],
+                            html=branded_email("Project email confirmed.",
+                                paragraphs=["This brief is ready for your review."],
+                                details=[("Name", record.name), ("Email", record.email)],
+                                action=("Review project brief", f"{settings.FRONTEND_URL}/dashboard/briefs")))
         return Response({"kind": kind, "confirmed": True,
                          "detail": "Your consultation is confirmed." if kind == "appointment" else
                          "Your email is confirmed. Cartez will follow up personally."})

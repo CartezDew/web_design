@@ -10,11 +10,11 @@ export default function ContactCTA() {
         <Reveal>
           <h2>Your next chapter starts with a conversation.</h2>
         </Reveal>
-        <Reveal as="p" className="contact-cta-copy" delay={0.08} distance={18}>
+        <Reveal as="p" className="contact-cta-copy" distance={18}>
           Tell me what you have in mind. We’ll figure out the right next step,
           together.
         </Reveal>
-        <Reveal className="actions" delay={0.16} distance={16}>
+        <Reveal className="actions" distance={16}>
           <Link className="button button--red" to="/#book">
             Book a free call <ArrowUpRight size={18} />
           </Link>
@@ -22,7 +22,7 @@ export default function ContactCTA() {
             Send a project brief
           </Link>
         </Reveal>
-        <Reveal className="contact-cta-details" delay={0.24} distance={14}>
+        <Reveal className="contact-cta-details" distance={14}>
           <div>
             <span>Email</span>
             <a href="mailto:letsbuild@marcdbycartez.com">

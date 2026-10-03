@@ -27,7 +27,7 @@ export default function About() {
             loading="lazy"
           />
         </Reveal>
-        <Reveal className="about-copy" delay={0.1}>
+        <Reveal className="about-copy">
           <p className="section-label">About me</p>
           <h2>I bring a builder’s mindset to every project.</h2>
           <p className="about-lead">

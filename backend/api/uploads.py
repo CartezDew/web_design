@@ -16,8 +16,8 @@ from projects.models import Project
 from api.tokens import require_token
 from api.storage import signed_upload_url, validate_uploaded_blob
 from api.serializers import AssetSerializer
+from api.file_types import ALLOWED, FORMAT_MESSAGE
 
-ALLOWED = {"image/jpeg": {"jpg", "jpeg"}, "image/png": {"png"}, "image/webp": {"webp"}, "application/pdf": {"pdf"}}
 TTL = timedelta(minutes=20)
 
 
@@ -53,7 +53,7 @@ class AssetPrepareView(APIView):
         content_type = request.data.get("content_type")
         name = str(request.data.get("name", ""))[:255]
         if any(ord(c) < 32 for c in name) or content_type not in ALLOWED or name.rsplit(".", 1)[-1].lower() not in ALLOWED[content_type]:
-            raise ValidationError("Use a JPG, PNG, WebP, or PDF file.")
+            raise ValidationError(FORMAT_MESSAGE)
         if size <= 0 or size > settings.MAX_UPLOAD_FILE_BYTES:
             raise ValidationError("Each file must be nonempty and no larger than 5 MB.")
         brief = project = None

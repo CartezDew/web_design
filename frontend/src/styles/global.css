@@ -313,6 +313,13 @@ summary:focus-visible {
   }
 }
 
+/* Scroll reveals: hidden only once the boot script confirms motion is on; Reveal.jsx plays them in. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .motion [data-reveal]:not([data-revealed]) {
+    opacity: 0;
+  }
+}
+
 /* Shared microinteractions from the main design; section motion stays in its own CSS. */
 .button {
   transition:

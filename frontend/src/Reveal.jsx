@@ -1,67 +1,76 @@
 import { useEffect, useRef } from "react";
-import { animate } from "framer-motion";
+import { motionEnabled } from "./motion";
 
-// Match main's viewport reveal timing while keeping prerendered/no-JS content visible.
+const DURATION = 800;
+const EASING = "cubic-bezier(0.16, 1, 0.3, 1)";
+const STAGGER = 0.09;
+const MAX_STAGGER = 0.45;
+
+const settings = new WeakMap();
+let observer;
+
+function play(element, wait) {
+  const { delay, distance, direction, scale } = settings.get(element);
+  const offset =
+    direction === "left"
+      ? `${-distance}px 0`
+      : direction === "right"
+        ? `${distance}px 0`
+        : `0 ${distance}px`;
+  element.dataset.revealed = "";
+  element.animate?.(
+    [
+      { opacity: 0, translate: offset, scale: String(scale) },
+      { opacity: 1, translate: "0 0", scale: "1" },
+    ],
+    {
+      duration: DURATION,
+      delay: (delay + wait) * 1000,
+      easing: EASING,
+      fill: "backwards",
+    },
+  );
+}
+
+// One observer for every reveal so elements entering in the same frame can be staggered together.
+function getObserver() {
+  observer ??= new IntersectionObserver(
+    (entries) => {
+      entries
+        .filter((entry) => entry.isIntersecting)
+        .sort(
+          (a, b) =>
+            a.boundingClientRect.top - b.boundingClientRect.top ||
+            a.boundingClientRect.left - b.boundingClientRect.left,
+        )
+        .forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          play(entry.target, Math.min(index * STAGGER, MAX_STAGGER));
+        });
+    },
+    { rootMargin: "0px 0px -5% 0px", threshold: 0 },
+  );
+  return observer;
+}
+
 export default function Reveal({
   as: Element = "div",
   delay = 0,
-  distance = 26,
+  distance = 28,
   direction = "up",
   scale = 1,
-  once = true,
   children,
   ...props
 }) {
   const ref = useRef(null);
   useEffect(() => {
     const element = ref.current;
-    if (!element || !("IntersectionObserver" in window)) return;
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let animation;
-    let revealed = false;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        element.dataset.inView = String(entry.isIntersecting);
-        if (!entry.isIntersecting || preference.matches || (once && revealed))
-          return;
-        const from =
-          direction === "left"
-            ? `translateX(-${distance}px)`
-            : direction === "right"
-              ? `translateX(${distance}px)`
-              : `translateY(${distance}px)`;
-        animation?.cancel();
-        animation = animate(
-          element,
-          {
-            opacity: [0, 1],
-            transform: [`${from} scale(${scale})`, "translate(0, 0) scale(1)"],
-          },
-          {
-            duration: 0.55,
-            delay,
-            ease: [0.22, 0.61, 0.36, 1],
-          },
-        );
-        revealed = true;
-      },
-      { threshold: 0.2, rootMargin: "0px 0px -12% 0px" },
-    );
-    const onPreference = () => {
-      if (preference.matches) {
-        animation?.cancel();
-        element.style.removeProperty("opacity");
-        element.style.removeProperty("transform");
-      }
-    };
-    preference.addEventListener("change", onPreference);
-    observer.observe(element);
-    return () => {
-      observer.disconnect();
-      animation?.cancel();
-      preference.removeEventListener("change", onPreference);
-    };
-  }, [delay, distance, direction, scale, once]);
+    if (!element || "revealed" in element.dataset || !motionEnabled()) return;
+    settings.set(element, { delay, distance, direction, scale });
+    const io = getObserver();
+    io.observe(element);
+    return () => io.unobserve(element);
+  }, [delay, distance, direction, scale]);
   return (
     <Element ref={ref} data-reveal="" {...props}>
       {children}

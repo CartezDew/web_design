@@ -6,9 +6,18 @@ import uuid
 
 from django.test import SimpleTestCase, TestCase, override_settings
 from PIL import Image
+from pypdf import PdfWriter
 
 from api.s3_storage import signed_upload_url, validate_uploaded_blob
 from intakes.models import ProjectBrief
+
+
+def pdf_bytes():
+    stream = BytesIO()
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    writer.write(stream)
+    return stream.getvalue()
 
 
 @override_settings(S3_BUCKET_NAME="local-test-uploads", S3_BACKUP_BUCKET_NAME="local-test-backups",
@@ -36,7 +45,7 @@ class RailwayStorageTests(SimpleTestCase):
 
     @patch("api.s3_storage.client")
     def test_verified_pdf_is_stored_and_backed_up_away_from_upload_destination(self, provider):
-        data = b"%PDF-1.4\nlocal test\n"
+        data = pdf_bytes()
         primary, backup = self.storage(data), Mock()
         provider.side_effect = [primary, backup]
         asset = self.asset(data)
@@ -50,7 +59,7 @@ class RailwayStorageTests(SimpleTestCase):
 
     @patch("api.s3_storage.client")
     def test_backup_failure_keeps_asset_pending_for_retry(self, provider):
-        data = b"%PDF-1.4\nlocal test\n"
+        data = pdf_bytes()
         primary, backup = self.storage(data), Mock()
         backup.put_object.side_effect = RuntimeError("local simulated outage")
         provider.side_effect = [primary, backup]

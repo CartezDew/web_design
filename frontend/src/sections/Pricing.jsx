@@ -24,7 +24,6 @@ export default function Pricing({ onPlan }) {
               item.featured ? "price-plan price-plan--featured" : "price-plan"
             }
             key={item.name}
-            delay={i * 0.06}
           >
             <h3>{item.name}</h3>
             <p className="price-description">{item.description}</p>

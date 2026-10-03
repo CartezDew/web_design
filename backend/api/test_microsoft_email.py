@@ -192,7 +192,7 @@ class MicrosoftEmailTests(TestCase):
         self.assertIsNotNone(row.sent_at)
         self.assertEqual(row.attempts, 2)
 
-    @patch("api.notifications.EmailMessage.send", return_value=0)
+    @patch("api.notifications.EmailMultiAlternatives.send", return_value=0)
     def test_outbox_does_not_mark_a_zero_delivery_count_as_sent(self, send):
         row = EmailDelivery.objects.create(subject="Queued", body="Pending", recipients=["client@example.test"])
         deliver_email(row.pk)

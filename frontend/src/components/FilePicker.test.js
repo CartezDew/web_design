@@ -1,9 +1,55 @@
 import { describe, expect, it } from "vitest";
 import { FILE_LIMITS, validateFiles } from "./FilePicker";
+import { uploadContentType } from "../content/uploads";
 
 const pdf = (name, size = 100) => ({ name, size, type: "application/pdf" });
 
 describe("project attachment limits", () => {
+  it.each([
+    ["jpg", "image/jpeg"],
+    ["jpeg", "image/jpeg"],
+    ["png", "image/png"],
+    ["webp", "image/webp"],
+    ["gif", "image/gif"],
+    ["avif", "image/avif"],
+    ["bmp", "image/bmp"],
+    ["tif", "image/tiff"],
+    ["tiff", "image/tiff"],
+    ["pdf", "application/pdf"],
+  ])(
+    "accepts %s with a matching, missing, or generic MIME type",
+    (extension, type) => {
+      for (const reportedType of [type, "", "application/octet-stream"]) {
+        const file = {
+          name: `reference.${extension.toUpperCase()}`,
+          type: reportedType,
+          size: 100,
+        };
+        expect(validateFiles([file]).accepted).toEqual([file]);
+        expect(uploadContentType(file)).toBe(type);
+      }
+    },
+  );
+
+  it("normalizes OS image aliases and rejects other images and document formats", () => {
+    expect(
+      uploadContentType({ name: "photo.bmp", type: "image/x-ms-bmp" }),
+    ).toBe("image/bmp");
+    expect(uploadContentType({ name: "photo.tif", type: "image/x-tiff" })).toBe(
+      "image/tiff",
+    );
+    for (const name of [
+      "image.svg",
+      "image.heic",
+      "file.docx",
+      "file.zip",
+      "file.exe",
+    ]) {
+      expect(
+        validateFiles([{ name, type: "", size: 100 }]).accepted,
+      ).toHaveLength(0);
+    }
+  });
   it("counts already stored files with the current selection", () => {
     const stored = Array.from({ length: 11 }, (_, i) => pdf(`${i}.pdf`));
     const result = validateFiles(

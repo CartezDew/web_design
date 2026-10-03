@@ -26,6 +26,7 @@ class EmailDelivery(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     subject = models.CharField(max_length=255)
     body = models.TextField()
+    html_body = models.TextField(blank=True)
     recipients = models.JSONField(default=list)
     calendar = models.TextField(blank=True)
     attempts = models.PositiveIntegerField(default=0)

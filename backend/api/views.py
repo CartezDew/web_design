@@ -36,6 +36,7 @@ from api.throttles import LoginThrottle, PublicFormThrottle
 from api.form_protection import issue_form_guard, verify_form_guard
 from api.client_address import client_ip
 from api.notifications import queue_email
+from communications.email_design import branded_email
 from scheduling.services import save_appointment, calendar_text
 from django.http import HttpResponse
 from rest_framework.exceptions import ValidationError
@@ -148,7 +149,10 @@ class PasswordResetRequestView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             url = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
-            queue_email("Reset your client portal password", f"Reset your password: {url}", [user.email])
+            queue_email("Reset your client portal password", f"Reset your password: {url}", [user.email],
+                        html=branded_email("Reset your password.",
+                            paragraphs=["Use the button below to choose a new password for your client portal."],
+                            action=("Reset password", url), safety="If you didn’t request this, no action is needed."))
         return Response({"detail": "If the account exists, a reset link has been sent."})
 
 
@@ -252,12 +256,18 @@ class PublicBriefCreateView(generics.CreateAPIView):
         from api.analytics import record_lead
         record_lead(brief, "brief", request.data.get("analytics"))
         audit(request, "brief.create", brief)
-        from api.confirmations import prepare_brief_confirmation, brief_summary
+        from api.confirmations import prepare_brief_confirmation, brief_summary, brief_details
         prepare_brief_confirmation(brief)
         queue_email("New project brief — awaiting email confirmation",
                     f"The brief is saved; customer email confirmation is pending. You can reach out directly now.\n\n"
                     f"{brief_summary(brief)}\n\nReview the full brief and files (as uploads finish): "
-                    f"{settings.FRONTEND_URL}/dashboard/briefs", [settings.ADMIN_NOTIFICATION_EMAIL])
+                    f"{settings.FRONTEND_URL}/dashboard/briefs", [settings.ADMIN_NOTIFICATION_EMAIL],
+                    html=branded_email("A new idea to review.",
+                        preheader=f"New brief from {brief.name}. Email confirmation pending.",
+                        paragraphs=["The brief is saved. Customer email confirmation is pending; you can reach out directly now."],
+                        details=brief_details(brief),
+                        action=("Review brief & files", f"{settings.FRONTEND_URL}/dashboard/briefs"),
+                        note="Files appear in the dashboard as uploads finish."))
         return Response({"id": str(brief.pk), "upload_token": issue_token("upload", brief.pk)}, status=201)
 
 
@@ -432,6 +442,9 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
                 "A project was added to your Marc-D portal",
                 f"Sign in to view {project.name}: {settings.FRONTEND_URL}/sign-in",
                 [email],
+                html=branded_email("Your project is in the portal.",
+                    paragraphs=[f"You can now follow {project.name} in your client portal."],
+                    action=("View your project", f"{settings.FRONTEND_URL}/sign-in")),
             )
             audit(request, "client.project_link", project)
             return Response({"detail": "Portal access email queued for delivery.", "project": ProjectSerializer(project).data})
@@ -441,6 +454,9 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
             "Your Marc-D client portal invitation",
             f"Set up your client portal within 48 hours: {url}",
             [email],
+            html=branded_email("Welcome to your client portal.",
+                paragraphs=["Your project has a home. Set up your account to view progress, share files, and keep our conversation in one place."],
+                action=("Set up your account", url), note="Your invitation works for 48 hours."),
         )
         audit(request, "client.invite", invitation, {"project_id": str(project.id)})
         return Response({"detail": "Invitation queued for delivery.", "project": ProjectSerializer(project).data})
@@ -467,6 +483,9 @@ class AdminProjectViewSet(viewsets.ModelViewSet):
             f"{project.name} status update",
             f"Your project is now in {project.get_status_display()}. View details: {settings.FRONTEND_URL}/dashboard",
             [project.client.email],
+            html=branded_email("Your project has an update.",
+                details=[("Project", project.name), ("Status", project.get_status_display())],
+                action=("View project update", f"{settings.FRONTEND_URL}/dashboard")),
         )
         return Response(ProjectSerializer(project).data)
 
@@ -569,6 +588,10 @@ class ConversationViewSet(viewsets.ReadOnlyModelViewSet):
                 f"New message: {conversation.subject}",
                 f"A new portal message is waiting at {settings.FRONTEND_URL}/dashboard/messages.",
                 [recipient],
+                html=branded_email("You have a new message.",
+                    paragraphs=["A new message is waiting in your project conversation."],
+                    details=[("Conversation", conversation.subject)],
+                    action=("Read your message", f"{settings.FRONTEND_URL}/dashboard/messages")),
             )
         return Response(MessageSerializer(message).data, status=201)
 

@@ -160,8 +160,18 @@ class EmailBackend(BaseEmailBackend):
             try:
                 body = payload(message)
                 token = token or access_token()
-                response = requests.post(SEND_URL, json=body,
-                    headers={"Authorization":f"Bearer {token}"}, timeout=20)
+                if getattr(message, "alternatives", []):
+                    # Graph JSON accepts only one body. MIME preserves the plain-text
+                    # alternative, HTML, reply-to and calendar attachment together.
+                    mime = message.message()
+                    if message.bcc:
+                        mime["Bcc"] = ", ".join(message.bcc)
+                    response = requests.post(SEND_URL,
+                        data=base64.b64encode(mime.as_bytes(linesep="\r\n")).decode("ascii"),
+                        headers={"Authorization":f"Bearer {token}", "Content-Type":"text/plain"}, timeout=20)
+                else:
+                    response = requests.post(SEND_URL, json=body,
+                        headers={"Authorization":f"Bearer {token}"}, timeout=20)
                 if response.status_code != 202:
                     # Never include provider bodies, headers, tokens or recipient data in exceptions.
                     raise MicrosoftEmailUnavailable("Microsoft did not accept the email.")

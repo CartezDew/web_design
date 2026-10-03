@@ -7,7 +7,7 @@ import { stories } from "../content/stories";
 import Reveal from "../Reveal";
 import "./Work.css";
 
-export function ProjectCard({ project, index = 0 }) {
+export function ProjectCard({ project }) {
   const story = stories[project.slug];
   const [storyOpen, setStoryOpen] = useState(false);
   const { hash, key } = useLocation();
@@ -21,7 +21,6 @@ export function ProjectCard({ project, index = 0 }) {
       as="article"
       className={`work-item work-item--${project.slug}`}
       id={projectId}
-      delay={index * 0.05}
       scale={0.98}
     >
       <div className="work-image">
@@ -103,13 +102,13 @@ export default function Work() {
         </p>
       </Reveal>
       <div className="work-grid">
-        {portfolio.slice(0, 2).map((project, index) => (
-          <ProjectCard key={project.slug} project={project} index={index} />
+        {portfolio.slice(0, 2).map((project) => (
+          <ProjectCard key={project.slug} project={project} />
         ))}
       </div>
       <div className="work-grid work-grid--more">
-        {portfolio.slice(2).map((project, index) => (
-          <ProjectCard key={project.slug} project={project} index={index} />
+        {portfolio.slice(2).map((project) => (
+          <ProjectCard key={project.slug} project={project} />
         ))}
       </div>
     </section>

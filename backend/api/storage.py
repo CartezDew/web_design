@@ -1,18 +1,10 @@
 import json
 import uuid
-from io import BytesIO
-from PIL import Image
 from datetime import timedelta
 
 from django.conf import settings
 from google.cloud import storage
-
-ALLOWED_TYPES = {
-    "image/jpeg": (b"\xff\xd8\xff",),
-    "image/png": (b"\x89PNG\r\n\x1a\n",),
-    "image/webp": (b"RIFF",),
-    "application/pdf": (b"%PDF",),
-}
+from api.file_types import ALLOWED, validate_file_contents
 
 
 def storage_client():
@@ -68,29 +60,14 @@ def validate_uploaded_blob(asset):
     if blob.size != asset.size or blob.size > settings.MAX_UPLOAD_FILE_BYTES:
         blob.delete()
         return False, "Uploaded file size does not match the request."
-    if blob.content_type != asset.content_type or asset.content_type not in ALLOWED_TYPES:
+    if blob.content_type != asset.content_type or asset.content_type not in ALLOWED:
         blob.delete()
         return False, "Uploaded file type does not match the request."
-    prefix = blob.download_as_bytes(start=0, end=15, if_generation_match=blob.generation)
-    signatures = ALLOWED_TYPES[asset.content_type]
-    valid = any(prefix.startswith(signature) for signature in signatures)
-    if asset.content_type == "image/webp":
-        valid = valid and prefix[8:12] == b"WEBP"
+    data = blob.download_as_bytes(if_generation_match=blob.generation)
+    valid, message = validate_file_contents(data, asset.content_type)
     if not valid:
         blob.delete()
-        return False, "File contents do not match the declared type."
-    # Decode image content, not just its magic bytes; prevent decompression bombs.
-    if asset.content_type.startswith("image/"):
-        try:
-            import warnings
-            with warnings.catch_warnings():
-                warnings.simplefilter("error", Image.DecompressionBombWarning)
-                with Image.open(BytesIO(blob.download_as_bytes(if_generation_match=blob.generation))) as img:
-                    if img.width * img.height > 40_000_000:
-                        raise ValueError("Image dimensions too large")
-                    img.verify()
-        except Exception:
-            return False, "This image cannot be read or has oversized dimensions."
+        return False, message
     # Copy the validated generation away from the signed PUT destination so a
     # still-valid upload link cannot overwrite a file already marked accepted.
     destination = f"files/{asset.pk}/{uuid.uuid4()}"

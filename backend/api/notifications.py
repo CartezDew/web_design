@@ -1,16 +1,18 @@
 import logging
 from django.conf import settings
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
 
-def queue_email(subject, body, recipients, attachment=None):
+def queue_email(subject, body, recipients, attachment=None, *, html=None):
     """Commit an outbox record with business data; delivery can be retried safely."""
     from communications.models import EmailDelivery
+    from communications.email_design import branded_email
     delivery = EmailDelivery.objects.create(subject=subject, body=body, recipients=recipients,
-                                            calendar=attachment or "")
+                                            calendar=attachment or "",
+                                            html_body=html if html is not None else branded_email(subject, paragraphs=body.split("\n\n")))
     transaction.on_commit(lambda: deliver_email(delivery.pk))
 
 
@@ -25,8 +27,10 @@ def deliver_email(pk):
             delivery.last_error = "EmailProviderNotConfigured"
             delivery.save(update_fields=["last_error"])
             return
-        message = EmailMessage(delivery.subject, delivery.body, settings.DEFAULT_FROM_EMAIL,
-                               delivery.recipients)
+        message = EmailMultiAlternatives(delivery.subject, delivery.body, settings.DEFAULT_FROM_EMAIL,
+                                        delivery.recipients, reply_to=[settings.DEFAULT_FROM_EMAIL])
+        if delivery.html_body:
+            message.attach_alternative(delivery.html_body, "text/html")
         if delivery.calendar:
             message.attach("consultation.ics", delivery.calendar, "text/calendar")
         delivery.attempts += 1

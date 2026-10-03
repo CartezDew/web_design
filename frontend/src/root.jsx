@@ -7,19 +7,26 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "react-router-dom";
+import { useEffect } from "react";
 import SiteAnalytics from "./analytics/SiteAnalytics";
+import { confirmMotion, motionBootScript } from "./motion";
 import "./styles/tokens.css";
 import "./styles/global.css";
 export function Layout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script dangerouslySetInnerHTML={{ __html: motionBootScript }} />
         <meta name="theme-color" content="#ffffff" />
         <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+        <link
+          rel="apple-touch-icon"
+          href="/apple-touch-icon.png"
+          sizes="180x180"
+        />
         <Meta />
         <Links />
       </head>
@@ -32,6 +39,7 @@ export function Layout({ children }) {
   );
 }
 export default function Root() {
+  useEffect(confirmMotion, []);
   return (
     <>
       <Outlet />

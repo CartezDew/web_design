@@ -132,25 +132,63 @@ def notify_appointment(appointment):
     token = issue_token("appointment", appointment.pk)
     link = f"{settings.FRONTEND_URL}/book/manage?id={appointment.pk}&token={token}"
     when = appointment.starts_at.astimezone(EASTERN).strftime("%A, %B %d at %I:%M %p %Z")
-    text = f"Hi {appointment.first_name},\n\nYour 30-minute consultation is {appointment.get_status_display().lower()}: {when}.\n"
-    if appointment.status == "pending":
+    from communications.email_design import branded_email
+    pending = appointment.status == "pending"
+    greeting = f"Hi {appointment.first_name},"
+    status_label = appointment.get_status_display()
+    details = [("When", when), ("Duration", "30 minutes · Eastern time (EST/EDT)")]
+    action = secondary = None
+    note = ""
+    if pending:
         from api.confirmations import confirmation_link
         deadline = appointment.confirmation_expires_at.astimezone(EASTERN).strftime("%B %d at %I:%M %p %Z")
-        text += ("Your request is received, but your appointment is not booked yet. "
-                 f"Please confirm by {deadline}. The time is held for up to one hour.\n"
-                 "Open this link, then press Confirm appointment to book your call:\n"
-                 f"{confirmation_link('appointment', appointment)}\n")
+        heading = "Let’s confirm your call."
+        copy = "Your request is received. Confirm your email to book this time."
+        action = ("Confirm appointment", confirmation_link('appointment', appointment))
+        secondary = ("Manage your request", link)
+        note = f"Confirm by {deadline}. Your time is held for up to one hour."
     elif appointment.status == "confirmed":
-        text += "Your appointment is booked. Cartez will email how to join before the call.\n"
-    text += "All appointments are scheduled in Eastern time (EST/EDT).\n"
-    text += f"View, reschedule, cancel, or download your calendar entry: {link}"
-    text += "\n\nIf you didn’t request this, no action is needed. Questions? Reply to this email.\n\nCartez"
-    queue_email("Confirm your consultation with Cartez" if appointment.status == "pending" else
-                "Your consultation with Cartez", text, [appointment.email],
-                calendar_text(appointment) if appointment.status != "pending" else None)
-    queue_email("Consultation request — awaiting customer confirmation" if appointment.status == "pending" else "Consultation update",
-                f"Name: {appointment.first_name} {appointment.last_name}\nEmail: {appointment.email}\n"
-                f"Requested time: {when}\nDuration: 30 minutes\nTime zone: Eastern time (EST/EDT)\n"
-                f"Status: {appointment.get_status_display()}\nEmail confirmed: {'Yes' if appointment.email_verified_at else 'No'}\n"
-                f"Notes: {appointment.notes or 'None'}\nYou can reach out directly while awaiting confirmation.\n"
-                f"Review: {settings.FRONTEND_URL}/dashboard/appointments", [settings.ADMIN_NOTIFICATION_EMAIL])
+        heading = "You’re booked. Let’s talk."
+        copy = "Your appointment is booked. I’ll email how to join before our call."
+        action = ("Manage your consultation", link)
+        note = "Your calendar entry is attached. You can reschedule or cancel using the button above."
+    elif appointment.status == "cancelled":
+        heading = "Your call is cancelled."
+        copy = "Your consultation has been cancelled and the time has been released. You’re welcome to choose a new time."
+        action = ("Choose a new time", f"{settings.FRONTEND_URL}/#book")
+        note = "A cancellation calendar entry is attached."
+    elif appointment.status == "completed":
+        heading = "Thanks for the conversation."
+        copy = "Your consultation is complete. Reply here if you have any follow-up questions."
+        action = ("Visit the website", settings.FRONTEND_URL + "/")
+    else:
+        heading = "Your consultation update."
+        copy = f"Your consultation is {status_label.lower()}."
+        action = ("View your request", link)
+    text = f"{greeting}\n\nYour 30-minute consultation is {status_label.lower()}: {when}.\n{copy}\n"
+    if pending:
+        text += f"Open this link, then press Confirm appointment:\n{action[1]}\n{note}\n"
+        text += f"Manage your request: {link}\n"
+    else:
+        text += f"{action[0]}: {action[1]}\n{note}\n"
+    text += "All appointments use Eastern time (EST/EDT).\n\nQuestions? Reply to this email."
+    if pending:
+        text += " If you didn’t request this, no action is needed."
+    text += "\n\nCartez Dewberry\nmarcdbycartez.com"
+    queue_email("Confirm your consultation with Cartez" if pending else "Your consultation with Cartez",
+                text, [appointment.email], calendar_text(appointment) if not pending else None,
+                html=branded_email(heading, preheader=f"{status_label}: {when}. 30 minutes with Cartez.",
+                    greeting=greeting, paragraphs=[copy], details=details, action=action, secondary=secondary,
+                    note=note, safety="If you didn’t request this, no action is needed." if pending else ""))
+    owner_details = [("Name", f"{appointment.first_name} {appointment.last_name}"), ("Email", appointment.email),
+                     ("Requested time", when), ("Duration", "30 minutes · Eastern time (EST/EDT)"),
+                     ("Status", status_label), ("Email confirmed", "Yes" if appointment.email_verified_at else "No"),
+                     ("Notes", appointment.notes or "None")]
+    owner_copy = "You can reach out directly while awaiting confirmation." if pending else "The consultation record has been updated."
+    queue_email("Consultation request — awaiting customer confirmation" if pending else "Consultation update",
+                "\n".join(f"{label}: {value}" for label, value in owner_details) +
+                f"\n{owner_copy}\nReview: {settings.FRONTEND_URL}/dashboard/appointments",
+                [settings.ADMIN_NOTIFICATION_EMAIL],
+                html=branded_email("New consultation request." if pending else "Consultation update.",
+                    paragraphs=[owner_copy], details=owner_details,
+                    action=("Review appointment", f"{settings.FRONTEND_URL}/dashboard/appointments")))

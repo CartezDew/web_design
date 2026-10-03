@@ -702,7 +702,7 @@ export default function IntakePage({
           {modalOpen ? (
             <div className="intake-modal-placeholder" aria-hidden="true" />
           ) : (
-            <Reveal delay={0.1}>{formPanel}</Reveal>
+            <Reveal>{formPanel}</Reveal>
           )}
         </div>
       </section>

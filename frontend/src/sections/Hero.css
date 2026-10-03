@@ -424,3 +424,22 @@
     padding: 8px 5px;
   }
 }
+
+/* Hidden before first paint; useHeroEntrance animates these in and then marks the hero entered. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .motion
+    .hero-section:not([data-copy-entered])
+    :is(
+      .hero-eyebrow,
+      .hero-headline-word,
+      .hero-growth-word,
+      .hero-intro,
+      .hero-actions > *,
+      .trust-row
+    ),
+  .motion
+    .hero-visual:not([data-visual-entered])
+    :is(.hero-card, .mock-line, .floating-note) {
+    opacity: 0;
+  }
+}

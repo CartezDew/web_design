@@ -293,7 +293,7 @@ export default function BookingPage() {
           ))}
         </ol>
       </Reveal>
-      <Reveal as="section" className="booking-panel" delay={0.1}>
+      <Reveal as="section" className="booking-panel">
         {saved ? (
           <div className="form-success" role="status">
             <Check size={32} />

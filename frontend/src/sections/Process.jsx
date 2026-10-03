@@ -11,7 +11,7 @@ export default function Process() {
         </Reveal>
         <div className="process-steps">
           {processSteps.map(([title, copy], i) => (
-            <Reveal as="article" key={title} delay={i * 0.08}>
+            <Reveal as="article" key={title}>
               <h3>{title}</h3>
               <p>{copy}</p>
             </Reveal>

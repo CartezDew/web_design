@@ -208,7 +208,7 @@ class AccountAndDeliveryTests(TestCase):
         response = self.client.post('/api/v1/auth/password-reset/confirm/', {'uid': 'bm90LWEtdXVpZA', 'token': 'bad', 'password': 'long-test-password'})
         self.assertEqual(response.status_code, 400)
 
-    @patch('api.notifications.EmailMessage.send', side_effect=RuntimeError('provider unavailable'))
+    @patch('api.notifications.EmailMultiAlternatives.send', side_effect=RuntimeError('provider unavailable'))
     def test_email_failure_keeps_retryable_outbox(self, send):
         with self.captureOnCommitCallbacks(execute=True):
             queue_email('Saved request', 'Thanks', ['client@example.test'])

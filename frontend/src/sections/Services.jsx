@@ -43,7 +43,6 @@ export default function Services() {
           {services.map((service, i) => (
             <Reveal
               key={service.slug}
-              delay={i * 0.04}
               direction="right"
               distance={18}
             >

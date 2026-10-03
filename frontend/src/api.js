@@ -1,4 +1,5 @@
 import { submissionContext } from "./analytics/client";
+import { FILE_FORMAT_LABEL, uploadContentType } from "./content/uploads";
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(
   /\/$/,
   "",
@@ -69,7 +70,14 @@ export async function apiRequest(path, options = {}) {
       ["/public/briefs/", "/public/appointments/"].includes(path);
     if (publicSubmission) {
       const analytics = await submissionContext();
-      if (analytics) options = { ...options, body: JSON.stringify({ ...JSON.parse(options.body || "{}"), analytics }) };
+      if (analytics)
+        options = {
+          ...options,
+          body: JSON.stringify({
+            ...JSON.parse(options.body || "{}"),
+            analytics,
+          }),
+        };
     }
     if (publicSubmission && formGuard && Date.now() >= guardExpiresAt)
       resetCsrf();
@@ -137,15 +145,12 @@ export async function uploadAsset({
   onProgress,
   onPrepared,
 }) {
-  const type =
-    file.type ||
-    {
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      png: "image/png",
-      webp: "image/webp",
-      pdf: "application/pdf",
-    }[file.name.split(".").pop().toLowerCase()];
+  const type = uploadContentType(file);
+  if (!type)
+    throw new ApiError(
+      `Choose ${FILE_FORMAT_LABEL}. Images and PDF files only.`,
+      400,
+    );
   const prepared = await apiRequest("/assets/prepare/", {
     method: "POST",
     body: JSON.stringify({
