@@ -1,3 +1,4 @@
+import { track } from "../analytics/client";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { faqs } from "../content/site";
@@ -24,8 +25,9 @@ export default function FAQ() {
           </Link>
         </Reveal>
         <div className="faq-list">
-          {faqs.map((faq) => (
-            <details key={faq.question} className="faq-item">
+          {faqs.map((faq, index) => (
+            <details key={faq.question} className="faq-item"
+              onToggle={(event) => { if (event.currentTarget.open) track("faq_open", { faq_id: `faq_${index + 1}` }); }}>
               <summary>
                 <strong>{faq.question}</strong>
                 <ChevronDown size={19} />

@@ -1,3 +1,5 @@
+import { track, trackSaved, failureClass } from "../analytics/client";
+import { useFormAnalytics } from "../analytics/useFormAnalytics";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowUpRight, CalendarDays, Check, Download } from "lucide-react";
@@ -34,11 +36,15 @@ export function SlotPicker({ value, onChange, refresh = 0 }) {
       `/public/availability/?start=${today(CONSULTATION_TIME_ZONE)}&days=60`,
     )
       .then((data) => {
-        if (active) setDays(data);
+        if (active) {
+          setDays(data);
+          track("booking_availability", { form_type: "booking", availability: data.some((day) => day.slots.length) ? "available" : "empty" });
+        }
       })
       .catch((e) => {
         if (active) {
           setError(e.message);
+          track("booking_availability", { form_type: "booking", availability: "error", failure_class: failureClass(e) });
           setDays([]);
         }
       })
@@ -166,6 +172,7 @@ export function SlotPicker({ value, onChange, refresh = 0 }) {
   );
 }
 export default function BookingPage() {
+  const formAnalytics = useFormAnalytics("booking", "booking");
   const { contact: form, updateContact: change } = useLeadContact();
   const [slot, setSlot] = useState("");
   const [attempted, setAttempted] = useState(false);
@@ -200,9 +207,11 @@ export default function BookingPage() {
     if (working) return;
     setAttempted(true);
     if (!ready) {
+      track("form_submit_error", { form_type: "booking", failure_class: "validation" });
       requestAnimationFrame(() => validationSummary.current?.focus());
       return;
     }
+    track("form_submit_attempt", { form_type: "booking" });
     setError("");
     setWorking(true);
     if (!key.current) key.current = crypto.randomUUID();
@@ -220,7 +229,9 @@ export default function BookingPage() {
         }),
       });
       setSaved(data);
+      trackSaved(data.id, "booking");
     } catch (e) {
+      track("form_submit_error", { form_type: "booking", failure_class: failureClass(e) });
       setError(e.message);
       if (e.status === 409) {
         setSlot("");
@@ -310,6 +321,7 @@ export default function BookingPage() {
           <form
             className="form-stack"
             onSubmit={submit}
+            onFocusCapture={formAnalytics.start}
             noValidate
             aria-busy={working}
           >
@@ -329,7 +341,11 @@ export default function BookingPage() {
                 </ul>
               </div>
             )}
-            <SlotPicker value={slot} onChange={setSlot} refresh={refresh} />
+            <SlotPicker value={slot} onChange={(value) => {
+              setSlot(value);
+              formAnalytics.start();
+              if (value) track("booking_slot_selected", { form_type: "booking" });
+            }} refresh={refresh} />
             <fieldset
               className="booking-contact"
               disabled={!slot || working}
@@ -441,6 +457,7 @@ export function ManageBooking() {
           : "Check your email to confirm your new time within one hour.",
       );
     } catch (e) {
+      track("form_submit_error", { form_type: "booking", failure_class: failureClass(e) });
       setError(e.message);
     } finally {
       setWorking(false);

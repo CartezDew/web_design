@@ -1,0 +1,6 @@
+.analytics-consent { position: fixed; z-index: 200; bottom: 18px; left: 50%; transform: translateX(-50%); width: min(850px, calc(100% - 32px)); background: #fff; color: #17212d; border: 1px solid #dce1e5; border-radius: 16px; box-shadow: 0 8px 40px #17212d26; padding: 22px; display: flex; align-items: center; gap: 24px; }
+.analytics-consent p { font-size: 13px; line-height: 1.6; margin: 8px 0; }
+.analytics-consent a { font-size: 13px; text-decoration: underline; }
+.analytics-consent-actions { display: flex; flex-wrap: wrap; flex-shrink: 0; gap: 10px; max-width: 170px; }
+.analytics-consent-actions .button { width: 100%; justify-content: center; }
+@media (max-width: 600px) { .analytics-consent { padding: 18px; gap: 14px; display: block; max-height: 70vh; overflow: auto; } .analytics-consent-actions { max-width: none; margin-top: 14px; } .analytics-consent-actions .button { width: auto; flex: 1; } }

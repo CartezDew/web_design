@@ -1,3 +1,4 @@
+import { track } from "../analytics/client";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -43,12 +44,14 @@ export function ProjectCard({ project, index = 0 }) {
           type="button"
           aria-expanded={storyOpen}
           aria-controls={storyId}
-          onClick={() => setStoryOpen((open) => !open)}
+          data-analytics-id={`portfolio_${project.slug}`}
+          onClick={() => { if (!storyOpen) track("portfolio_view", { project_id: project.slug }); setStoryOpen(!storyOpen); }}
         >
           Behind the project <ChevronDown size={17} aria-hidden="true" />
         </button>
         <a
           className="project-live-link"
+          data-analytics-id={`portfolio_visit_${project.slug}`}
           href={project.url}
           target="_blank"
           rel="noreferrer"

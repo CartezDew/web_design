@@ -1,3 +1,5 @@
+import { track } from "../analytics/client";
+import { packages as analyticsPackages } from "../analytics/catalog";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Check } from "lucide-react";
 import { packages } from "../content/site";
@@ -43,7 +45,9 @@ export default function Pricing({ onPlan }) {
               className="button button--red"
               to={`/?package=${item.name.toLowerCase()}#start-a-project`}
               aria-haspopup="dialog"
+              data-analytics-id={`cta_package_${item.name.toLowerCase()}`}
               onClick={(event) => {
+                track("form_choice", { form_type: "brief", field_id: "package", package_tier: analyticsPackages[item.name] });
                 if (
                   onPlan &&
                   !event.metaKey &&

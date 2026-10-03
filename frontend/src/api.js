@@ -1,3 +1,4 @@
+import { submissionContext } from "./analytics/client";
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(
   /\/$/,
   "",
@@ -66,6 +67,10 @@ export async function apiRequest(path, options = {}) {
     const publicSubmission =
       method.toUpperCase() === "POST" &&
       ["/public/briefs/", "/public/appointments/"].includes(path);
+    if (publicSubmission) {
+      const analytics = await submissionContext();
+      if (analytics) options = { ...options, body: JSON.stringify({ ...JSON.parse(options.body || "{}"), analytics }) };
+    }
     if (publicSubmission && formGuard && Date.now() >= guardExpiresAt)
       resetCsrf();
     if (!["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase()))

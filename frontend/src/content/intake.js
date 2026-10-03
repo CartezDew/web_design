@@ -8,16 +8,11 @@ export const intakePlans = [
 
 // These discovery answers use fields already supported by the backend.
 export function buildBriefPayload(form) {
-  const { content_readiness, decision_maker, ...brief } = form;
+  const { decision_maker, ...brief } = form;
   return {
     ...brief,
     launch_date: brief.launch_date || null,
-    brand: [
-      brief.brand,
-      content_readiness && `Content readiness: ${content_readiness}`,
-    ]
-      .filter(Boolean)
-      .join("\n\n"),
+    brand: brief.brand,
     notes: [
       decision_maker && `Project approver: ${decision_maker}`,
       brief.notes,
@@ -35,6 +30,8 @@ export const intakeReviewGroups = [
       ["name", "Your name"],
       ["email", "Email"],
       ["company", "Business or project"],
+      ["business_type", "Business category"],
+      ["service_interest", "Service interest"],
       ["phone", "Phone"],
       ["overview", "Your idea"],
       ["mission", "Audience & what makes you different"],
@@ -54,6 +51,7 @@ export const intakeReviewGroups = [
       ["offerings", "Products or services"],
       ["content_readiness", "Content readiness"],
       ["brand", "Brand direction"],
+      ["content_readiness", "Content readiness"],
       ["integrations", "Tools & integrations"],
       ["decision_maker", "Project approver"],
     ],

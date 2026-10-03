@@ -1,3 +1,6 @@
+import { track, trackSaved, failureClass } from "../analytics/client";
+import { businessTypes, serviceInterests, leadProperties } from "../analytics/catalog";
+import { useFormAnalytics } from "../analytics/useFormAnalytics";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -53,6 +56,8 @@ export default function IntakePage({
   const { contact, updateContact } = useLeadContact();
   const [details, setForm] = useState({
     company: "",
+    business_type: "",
+    service_interest: "",
     phone: "",
     overview: "",
     features: "",
@@ -71,6 +76,8 @@ export default function IntakePage({
     decision_maker: "",
   });
   const form = { ...details, name: contact.name, email: contact.email };
+  const stepId = ["contact", "direction", "review"][step];
+  const formAnalytics = useFormAnalytics("brief", stepId);
   const contactReady =
     !!form.name.trim() &&
     validContactEmail(form.email) &&
@@ -103,10 +110,14 @@ export default function IntakePage({
     }
   }, [modalOpen, selectedPackage, brief]);
   const update = (name, value) => {
+    formAnalytics.start();
+    if (["business_type", "service_interest", "goal", "package", "content_readiness"].includes(name))
+      track("form_choice", { form_type: "brief", step_id: stepId, field_id: name, ...leadProperties({ ...form, [name]: value }) });
     if (name === "name" || name === "email") updateContact(name, value);
     else setForm((f) => ({ ...f, [name]: value }));
   };
   const move = (n) => {
+    if (n !== step) track("form_step_view", { form_type: "brief", step_id: ["contact", "direction", "review"][n] });
     setStep(n);
     setError("");
     requestAnimationFrame(() => heading.current?.focus());
@@ -131,9 +142,11 @@ export default function IntakePage({
       return;
     }
     if (step < 2) {
+      track("form_step_complete", { form_type: "brief", step_id: stepId });
       move(step + 1);
       return;
     }
+    track("form_submit_attempt", { form_type: "brief", ...leadProperties(form) });
     setWorking(true);
     setError("");
     if (!key.current) key.current = crypto.randomUUID();
@@ -150,6 +163,7 @@ export default function IntakePage({
           }),
         });
         setBrief(saved);
+        trackSaved(saved.id, "brief", leadProperties(form));
       }
       for (const item of files.filter((i) => i.status !== "done")) {
         setFiles((all) =>
@@ -178,7 +192,9 @@ export default function IntakePage({
               i.key === item.key ? { ...i, status: "done", progress: 100 } : i,
             ),
           );
+          track("upload_outcome", { form_type: "brief", outcome: "success" });
         } catch (uploadError) {
+          track("upload_outcome", { form_type: "brief", outcome: "error", failure_class: failureClass(uploadError) });
           setFiles((all) =>
             all.map((i) =>
               i.key === item.key
@@ -191,6 +207,7 @@ export default function IntakePage({
       }
       setComplete(true);
     } catch (e) {
+      if (!saved) track("form_submit_error", { form_type: "brief", failure_class: failureClass(e) });
       setError(
         saved
           ? `Your brief is saved. Some files still need to upload. ${e.message}`
@@ -291,7 +308,8 @@ export default function IntakePage({
               ][step]
             }
           </p>
-          <form className="form-stack" onSubmit={send}>
+          <form className="form-stack" onSubmit={send} onFocusCapture={formAnalytics.start}
+            onInvalidCapture={() => track("form_submit_error", { form_type: "brief", step_id: stepId, failure_class: "validation" })}>
             <FormSpamTrap inputRef={spamTrap} />
             {error && (
               <div ref={errorHeading} tabIndex="-1" className="intake-error">
@@ -351,6 +369,12 @@ export default function IntakePage({
                       value={form.phone}
                       onChange={(e) => update("phone", e.target.value)}
                     />
+                  </div>
+                  <div className="form-row">
+                    <CustomSelect label="Business category (optional)" value={form.business_type}
+                      onChange={(value) => update("business_type", value)} options={businessTypes} />
+                    <CustomSelect label="Service you’re interested in (optional)" value={form.service_interest}
+                      onChange={(value) => update("service_interest", value)} options={serviceInterests} />
                   </div>
                   <Field
                     label="What do you have in mind?"
@@ -549,7 +573,7 @@ export default function IntakePage({
                             .map(([key, label]) => (
                               <div key={key}>
                                 <dt>{label}</dt>
-                                <dd>{form[key]}</dd>
+                                <dd>{[...businessTypes, ...serviceInterests].find((item) => item.value === form[key])?.label || form[key]}</dd>
                               </div>
                             ))}
                         </dl>
@@ -601,6 +625,7 @@ export default function IntakePage({
               )}
               <button
                 className="button button--red"
+                data-analytics-id={step < 2 ? "form_brief_continue" : "form_brief_submit"}
                 disabled={working || (step === 0 && !contactReady)}
               >
                 {working

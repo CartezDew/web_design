@@ -7,6 +7,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "react-router-dom";
+import SiteAnalytics from "./analytics/SiteAnalytics";
 import "./styles/tokens.css";
 import "./styles/global.css";
 export function Layout({ children }) {
@@ -28,7 +29,7 @@ export function Layout({ children }) {
   );
 }
 export default function Root() {
-  return <Outlet />;
+  return <><Outlet /><SiteAnalytics /></>;
 }
 export function ErrorBoundary() {
   const error = useRouteError();

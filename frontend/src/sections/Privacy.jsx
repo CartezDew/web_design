@@ -24,8 +24,8 @@ export default function Privacy() {
           </p>
           <h3>Storage and service providers</h3>
           <p>
-            Application records are stored with Railway. Uploaded files are held
-            in private Google Cloud Storage. Resend delivers service emails.
+            Application records and private uploaded files are stored with
+            Railway, with separate backup copies. Microsoft 365 delivers service emails.
             Cloudflare Turnstile helps protect public forms from automated
             abuse. These providers process information needed to deliver their
             respective services.
@@ -33,8 +33,18 @@ export default function Privacy() {
           <h3>Cookies and tracking</h3>
           <p>
             Essential session and security cookies support account sign-in and
-            protect forms. This release does not include advertising or audience
-            analytics tracking.
+            protect forms. If you allow analytics, Google Analytics measures
+            visits, approximate location, device category, traffic sources,
+            section views, clicks, form progress and successful requests.
+            Selected business categories, service interests and package choices
+            help improve our services. Names, contact details, written answers,
+            uploaded files and private portal pages are excluded from analytics.
+            Advertising personalization is disabled. Analytics cookies and your
+            preference can last up to six months. Change or withdraw permission
+            using “Analytics choices” in the footer; the site and forms work
+            whether you allow analytics or not. With permission, campaign and
+            device categories are also saved with your inquiry to understand
+            which channels lead to projects.
           </p>
           <h3>Access and retention</h3>
           <p>

@@ -40,6 +40,7 @@ export default function Hero({ onPlan }) {
           <div className="hero-actions">
             <Link
               className="button hero-primary"
+              data-analytics-id="cta_hero_plan"
               to="/#start-a-project"
               aria-haspopup="dialog"
               onClick={(event) => {

@@ -1,3 +1,4 @@
+import { track } from "../analytics/client";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { services } from "../content/site";
@@ -49,6 +50,7 @@ export default function Services() {
               <details
                 className="service-detail"
                 id={`service-${service.slug}`}
+                onToggle={(event) => { if (event.currentTarget.open) track("service_view", { service_interest: service.slug }); }}
               >
                 <summary className="service-row">
                   <div>

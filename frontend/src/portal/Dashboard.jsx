@@ -16,6 +16,7 @@ import {
   User,
   Clock,
   FileText,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "../AuthContext";
 import { Logo } from "../components/SiteLayout";
@@ -28,6 +29,7 @@ import {
   AppointmentsPanel,
   AvailabilityPanel,
 } from "./ManagementPanels";
+import InsightsPanel from "./InsightsPanel";
 import "./Dashboard.css";
 export function More({ records }) {
   return records.next ? (
@@ -133,6 +135,7 @@ export default function Dashboard() {
     ["overview", LayoutDashboard],
     ["projects", Folder],
     ...(user.is_admin ? [["briefs", FileText]] : []),
+    ...(user.is_admin ? [["insights", BarChart3]] : []),
     ["messages", MessageSquare],
     ["appointments", CalendarDays],
     ...(user.is_admin ? [["availability", Clock]] : []),
@@ -196,7 +199,9 @@ export default function Dashboard() {
           </Link>
         </header>
         <Notice error={error} />
-        {section === "profile" ? (
+        {section === "insights" && user.is_admin ? (
+          <InsightsPanel />
+        ) : section === "profile" ? (
           <Profile />
         ) : section === "messages" ? (
           <MessagesPanel />

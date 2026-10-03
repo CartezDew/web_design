@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, Menu, X } from "lucide-react";
+import { AnalyticsSettingsButton } from "../analytics/SiteAnalytics";
 import AboutMenu from "./AboutMenu";
 import "./SiteLayout.css";
 export function Logo() {
@@ -94,7 +95,7 @@ export function SiteFooter() {
             ["/#contact", "Contact"],
             ["/sign-in", "Client sign in"],
           ].map(([to, label]) => (
-            <Link key={to} to={to}>
+            <Link key={to} to={to} reloadDocument={to === "/sign-in"}>
               {label}
             </Link>
           ))}
@@ -111,6 +112,7 @@ export function SiteFooter() {
             LinkedIn ↗
           </a>
           <Link to="/#privacy">Privacy</Link>
+          <AnalyticsSettingsButton />
         </div>
       </div>
     </footer>
