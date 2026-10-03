@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { apiRequest } from "../api";
 import { sections } from "./catalog";
-import { CONSENT_KEY, analyticsConfigured, chooseConsent, disable, durationBucket, eligible, initialize, readConsent, refreshConsent, setConfig, track } from "./client";
+import { CONSENT_KEY, analyticsConfigured, chooseConsent, disable, durationBucket, eligible, initialize, privacySignal, readChoice, readConsent, refreshConsent, setConfig, setPolicy, track } from "./client";
 import "./analytics.css";
 
 function observeSite() {
@@ -75,53 +75,65 @@ export default function SiteAnalytics() {
   const { pathname } = useLocation();
   const [ready, setReady] = useState(false);
   const [consent, setConsent] = useState(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     if (pathname !== "/") { disable(); return; }
     let active = true;
-    apiRequest("/public/analytics-config/").then((value) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2500);
+    const region = fetch("/analytics-policy", { credentials: "omit", cache: "no-store", signal: controller.signal })
+      .then((response) => response.ok ? response.json() : {}).catch(() => ({})).finally(() => clearTimeout(timer));
+    Promise.all([apiRequest("/public/analytics-config/"), region]).then(([value, policy]) => {
       if (!active) return;
-      setConfig(value); setConsent(readConsent()); setReady(analyticsConfigured());
+      setPolicy(policy); setConfig(value); setConsent(readConsent()); setReady(analyticsConfigured());
     }).catch(() => { /* Analytics failure must never block the site or forms. */ });
-    return () => { active = false; disable(); };
+    return () => { active = false; controller.abort(); clearTimeout(timer); disable(); };
   }, [pathname]);
   useEffect(() => {
     const update = () => setConsent(readConsent());
-    const open = () => setSettingsOpen(true);
     const storage = (event) => { if (event.key === CONSENT_KEY || event.key === null) refreshConsent(); };
     window.addEventListener("analytics-consent-change", update);
-    window.addEventListener("analytics-settings-open", open);
     window.addEventListener("storage", storage);
-    return () => { window.removeEventListener("analytics-consent-change", update); window.removeEventListener("analytics-settings-open", open); window.removeEventListener("storage", storage); };
+    return () => { window.removeEventListener("analytics-consent-change", update); window.removeEventListener("storage", storage); };
   }, []);
   useEffect(() => {
     if (!ready || pathname !== "/" || consent !== true || !initialize()) return;
     return observeSite();
   }, [ready, pathname, consent]);
-  if (pathname !== "/" || !ready || !eligible() || consent !== null && !settingsOpen) return null;
-  const choose = (value) => { chooseConsent(value); setConsent(value); setSettingsOpen(false); };
-  return (
-    <aside className="analytics-consent" aria-label="Analytics preferences" data-analytics-ignore>
-      <div className="analytics-consent-copy">
-        <p>Allow Google Analytics cookies to measure visits and improve this site? <a href="/#privacy">Privacy details</a></p>
-      </div>
-      <div className="analytics-consent-actions">
-        <button type="button" className="analytics-choice" onClick={() => choose(false)}>No thanks</button>
-        <button type="button" className="analytics-choice" onClick={() => choose(true)}>Allow</button>
-        {consent !== null && <button type="button" className="analytics-dismiss" aria-label="Close analytics preferences" onClick={() => setSettingsOpen(false)}>×</button>}
-      </div>
-    </aside>
-  );
+  return null;
 }
 
-export function AnalyticsSettingsButton() {
+export function PrivacyAnalyticsSettings() {
+  const [enabled, setEnabled] = useState(false);
   const [available, setAvailable] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [saved, setSaved] = useState(false);
   useEffect(() => {
-    const update = () => setAvailable(eligible());
+    const update = () => { setEnabled(readConsent()); setAvailable(eligible()); setBlocked(privacySignal()); };
     update();
     window.addEventListener("analytics-config-change", update);
-    return () => window.removeEventListener("analytics-config-change", update);
+    window.addEventListener("analytics-consent-change", update);
+    return () => { window.removeEventListener("analytics-config-change", update); window.removeEventListener("analytics-consent-change", update); };
   }, []);
-  if (!available) return null;
-  return <button type="button" className="text-link" data-analytics-ignore onClick={() => window.dispatchEvent(new Event("analytics-settings-open"))}>Analytics choices</button>;
+  const choose = (value) => {
+    const previous = readChoice();
+    chooseConsent(value); setSaved(true);
+    if (!value && previous !== false) {
+      // The choice is applied first. Only an anonymous counter reaches our server.
+      apiRequest("/public/analytics-preference/", { method: "POST", body: JSON.stringify({
+        automation_signal: navigator.webdriver === true ? "reported" : "unknown",
+      }) }).catch(() => { /* Measurement must never prevent an opt-out. */ });
+    }
+  };
+  return <div id="analytics-settings" className="analytics-settings" data-analytics-ignore>
+    <div><h3 tabIndex={-1}>Analytics settings</h3>
+      <p>Google Analytics helps improve this website. You can turn it off for this browser; forms and bookings will still work.</p>
+    </div>
+    <label className="analytics-toggle">
+      <span>Website analytics <strong>{enabled && available ? "On" : "Off"}</strong></span>
+      <input type="checkbox" role="switch" aria-label="Website analytics" checked={enabled && available} disabled={!available || blocked} onChange={(event) => choose(event.target.checked)} />
+    </label>
+    {blocked && <p>Your browser’s privacy signal keeps analytics off.</p>}
+    {!available && <p>Analytics is currently unavailable and remains off.</p>}
+    {saved && <p role="status">Your choice is saved for this browser.</p>}
+  </div>;
 }

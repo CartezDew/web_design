@@ -28,6 +28,7 @@ from api.uploads import AssetPrepareView, AssetFinalizeView, AssetReleaseView
 from communications.microsoft_authorization import authorization_callback
 from api.confirmations import SubmissionConfirmationView
 from api.analytics import AnalyticsConfigView, BusinessInsightsView
+from api.analytics_preferences import AnalyticsPreferenceView
 
 router = DefaultRouter()
 router.register("projects", ClientProjectViewSet, basename="projects")
@@ -42,6 +43,7 @@ router.register("admin/availability-overrides", AvailabilityOverrideViewSet, bas
 
 urlpatterns = [
     path("public/analytics-config/", AnalyticsConfigView.as_view()),
+    path("public/analytics-preference/", AnalyticsPreferenceView.as_view()),
     path("admin/insights/", BusinessInsightsView.as_view()),
     path("email/microsoft/callback/", authorization_callback),
     path("health/", HealthView.as_view()),

@@ -14,7 +14,7 @@ beforeEach(async () => {
   analytics = await import("./client");
   analytics.setConfig({ measurement_id: "G-TEST12345", server_conversions: false });
 });
-afterEach(() => { vi.unstubAllEnvs(); vi.useRealTimers(); });
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 it("makes no Google calls before consent or after declining", () => {
   expect(analytics.initialize()).toBe(false);
@@ -106,4 +106,42 @@ it("keeps localhost and previews out of production reporting by default", () => 
   vi.stubEnv("PROD", true);
   analytics.chooseConsent(true);
   expect(window.dataLayer).toHaveLength(0);
+});
+
+
+it("allows the US default only after a trusted policy arrives, without storing an explicit choice", () => {
+  expect(analytics.readConsent()).toBe(false);
+  analytics.setPolicy({ automatic_analytics: true });
+  expect(analytics.initialize()).toBe(true);
+  expect(analytics.readChoice()).toBeNull();
+  expect(events("page_view")).toHaveLength(1);
+});
+
+it("preserves existing opt-outs across default policy changes", () => {
+  localStorage.setItem(analytics.CONSENT_KEY, JSON.stringify({ granted: false, expires: Date.now() + 60000 }));
+  analytics.setPolicy({ automatic_analytics: true });
+  expect(analytics.initialize()).toBe(false);
+  expect(analytics.readChoice()).toBe(false);
+});
+
+it.each(["browser GPC", "browser DNT", "edge privacy header"])("honors %s even over a saved allow choice", (source) => {
+  analytics.chooseConsent(true);
+  if (source === "browser GPC") vi.stubGlobal("navigator", { globalPrivacyControl: true });
+  if (source === "browser DNT") vi.stubGlobal("navigator", { doNotTrack: "1" });
+  analytics.setPolicy({ automatic_analytics: true, privacy_signal: source === "edge privacy header" });
+  analytics.chooseConsent(true);
+  expect(analytics.readConsent()).toBe(false);
+  expect(analytics.track("page_view")).toBe(false);
+  expect(commands().at(-1)).toEqual(["consent", "update", { analytics_storage: "denied" }]);
+});
+
+it("removes Google cookies and acquisition data when a different tab opts out", () => {
+  analytics.chooseConsent(true);
+  document.cookie = "_ga=123.456;path=/";
+  document.cookie = "_ga_TEST12345=session;path=/";
+  localStorage.setItem(analytics.CONSENT_KEY, JSON.stringify({ granted: false, expires: Date.now() + 60000 }));
+  analytics.refreshConsent();
+  expect(document.cookie).not.toContain("_ga");
+  expect(sessionStorage.getItem("marcdbycartez.acquisition.v1")).toBeNull();
+  expect(analytics.canTrack()).toBe(false);
 });

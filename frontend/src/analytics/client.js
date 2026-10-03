@@ -5,6 +5,7 @@ export const CONSENT_KEY = "marcdbycartez.analytics-consent.v1";
 const CAMPAIGN_KEY = "marcdbycartez.acquisition.v1";
 const TTL = 180 * 24 * 60 * 60 * 1000;
 let config = { measurement_id: "", server_conversions: false };
+let policy = { automatic_analytics: false, privacy_signal: false };
 let initialized = false;
 let pageSent = false;
 let consentOverride;
@@ -38,12 +39,25 @@ export function sanitizeParams(params) {
   }
   return clean;
 }
-export function readConsent() {
+export function privacySignal() {
+  return policy.privacy_signal || typeof navigator !== "undefined" &&
+    (navigator.globalPrivacyControl === true || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes");
+}
+export function readChoice() {
   if (consentOverride !== undefined) return consentOverride;
   try {
     const record = JSON.parse(localStorage.getItem(CONSENT_KEY));
     return record?.expires > Date.now() && typeof record.granted === "boolean" ? record.granted : null;
   } catch { return null; }
+}
+export function readConsent() {
+  if (privacySignal()) return false;
+  return readChoice() ?? policy.automatic_analytics;
+}
+export function setPolicy(value) {
+  policy = { automatic_analytics: value?.automatic_analytics === true, privacy_signal: value?.privacy_signal === true };
+  if (!readConsent()) revoke();
+  window.dispatchEvent(new Event("analytics-consent-change"));
 }
 export function setConfig(value) {
   config = { measurement_id: /^G-[A-Z0-9]{6,20}$/.test(value?.measurement_id) ? value.measurement_id : "", server_conversions: value?.server_conversions === true };
@@ -137,13 +151,10 @@ export function disable() {
 }
 export function refreshConsent() {
   consentOverride = undefined;
-  if (readConsent() !== true) disable();
+  if (readConsent() !== true) revoke();
   window.dispatchEvent(new Event("analytics-consent-change"));
 }
-export function chooseConsent(granted) {
-  consentOverride = granted;
-  try { localStorage.setItem(CONSENT_KEY, JSON.stringify({ granted, expires: Date.now() + TTL })); } catch { /* Session-only choice. */ }
-  if (!granted) {
+function revoke() {
     disable();
     try { sessionStorage.removeItem(CAMPAIGN_KEY); } catch { /* Optional. */ }
     if (initialized) gtag("consent", "update", { analytics_storage: "denied" });
@@ -153,7 +164,13 @@ export function chooseConsent(granted) {
       if (name === "_ga" || name.startsWith("_ga_")) for (const domain of domains)
         document.cookie = `${name}=; Max-Age=0; path=/;${domain ? ` domain=${domain};` : ""} SameSite=Lax; Secure`;
     }
-  } else {
+}
+export function chooseConsent(granted) {
+  granted = granted === true && !privacySignal();
+  consentOverride = granted;
+  try { localStorage.setItem(CONSENT_KEY, JSON.stringify({ granted, expires: Date.now() + TTL })); } catch { /* Session-only choice. */ }
+  if (!granted) revoke();
+  else {
     if (initialized) gtag("consent", "update", { analytics_storage: "granted" });
     initialize();
   }

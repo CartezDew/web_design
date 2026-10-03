@@ -145,6 +145,7 @@ class BusinessInsightsView(APIView):
                     for value, count in counts.most_common()]
 
         weekly = Counter(b.created_at.date().isoformat() for b in briefs)
+        from api.analytics_preferences import preference_summary
         return Response({
             "days": days, "generated_at": timezone.now(), "source": "business_database",
             "totals": {"briefs": len(briefs), "confirmed_briefs": sum(bool(b.email_verified_at) for b in briefs),
@@ -164,6 +165,7 @@ class BusinessInsightsView(APIView):
                 "device_category": breakdown(lambda b: b.acquisition.get("device_category")),
             },
             "daily_briefs": [{"date": day, "leads": count} for day, count in sorted(weekly.items())],
+            "privacy_choices": preference_summary(days),
             "tracking": {"configured": configured(), "server_conversions": configured() and bool(settings.GA_API_SECRET),
                          "property_id": settings.GA_PROPERTY_ID, "measurement_id": settings.GA_MEASUREMENT_ID if configured() else ""},
         })

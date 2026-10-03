@@ -26,3 +26,9 @@ class Command(BaseCommand):
         for pk in ids:
             deliver_email(pk)
         self.stdout.write(f"Processed {len(ids)} queued messages.")
+        from api.analytics_preferences import report_preference_totals
+        try:
+            report_preference_totals()
+        except Exception:
+            # Optional aggregate reporting must never interfere with email delivery.
+            self.stderr.write("Anonymous analytics summary reporting was unavailable.")

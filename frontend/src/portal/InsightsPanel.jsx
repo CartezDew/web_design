@@ -53,6 +53,13 @@ export default function InsightsPanel() {
           {propertyId && <a className="button button--ghost" href={`https://analytics.google.com/analytics/web/#/p${propertyId}/reports/intelligenthome`} target="_blank" rel="noreferrer">Open website analytics ↗</a>}
         </div>
         <div className="insights-breakdowns">
+          {data.privacy_choices && <article className="portal-panel">
+            <h3>Analytics turned off</h3>
+            <p><strong>{data.privacy_choices.opt_out_total}</strong> off choices in this period.</p>
+            <p>{data.privacy_choices.automation_reported} reported an automation signal · {data.privacy_choices.unclassified} unclassified.</p>
+            <p>Anonymous choices, not unique people. No names or visitor identifiers are recorded. Automation signals cannot prove whether a person or AI made a choice.</p>
+            <p>Google receives completed daily totals. In GA4, use Event value for analytics_opt_out_total; Event count measures summary batches.</p>
+          </article>}
           {questions.map(([key, title, description]) => <article className="portal-panel" key={key}>
             <h3>{title}</h3><p>{description}</p>
             {data.breakdowns[key].length ? <div className="insights-table-wrap"><table>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, Menu, X } from "lucide-react";
-import { AnalyticsSettingsButton } from "../analytics/SiteAnalytics";
 import AboutMenu from "./AboutMenu";
 import "./SiteLayout.css";
 export function Logo() {
@@ -111,8 +110,7 @@ export function SiteFooter() {
           >
             LinkedIn ↗
           </a>
-          <Link to="/#privacy">Privacy</Link>
-          <AnalyticsSettingsButton />
+          <Link to="/#analytics-settings" data-analytics-ignore>Privacy settings</Link>
         </div>
       </div>
     </footer>
@@ -139,8 +137,10 @@ function SectionNavigation() {
     const frame = requestAnimationFrame(() => {
       const target = document.getElementById(hash.slice(1));
       if (!target) return;
-      if (target instanceof HTMLDetailsElement) target.open = true;
+      const disclosure = target.closest("details");
+      if (disclosure) disclosure.open = true;
       target.scrollIntoView({ block: "start" });
+      if (hash === "#analytics-settings") target.querySelector("h3")?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
   }, [pathname, hash, key]);

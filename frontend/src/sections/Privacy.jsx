@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import { PrivacyAnalyticsSettings } from "../analytics/SiteAnalytics";
 import "./Privacy.css";
 export default function Privacy() {
   return (
@@ -33,18 +34,30 @@ export default function Privacy() {
           <h3>Cookies and tracking</h3>
           <p>
             Essential session and security cookies support account sign-in and
-            protect forms. If you allow analytics, Google Analytics measures
+            protect forms. Google Analytics measures
             visits, approximate location, device category, traffic sources,
             section views, clicks, form progress and successful requests.
             Selected business categories, service interests and package choices
             help improve our services. Names, contact details, written answers,
             uploaded files and private portal pages are excluded from analytics.
-            Advertising personalization is disabled. Analytics cookies and your
-            preference can last up to six months. Change or withdraw permission
-            using “Analytics choices” in the footer; the site and forms work
-            whether you allow analytics or not. With permission, campaign and
-            device categories are also saved with your inquiry to understand
-            which channels lead to projects.
+            Advertising personalization is disabled. In the United States,
+            analytics is enabled by default unless you turn it off or your browser
+            sends a privacy signal. Elsewhere, or when we cannot determine your
+            region, it stays off unless you enable it. Existing opt-outs are respected.
+            Analytics cookies and your preference can last up to six months.
+            You can change your choice below or through “Privacy settings” in the
+            footer. When analytics is enabled, campaign and device categories are
+            also saved with your inquiry to understand which channels lead to projects.
+          </p>
+          <PrivacyAnalyticsSettings />
+          <p>
+            Turning analytics off stops further visitor tracking in this browser
+            and removes its Google Analytics cookies. We keep anonymous daily
+            totals of off choices and reported automation signals, without names,
+            contact details, IP addresses or visitor identifiers in those totals.
+            These totals may be shared with Google to measure privacy preferences.
+            An automation signal does not reliably identify a person or an AI.
+            Your choice does not delete information previously collected.
           </p>
           <h3>Access and retention</h3>
           <p>
