@@ -86,7 +86,9 @@ class SubmissionConfirmationView(APIView):
         model = ProjectBrief if kind == "brief" else Appointment
         records = model.objects.filter(deleted_at__isnull=True)
         record = get_object_or_404(records.select_for_update() if locked else records, pk=pk)
-        require_token(values.get("token"), confirmation_kind(kind, record), record.pk, 48 * 3600)
+        authorization = request.headers.get("Authorization", "")
+        token = authorization.removeprefix("Bearer ") if request.method == "GET" else values.get("token")
+        require_token(token, confirmation_kind(kind, record), record.pk, 48 * 3600)
         if not record.confirmation_expires_at or record.confirmation_expires_at <= timezone.now():
             raise ValidationError("This confirmation link has expired. Your request is still saved. "
                                   "Please email Cartez for a new project link, or choose another consultation time.")

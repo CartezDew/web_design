@@ -28,7 +28,10 @@ it("reads without confirming and books only on a deliberate button press", async
     name: "Confirm appointment",
   });
   expect(screen.getAllByText(/10:00 AM EST/)).toHaveLength(2);
-  expect(apiRequest.mock.calls.every(([, options]) => !options)).toBe(true);
+  expect(apiRequest.mock.calls[0][0]).not.toContain("token=");
+  expect(apiRequest.mock.calls[0][1]).toEqual({
+    headers: { Authorization: "Bearer secure" },
+  });
   fireEvent.click(button);
   await screen.findByText("Your call is confirmed.");
   const [path, options] = apiRequest.mock.calls.at(-1);

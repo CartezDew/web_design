@@ -33,7 +33,9 @@ export default function ConfirmationPage() {
       setLoading(false);
       return;
     }
-    apiRequest(`/public/confirm/?${new URLSearchParams({ kind, id, token })}`)
+    apiRequest(`/public/confirm/?${new URLSearchParams({ kind, id })}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((data) => {
         if (active) setRecord(data);
       })

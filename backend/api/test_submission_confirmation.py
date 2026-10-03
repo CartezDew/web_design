@@ -34,6 +34,10 @@ class SubmissionConfirmationTests(TestCase):
     def confirm(self, payload):
         return self.client.post('/api/v1/public/confirm/', payload, content_type='application/json')
 
+    def preview(self, payload):
+        return self.client.get('/api/v1/public/confirm/', {key:value for key,value in payload.items() if key != 'token'},
+                               HTTP_AUTHORIZATION='Bearer '+payload['token'])
+
     def test_customer_and_owner_receive_request_before_verification(self):
         appointment = self.booking()
         self.assertEqual(appointment.status, 'pending')
@@ -52,8 +56,9 @@ class SubmissionConfirmationTests(TestCase):
     def test_read_does_not_confirm_and_double_post_sends_only_one_receipt(self):
         appointment = self.booking()
         payload = self.payload('appointment', appointment)
-        response = self.client.get('/api/v1/public/confirm/', payload)
+        response = self.preview(payload)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get('/api/v1/public/confirm/', payload).status_code, 403)
         appointment.refresh_from_db(); self.assertIsNone(appointment.email_verified_at)
         self.assertEqual(appointment.status, 'pending')
         self.assertEqual(self.confirm(payload).status_code, 200)
@@ -122,7 +127,7 @@ class SubmissionConfirmationTests(TestCase):
         self.assertIn(data['inspiration_link'], owner.body)
         self.assertEqual(self.admin_api.post(f'/api/v1/admin/briefs/{brief.pk}/invite/', {}, format='json').status_code, 400)
         payload = self.payload('brief', brief)
-        self.assertEqual(self.client.get('/api/v1/public/confirm/', payload).status_code, 200)
+        self.assertEqual(self.preview(payload).status_code, 200)
         brief.refresh_from_db(); self.assertIsNone(brief.email_verified_at)
         self.assertEqual(self.confirm(payload).status_code, 200)
         brief.refresh_from_db(); self.assertIsNotNone(brief.email_verified_at)
