@@ -157,7 +157,7 @@ If adding Cloudflare Turnstile later:
 
 ## 7. Netlify
 
-Create a Netlify site from the same repository. The root `netlify.toml` already sets:
+The production Netlify project is `marcdbycartez` in the `cartezdew` team (Marc-d Group LLC), connected to `CartezDew/web_design` on the `resigned` branch. Auto publishing is enabled for that branch. The root `netlify.toml` sets:
 
 - Base directory: `frontend`
 - Build command: `npm run build`
@@ -219,7 +219,7 @@ Database backups cover records and asset references, not client-file bytes. Ever
 
 ## Redesign additions (October 2026)
 
-The frontend now uses React Router prerendering. Netlify publishes **`dist/client`** with Node 22. The single public landing page has prerendered HTML, metadata, a canonical link, and a sitemap entry. Former public routes redirect to its section anchors. Private routes use `__spa-fallback.html` and `noindex`. Set `VITE_SITE_URL` to the verified public origin before building; the current `marcdbycartez.com` value is provisional. Keep the API on a subdomain of that same registrable domain so secure SameSite=Lax session cookies work. Netlify preview domains need their own same-site API proxy or a dedicated test setup; do not weaken production cookie settings to support them.
+The frontend uses React Router prerendering. Netlify publishes **`dist/client`** with Node 22. The single public landing page has prerendered HTML, metadata, a canonical link, and a sitemap entry. Former public routes redirect to its section anchors. Private routes use `__spa-fallback.html` and `noindex`. Production `VITE_SITE_URL` is `https://marcdbycartez.com`, with the API at `https://api.marcdbycartez.com/api/v1`. Keeping the API on a subdomain of that same registrable domain allows secure SameSite=Lax session cookies to work. Netlify preview domains need their own same-site API proxy or a dedicated test setup; do not weaken production cookie settings to support them.
 
 The development Vite server proxies `/api` to `127.0.0.1:8000`, so leave `VITE_API_BASE_URL=/api/v1` locally. Run the frontend at `http://127.0.0.1:5173`. Add this exact origin to `CSRF_TRUSTED_ORIGINS` and `CORS_ALLOWED_ORIGINS` when using a directly addressed API. `npm --prefix frontend run preview` serves the actual built files at `http://127.0.0.1:4173`, including private-route fallbacks, and proxies local API requests. The preview server is only for local verification.
 
@@ -257,4 +257,6 @@ Project: `compassionate-amazement`, production environment, backend service `web
 
 The actual production-built frontend was tested through an isolated local preview bridge to Railway: intake modal → required contact details → project answers/URLs → PNG and PDF file picker → successful saved confirmation. Contact details, both URLs, goal/features/notes, and two uploaded asset records were verified in PostgreSQL. Primary and backup file bytes had matching checksums. Unsigned downloads returned 403. No frontend warning/error logs appeared in this flow. Temporary browser test access was removed. A clearly marked “Railway Storage QA” brief and tiny diagnostic objects remain as verification evidence; they are not real client data.
 
-The API custom domain is configured in Railway and needs a DNS CNAME: `api` → `2c46dxbl.up.railway.app`. The domain currently uses `ns29.domaincontrol.com` and `ns30.domaincontrol.com`; it does not appear in the signed-in Netlify team's DNS zone list. Finish DNS at the actual authoritative provider, then confirm TLS and the frontend's `VITE_API_BASE_URL`. Email keys, the first admin account, real business hours, an outbox retry job, and a recovery drill remain before a complete launch.
+The domain's authoritative nameservers are now `dns1.p04.nsone.net` through `dns4.p04.nsone.net` (Netlify DNS). The API CNAME `api` → `2c46dxbl.up.railway.app` and Railway's `_railway-verify.api` ownership TXT record are saved. Existing Microsoft 365 MX, SPF, tenant verification, autodiscover, DKIM, and DMARC records were copied from the previous GoDaddy DNS zone and confirmed against the new authoritative nameserver and public resolvers.
+
+Netlify production deployment `6ac078ff1eb252488d185e38` published commit `68e09bf` from `resigned`. Its generated HTTPS URL is `https://marcdbycartez.netlify.app`. The deployed HTML, canonical URL, structured data, robots/sitemap, sign-in route, and intake modal were verified. The production bundle contains the custom API URL. The primary domain `https://marcdbycartez.com` has a valid automatically renewing Let's Encrypt certificate; `https://www.marcdbycartez.com` redirects to it with HTTP 301. The homepage was verified in the browser on the real domain. Railway confirms API ownership and propagated routing, but API certificate issuance is still pending; public forms and authentication must not be considered connected until API HTTPS and the final cross-subdomain browser flow pass. Email keys, the first admin account, real business hours, an outbox retry job, and a recovery drill remain before a complete launch.
