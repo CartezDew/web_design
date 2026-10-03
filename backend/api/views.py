@@ -361,8 +361,7 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         old_email = serializer.instance.email
-        from api.analytics import acquisition_context
-                brief = serializer.save(acquisition=acquisition_context(request.data.get("analytics")))
+        brief = serializer.save()
         if brief.email.lower() != old_email.lower():
             from api.confirmations import prepare_brief_confirmation
             prepare_brief_confirmation(brief)
