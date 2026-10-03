@@ -41,6 +41,7 @@ class Appointment(SoftDeleteModel, TimeStampedModel):
         COMPLETED = "completed", "Completed"
         EXPIRED = "expired", "Unconfirmed · time released"
 
+    acquisition = models.JSONField(default=dict, blank=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     client = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="appointments"

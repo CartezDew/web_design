@@ -188,3 +188,8 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
 }
+
+# GA4: a dedicated marcdbycartez property. The secret is server-only.
+GA_MEASUREMENT_ID = env("GA_MEASUREMENT_ID", default="")
+GA_PROPERTY_ID = env("GA_PROPERTY_ID", default="")
+GA_API_SECRET = env("GA_API_SECRET", default="")

@@ -14,3 +14,7 @@ from .settings import *  # noqa: F403,E402
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []  # noqa: F405
+
+GA_MEASUREMENT_ID = ""
+GA_PROPERTY_ID = ""
+GA_API_SECRET = ""

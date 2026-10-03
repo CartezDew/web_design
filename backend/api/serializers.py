@@ -43,6 +43,10 @@ class AssetSerializer(serializers.ModelSerializer):
 
 
 class ProjectBriefSerializer(serializers.ModelSerializer):
+    from api.analytics import BUSINESS_TYPES, SERVICE_INTERESTS, CONTENT
+    business_type = serializers.ChoiceField(choices=BUSINESS_TYPES, required=False, allow_blank=True)
+    service_interest = serializers.ChoiceField(choices=SERVICE_INTERESTS, required=False, allow_blank=True)
+    content_readiness = serializers.ChoiceField(choices=list(CONTENT), required=False, allow_blank=True)
     assets = serializers.SerializerMethodField()
 
     def get_assets(self, obj):
@@ -54,7 +58,7 @@ class ProjectBriefSerializer(serializers.ModelSerializer):
             "id", "status", "company", "name", "email", "phone", "overview", "mission",
             "success", "pages", "goal", "offerings", "features", "inspiration_link",
             "domain", "launch_date", "brand", "integrations", "package", "referral",
-            "social_urls", "notes", "assets", "created_at", "updated_at", "email_verified_at", "confirmation_expires_at",
+            "social_urls", "notes", "business_type", "service_interest", "content_readiness", "assets", "created_at", "updated_at", "email_verified_at", "confirmation_expires_at",
         ]
         read_only_fields = ["id", "status", "assets", "created_at", "updated_at", "email_verified_at", "confirmation_expires_at"]
 

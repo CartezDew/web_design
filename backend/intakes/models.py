@@ -12,6 +12,10 @@ class ProjectBrief(SoftDeleteModel, TimeStampedModel):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.NEW, db_index=True)
+    business_type = models.CharField(max_length=40, blank=True)
+    service_interest = models.CharField(max_length=40, blank=True)
+    content_readiness = models.CharField(max_length=80, blank=True)
+    acquisition = models.JSONField(default=dict, blank=True)
     company = models.CharField(max_length=200, blank=True)
     name = models.CharField(max_length=200)
     email = models.EmailField(db_index=True)

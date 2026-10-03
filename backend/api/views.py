@@ -244,10 +244,13 @@ class PublicBriefCreateView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         try:
             with transaction.atomic():
-                brief = serializer.save()
+                from api.analytics import acquisition_context
+                brief = serializer.save(acquisition=acquisition_context(request.data.get("analytics")))
         except IntegrityError:
             brief = ProjectBrief.objects.get(idempotency_key=key, deleted_at__isnull=True)
             return Response({"id": str(brief.pk), "upload_token": issue_token("upload", brief.pk)})
+        from api.analytics import record_lead
+        record_lead(brief, "brief", request.data.get("analytics"))
         audit(request, "brief.create", brief)
         from api.confirmations import prepare_brief_confirmation, brief_summary
         prepare_brief_confirmation(brief)
@@ -296,6 +299,8 @@ class PublicAppointmentCreateView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         data = dict(serializer.validated_data)
         data.pop("turnstile_token", None)
+        from api.analytics import acquisition_context, record_lead
+        data["acquisition"] = acquisition_context(request.data.get("analytics"))
         if request.user.is_authenticated:
             data.update(client=request.user, email=request.user.email)
         try:
@@ -306,6 +311,7 @@ class PublicAppointmentCreateView(generics.CreateAPIView):
             if existing:
                 return Response({"id": str(existing.pk), "status": existing.status, "confirmation_email": existing.email, "manage_token": issue_token("appointment", existing.pk)})
             return Response({"detail": "That time is no longer available."}, status=409)
+        record_lead(appointment, "booking", request.data.get("analytics"))
         audit(request, "appointment.create", appointment)
         return Response({"id": str(appointment.pk), "status": appointment.status, "confirmation_email": appointment.email, "manage_token": issue_token("appointment", appointment.pk)}, status=201)
 
@@ -355,7 +361,8 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         old_email = serializer.instance.email
-        brief = serializer.save()
+        from api.analytics import acquisition_context
+                brief = serializer.save(acquisition=acquisition_context(request.data.get("analytics")))
         if brief.email.lower() != old_email.lower():
             from api.confirmations import prepare_brief_confirmation
             prepare_brief_confirmation(brief)
