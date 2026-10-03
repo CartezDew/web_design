@@ -1,0 +1,24 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Website email setup — Cartez Dewberry</title>
+  <link rel="stylesheet" href="{% static 'communications/authorization.css' %}">
+</head>
+<body>
+  <main>
+    <p class="brand">C<span>/</span>D</p>
+    {% if success %}
+      <h1>Website email connected.</h1>
+      <p>Your Microsoft authorization has been saved securely. Return to Codex to finish the delivery check and admin account setup.</p>
+    {% else %}
+      <h1>Email setup needs another try.</h1>
+      <p>The authorization could not be completed. Return to Codex for a new link and sign in with the configured sending mailbox.</p>
+    {% endif %}
+    <p class="note">You can close this tab.</p>
+  </main>
+</body>
+</html>

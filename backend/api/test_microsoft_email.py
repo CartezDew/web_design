@@ -26,6 +26,7 @@ class MicrosoftEmailTests(TestCase):
             MICROSOFT_TENANT_ID=TENANT, MICROSOFT_TOKEN_ENCRYPTION_KEY=self.key.decode(),
             MICROSOFT_MAILBOX=MAILBOX, DEFAULT_FROM_EMAIL=f"Owner <{MAILBOX}>",
             EMAIL_BACKEND="communications.microsoft_email.EmailBackend",
+            MICROSOFT_CLIENT_CERTIFICATE_KEY="", MICROSOFT_CLIENT_CERTIFICATE_THUMBPRINT="",
         )
         self.settings_override.enable()
         self.addCleanup(self.settings_override.disable)
@@ -155,6 +156,17 @@ class MicrosoftEmailTests(TestCase):
         row.refresh_from_db()
         self.assertEqual(row.attempts, 0)
         self.assertIsNone(row.sent_at)
+
+    @patch("api.management.commands.retry_emails.deliver_email")
+    @patch("communications.microsoft_email.access_token", return_value="test-token")
+    def test_retry_can_preserve_a_setup_message_without_sending_or_deleting_it(self, token, deliver):
+        held = EmailDelivery.objects.create(subject="Setup", body="Pending", recipients=["qa@example.test"])
+        active = EmailDelivery.objects.create(subject="Queued", body="Pending", recipients=["client@example.test"])
+        call_command("retry_emails", "--exclude", str(held.pk))
+        deliver.assert_called_once_with(active.pk)
+        held.refresh_from_db()
+        self.assertEqual(held.attempts, 0)
+        self.assertIsNone(held.sent_at)
 
     @override_settings(DJANGO_ENV="production", EMAIL_PROVIDER="console")
     def test_production_console_cannot_mark_email_as_sent(self):

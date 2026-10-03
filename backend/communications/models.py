@@ -42,3 +42,11 @@ class MicrosoftMailCredential(models.Model):
     encrypted_cache = models.TextField()
     revision = models.PositiveIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class MicrosoftMailAuthorization(models.Model):
+    """One-use owner authorization attempt; PKCE verifier is encrypted, never exposed."""
+    state_hash = models.CharField(max_length=64, primary_key=True)
+    encrypted_flow = models.TextField()
+    expires_at = models.DateTimeField()
+    claimed_at = models.DateTimeField(null=True, blank=True)

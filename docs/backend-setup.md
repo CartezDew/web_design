@@ -103,6 +103,9 @@ MICROSOFT_CLIENT_ID=<public Application client ID>
 MICROSOFT_TENANT_ID=<public Directory tenant ID>
 MICROSOFT_MAILBOX=letsbuild@marcdbycartez.com
 MICROSOFT_TOKEN_ENCRYPTION_KEY=<private Fernet key stored only in Railway>
+MICROSOFT_CLIENT_CERTIFICATE_KEY=<private PEM signing key stored only in Railway>
+MICROSOFT_CLIENT_CERTIFICATE_THUMBPRINT=<public SHA-1 certificate thumbprint>
+MICROSOFT_AUTH_REDIRECT_URI=https://api.marcdbycartez.com/api/v1/email/microsoft/callback/
 UPLOAD_STORAGE_BACKEND=s3
 UPLOAD_BACKUP_REQUIRED=true
 S3_ADDRESSING_STYLE=virtual
@@ -151,12 +154,15 @@ Microsoft authentication happens in the owner's normal browser; signing in throu
 In the owner's signed-in browser:
 
 1. Open [Microsoft Entra](https://entra.microsoft.com), then **Entra ID → App registrations → New registration**.
-2. Name it **Marc'd Website Email**. Choose **Accounts in this organizational directory only** and leave the redirect URI empty.
+2. Name it **Marc'd by Cartez Website Email**. Choose **Accounts in this organizational directory only**.
 3. In **API permissions**, add **Microsoft Graph → Delegated permissions → Mail.Send**. Remove the default `User.Read` permission. Do not add application-wide mailbox permissions.
-4. In **Authentication**, enable **Allow public client flows**. A redirect URI and client secret are unnecessary for device-code authorization.
-5. From **Overview**, copy the **Application (client) ID** and **Directory (tenant) ID** into the corresponding Railway variables. These identifiers are public; passwords, access tokens, and refresh tokens are private. If app registration or consent is blocked by tenant policy, the Microsoft 365 administrator must enable the specific app/permission; do not weaken MFA or tenant security defaults.
+4. In **Authentication → Add a platform → Web**, register `https://api.marcdbycartez.com/api/v1/email/microsoft/callback/`. The production flow is a confidential web client; it does not need public-client flows enabled.
+5. In **Certificates & secrets → Certificates**, upload the generated public `.cer` certificate. Its private signing key stays in Railway as `MICROSOFT_CLIENT_CERTIFICATE_KEY`; the matching public fingerprint is `MICROSOFT_CLIENT_CERTIFICATE_THUMBPRINT`. Never upload or share the private PEM key. The initial certificate expires October 3, 2027; replace the certificate/key pair before expiry and test refresh/delivery afterward.
+6. From **Overview**, copy the **Application (client) ID** and **Directory (tenant) ID** into the corresponding Railway variables. These identifiers are public; passwords, access tokens, and refresh tokens are private. If app registration or consent is blocked by tenant policy, the Microsoft 365 administrator must enable the specific app/permission; do not weaken MFA or tenant security defaults.
 
-The server uses a tenant-specific MSAL public client and requests delegated `Mail.Send`, plus MSAL's standard sign-in/refresh scopes. This grants sending access for the signed-in mailbox, with no inbox-reading or calendar permissions. The backend accepts only an account whose username matches `MICROSOFT_MAILBOX`. See [Microsoft's device-code documentation](https://learn.microsoft.com/en-us/entra/msal/python/getting-started/acquiring-tokens#device-code-flow).
+The server uses a tenant-specific MSAL confidential client authenticated by its certificate and requests delegated `Mail.Send`, plus MSAL's standard sign-in/refresh scopes. This grants sending access for the signed-in mailbox, with no inbox-reading or calendar permissions. The backend accepts only an account whose username matches `MICROSOFT_MAILBOX`. See [Microsoft's authorization-code documentation](https://learn.microsoft.com/en-us/entra/msal/python/getting-started/acquiring-tokens#acquire-token-by-authorization-code-flow).
+
+The initial device-code attempt was blocked by Microsoft error 530035 because this tenant enforces Security Defaults. Microsoft now blocks device-code flows under that protection. Keep Security Defaults/MFA enabled and use the browser authorization-code flow instead; registering the owner's Mac is not the fix. The device-code command has been replaced by the browser authorization flow. [Microsoft Security Defaults](https://learn.microsoft.com/en-us/entra/fundamentals/security-defaults#block-device-code-flow).
 
 Generate a Fernet encryption key privately and store it in `MICROSOFT_TOKEN_ENCRYPTION_KEY` on the backend. Reference that same Railway variable from the email worker; do not generate a new key during each deploy. Keep an access-controlled recovery copy separately from the database backup. Changing or losing the key requires mailbox reauthorization.
 
@@ -166,7 +172,9 @@ After deployment, run in the Railway backend container:
 /opt/venv/bin/python manage.py authorize_microsoft_email
 ```
 
-The command displays Microsoft's verification URL and a short-lived user code. The owner opens that URL in their normal browser, enters the code, signs in as `letsbuild@marcdbycartez.com`, and reviews/approves the sending permission. The command prints neither private device codes nor tokens. Its successful authorization cache is encrypted in PostgreSQL, outside dashboard/admin/API exposure. The backend and worker share it and silently refresh access; concurrent refreshes cannot overwrite a newer cache. Revoked consent, changed registrations, or tenant sign-in policies can require the owner to run the same authorization command again.
+The command displays a Microsoft authorization link valid for 15 minutes. The owner opens it in their normal browser, signs in as `letsbuild@marcdbycartez.com`, and reviews/approves sending permission. Microsoft posts the one-use authorization code to the registered HTTPS callback; it is not placed in URL query strings or pasted into chat. MSAL validates state, nonce, and PKCE. The backend atomically claims each encrypted authorization attempt once, outside request-wide transactions, then contacts Microsoft without holding database locks. Invalid/expired/replayed state and a different mailbox cannot save credentials. Callback pages contain no tokens/provider errors and use no-store/noindex/no-referrer headers.
+
+The successful authorization cache is encrypted in PostgreSQL, outside dashboard/admin/API exposure. The backend and worker share it and silently refresh access using the certificate; concurrent refreshes cannot overwrite a newer cache. Revoked consent, changed registrations, or tenant sign-in policies can require the owner to run the same authorization command again.
 
 Test delivery to the owner before enabling the scheduled worker. Graph HTTP 202 means provider acceptance, not confirmed inbox delivery; verify the actual received message and password-reset link. Messages are saved to the mailbox's Sent Items. See [Microsoft Graph sendMail](https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0). Resend remains a supported optional provider with `EMAIL_PROVIDER=resend` and its API key, but is not the selected production service.
 
@@ -225,7 +233,7 @@ backend/.venv/bin/python backend/manage.py check
 
 ## 10. Backups and restore drills
 
-Railway PostgreSQL point-in-time recovery is enabled. Daily, weekly, and monthly volume snapshots are scheduled. Manual snapshots completed on October 2, 2026 at 22:54 Eastern (222 MB) and October 3 at 00:13 Eastern (259 MB), the latter before the additive Microsoft email credential migration. The private PITR archive bucket is separate from both client-file buckets; do not repurpose it.
+Railway PostgreSQL point-in-time recovery is enabled. Daily, weekly, and monthly volume snapshots are scheduled. Manual snapshots completed on October 2, 2026 at 22:54 Eastern (222 MB) and October 3 at 00:13 Eastern (259 MB), the latter before the additive Microsoft email credential migration. Another snapshot completed at 00:47 Eastern (267 MB) before the browser-authorization table migration. The private PITR archive bucket is separate from both client-file buckets; do not repurpose it.
 
 Database backups cover records and asset references, not client-file bytes. Every newly accepted Railway upload is separately copied to `client-upload-backups` before being marked complete. Both copies are in the same Railway project and region. A restore drill into an isolated environment remains required before launch; never restore over production to test recovery. Check backups after schema deployments and after changing retention or storage settings.
 
@@ -260,7 +268,9 @@ Business availability is edited in `/dashboard/availability` in America/New_York
 
 All invitation, password-reset, inquiry, message, project-status, and booking notifications use the `EmailDelivery` outbox. A separate Railway service named `email-delivery` is prepared with root `/backend`, builder Railpack, start command `python manage.py retry_emails`, empty pre-deploy commands, no health check, no public domain, and restart policy Never. Configure these directly in Railway service settings; new services cannot opt into the deprecated `railway.json`/`railway.toml` configuration. The web service retains its existing settings. The worker has no migration credentials or storage keys.
 
-The worker references the backend's runtime `DATABASE_URL`, `SECRET_KEY`, `FRONTEND_URL`, sender/notification addresses, and Microsoft client/tenant/encryption settings; use `DJANGO_ENV=production`, `DEBUG=false`, `EMAIL_PROVIDER=microsoft365`, and the configured mailbox. Connect `CartezDew/web_design` on `resigned` and enable the five-minute cron schedule only after successful authorization and a received test message. The worker exits after a batch of at most 100 queued messages; HTTP requests have timeouts, and authorization is checked before consuming retry attempts. Railway runs the start command on schedule; see [Railway cron documentation](https://docs.railway.com/cron-jobs). Monitor unsent rows and retry failures. After ten attempts, investigate before resetting attempts. A crash after the provider accepts a message but before the database records success can cause a duplicate; delivery is not exactly-once.
+The worker references the backend's runtime `DATABASE_URL`, `SECRET_KEY`, `FRONTEND_URL`, sender/notification addresses, and Microsoft client/tenant/encryption/certificate settings; use `DJANGO_ENV=production`, `DEBUG=false`, `EMAIL_PROVIDER=microsoft365`, and the configured mailbox. Connect `CartezDew/web_design` on `resigned` and enable the five-minute cron schedule only after successful authorization and a received test message. The worker exits after a batch of at most 100 queued messages; HTTP requests have timeouts, and authorization is checked before consuming retry attempts. Railway runs the start command on schedule; see [Railway cron documentation](https://docs.railway.com/cron-jobs). Monitor unsent rows and retry failures. After ten attempts, investigate before resetting attempts. A crash after the provider accepts a message but before the database records success can cause a duplicate; delivery is not exactly-once.
+
+`retry_emails --exclude DELIVERY_UUID` leaves a specific message queued without changing its recipient, attempts, or sent status. The earlier storage verification generated a confirmation addressed to a reserved example domain. Keep that setup-only delivery excluded in the production worker's start command; ordinary client notifications continue to retry. This exclusion does not delete the verification evidence or mark an unsent message as delivered.
 
 Set `TRUST_RAILWAY_PROXY=true` only on a backend reached through Railway's public edge, where `X-Real-IP` is provided by the proxy. Keep it false for direct local servers. This is used for authentication throttling, public forms, Turnstile and audit records; arbitrary `X-Forwarded-For` is not trusted. Verify with your actual ingress topology before launch. [Railway request headers](https://docs.railway.com/networking/public-networking/specs-and-limits).
 

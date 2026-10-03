@@ -1,5 +1,6 @@
 """Microsoft Graph email using delegated Mail.Send and an encrypted MSAL cache."""
 import base64
+import re
 import uuid
 from email.mime.base import MIMEBase
 from email.utils import parseaddr
@@ -10,6 +11,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail.backends.base import BaseEmailBackend
+from django.db import transaction
 from django.utils import timezone
 
 from communications.models import MicrosoftMailCredential
@@ -44,9 +46,18 @@ def configuration():
 
 def application(cache):
     client_id, tenant_id, _ = configuration()
-    return msal.PublicClientApplication(
+    options = {}
+    client_class = msal.PublicClientApplication
+    if settings.MICROSOFT_CLIENT_CERTIFICATE_KEY:
+        thumbprint = settings.MICROSOFT_CLIENT_CERTIFICATE_THUMBPRINT
+        if not re.fullmatch(r"[a-fA-F0-9]{40}", thumbprint):
+            raise ImproperlyConfigured("Microsoft client certificate is not configured.")
+        client_class = msal.ConfidentialClientApplication
+        options["client_credential"] = {"private_key": settings.MICROSOFT_CLIENT_CERTIFICATE_KEY,
+                                        "thumbprint": thumbprint}
+    return client_class(
         client_id, authority=f"https://login.microsoftonline.com/{tenant_id}",
-        token_cache=cache, http_client=BoundedHttpClient(),
+        token_cache=cache, http_client=BoundedHttpClient(), **options,
     )
 
 
@@ -62,11 +73,16 @@ def save_authorization(cache, app):
     matching_account(app)
     client_id, tenant_id, cipher = configuration()
     encrypted = cipher.encrypt(cache.serialize().encode()).decode()
-    MicrosoftMailCredential.objects.update_or_create(
-        mailbox=settings.MICROSOFT_MAILBOX,
-        defaults={"client_id":client_id, "tenant_id":tenant_id, "encrypted_cache":encrypted,
-                  "revision":0},
-    )
+    from audit.models import AuditEvent
+    with transaction.atomic():
+        MicrosoftMailCredential.objects.update_or_create(
+            mailbox=settings.MICROSOFT_MAILBOX,
+            defaults={"client_id":client_id, "tenant_id":tenant_id, "encrypted_cache":encrypted,
+                      "revision":0},
+        )
+        AuditEvent.objects.create(action="email.microsoft.authorized", object_type="mailbox",
+                                 object_id=settings.MICROSOFT_MAILBOX,
+                                 metadata={"permission":"Mail.Send", "client_id":client_id})
 
 
 def access_token():
