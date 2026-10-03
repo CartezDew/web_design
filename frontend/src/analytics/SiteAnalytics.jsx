@@ -102,15 +102,13 @@ export default function SiteAnalytics() {
   const choose = (value) => { chooseConsent(value); setConsent(value); setSettingsOpen(false); };
   return (
     <aside className="analytics-consent" aria-label="Analytics preferences" data-analytics-ignore>
-      <div>
-        <strong>Help me make this website more useful.</strong>
-        <p>With your permission, Google Analytics measures visits, clicks and form progress. Your name, contact details and written answers stay out of analytics. You can change your choice in the footer.</p>
-        <a href="/#privacy">Privacy details</a>
+      <div className="analytics-consent-copy">
+        <p>Allow Google Analytics cookies to measure visits and improve this site? <a href="/#privacy">Privacy details</a></p>
       </div>
       <div className="analytics-consent-actions">
-        <button className="button button--ghost" onClick={() => choose(false)}>No thanks</button>
-        <button className="button button--red" onClick={() => choose(true)}>Allow analytics</button>
-        {consent !== null && <button className="text-link" onClick={() => setSettingsOpen(false)}>Close</button>}
+        <button type="button" className="analytics-choice" onClick={() => choose(false)}>No thanks</button>
+        <button type="button" className="analytics-choice" onClick={() => choose(true)}>Allow</button>
+        {consent !== null && <button type="button" className="analytics-dismiss" aria-label="Close analytics preferences" onClick={() => setSettingsOpen(false)}>×</button>}
       </div>
     </aside>
   );

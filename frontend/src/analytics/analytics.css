@@ -1,6 +1,10 @@
-.analytics-consent { position: fixed; z-index: 200; bottom: 18px; left: 50%; transform: translateX(-50%); width: min(850px, calc(100% - 32px)); background: #fff; color: #17212d; border: 1px solid #dce1e5; border-radius: 16px; box-shadow: 0 8px 40px #17212d26; padding: 22px; display: flex; align-items: center; gap: 24px; }
-.analytics-consent p { font-size: 13px; line-height: 1.6; margin: 8px 0; }
-.analytics-consent a { font-size: 13px; text-decoration: underline; }
-.analytics-consent-actions { display: flex; flex-wrap: wrap; flex-shrink: 0; gap: 10px; max-width: 170px; }
-.analytics-consent-actions .button { width: 100%; justify-content: center; }
-@media (max-width: 600px) { .analytics-consent { padding: 18px; gap: 14px; display: block; max-height: 70vh; overflow: auto; } .analytics-consent-actions { max-width: none; margin-top: 14px; } .analytics-consent-actions .button { width: auto; flex: 1; } }
+.analytics-consent { position: fixed; z-index: 200; bottom: max(16px, env(safe-area-inset-bottom)); left: 16px; width: min(580px, calc(100% - 32px)); box-sizing: border-box; background: #fff; color: #17212d; border: 1px solid #dce1e5; border-radius: 10px; box-shadow: 0 4px 20px #17212d14; padding: 12px 14px; display: flex; align-items: center; gap: 16px; }
+.analytics-consent-copy { flex: 1; min-width: 0; }
+.analytics-consent p { font-size: 12px; line-height: 1.55; margin: 0; }
+.analytics-consent a { color: inherit; text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+.analytics-consent-actions { display: flex; align-items: center; flex-shrink: 0; gap: 8px; }
+.analytics-choice { min-height: 40px; padding: 8px 12px; border: 1px solid #c8cfd5; border-radius: 6px; background: #fff; color: #17212d; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.analytics-choice:hover { background: #f4f5f7; border-color: #89939e; }
+.analytics-dismiss { width: 32px; min-height: 40px; border: 0; background: transparent; color: #17212d; font-size: 22px; cursor: pointer; }
+.analytics-choice:focus-visible, .analytics-dismiss:focus-visible { outline: 2px solid #17212d; outline-offset: 3px; }
+@media (max-width: 600px) { .analytics-consent { left: 12px; width: calc(100% - 24px); padding: 12px; gap: 10px; flex-wrap: wrap; } .analytics-consent-copy { flex-basis: 100%; } .analytics-consent-actions { width: 100%; justify-content: flex-end; } }
