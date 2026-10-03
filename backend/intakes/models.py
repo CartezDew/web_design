@@ -12,7 +12,7 @@ class ProjectBrief(SoftDeleteModel, TimeStampedModel):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.NEW, db_index=True)
-    company = models.CharField(max_length=200)
+    company = models.CharField(max_length=200, blank=True)
     name = models.CharField(max_length=200)
     email = models.EmailField(db_index=True)
     phone = models.CharField(max_length=32, blank=True)

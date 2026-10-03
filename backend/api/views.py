@@ -9,18 +9,17 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.db import IntegrityError, models, transaction
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import DatabaseError, IntegrityError, connection, models, transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
 from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from accounts.models import Invitation, User
@@ -32,6 +31,14 @@ from projects.models import Project, ProjectStatusHistory
 from scheduling.models import Appointment, AvailabilityOverride, AvailabilityRule
 from scheduling.services import available_starts
 from api.permissions import IsAdminRole
+from api.tokens import issue_token, require_token
+from api.throttles import LoginThrottle, PublicFormThrottle
+from api.form_protection import issue_form_guard, verify_form_guard
+from api.client_address import client_ip
+from api.notifications import queue_email
+from scheduling.services import save_appointment, calendar_text
+from django.http import HttpResponse
+from rest_framework.exceptions import ValidationError
 from api.serializers import (
     AppointmentSerializer,
     AssetSerializer,
@@ -48,15 +55,6 @@ from api.serializers import (
     UserSerializer,
 )
 from api.storage import signed_upload_url, validate_uploaded_blob
-
-
-class PublicFormThrottle(AnonRateThrottle):
-    scope = "public_form"
-
-
-def client_ip(request):
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    return (forwarded.split(",")[0].strip() if forwarded else request.META.get("REMOTE_ADDR")) or None
 
 
 def audit(request, action, obj, metadata=None):
@@ -88,11 +86,18 @@ def verify_turnstile(token, remote_ip):
         return False
 
 
+@method_decorator(transaction.non_atomic_requests, name="dispatch")
 class HealthView(APIView):
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
+    throttle_classes = []
 
     def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+        except DatabaseError:
+            return Response({"status": "unavailable"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response({"status": "ok"})
 
 
@@ -103,11 +108,13 @@ class CsrfView(APIView):
 
     def get(self, request):
         from django.middleware.csrf import get_token
-        return Response({"csrfToken": get_token(request)})
+        return Response({"csrfToken": get_token(request), "formGuard": issue_form_guard()})
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class SessionView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [LoginThrottle]
 
     def get(self, request):
         return Response({"user": UserSerializer(request.user).data if request.user.is_authenticated else None})
@@ -141,30 +148,35 @@ class PasswordResetRequestView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             url = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
-            send_mail("Reset your Marc-D portal password", f"Reset your password: {url}", None, [user.email])
+            queue_email("Reset your client portal password", f"Reset your password: {url}", [user.email])
         return Response({"detail": "If the account exists, a reset link has been sent."})
 
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [PublicFormThrottle]
 
     def post(self, request):
         try:
             user_id = force_str(urlsafe_base64_decode(request.data.get("uid", "")))
             user = User.objects.get(pk=user_id)
-        except (ValueError, TypeError, User.DoesNotExist):
+        except (ValueError, TypeError, User.DoesNotExist, DjangoValidationError):
             return Response({"detail": "Invalid or expired reset link."}, status=400)
         token = request.data.get("token", "")
         password = request.data.get("password", "")
         if not default_token_generator.check_token(user, token):
             return Response({"detail": "Invalid or expired reset link."}, status=400)
         from django.contrib.auth import password_validation
-        password_validation.validate_password(password, user)
+        try:
+            password_validation.validate_password(password, user)
+        except DjangoValidationError as error:
+            raise ValidationError({"password": error.messages})
         user.set_password(password)
         user.save(update_fields=["password"])
         return Response({"detail": "Password updated."})
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class InvitationAcceptView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -180,6 +192,8 @@ class InvitationAcceptView(APIView):
             email=invitation.email,
             defaults={"is_active": False, "role": User.Role.CLIENT},
         )
+        if user.is_active or user.role != User.Role.CLIENT:
+            return Response({"detail": "This account is already active. Please sign in or reset your password."}, status=400)
         user.first_name = serializer.validated_data["first_name"]
         user.last_name = serializer.validated_data["last_name"]
         user.is_active = True
@@ -190,9 +204,25 @@ class InvitationAcceptView(APIView):
         invitation.project.save(update_fields=["client", "updated_at"])
         invitation.accepted_at = timezone.now()
         invitation.save(update_fields=["accepted_at"])
+        Appointment.objects.filter(email__iexact=user.email, client__isnull=True).update(client=user)
         login(request, user)
         audit(request, "invitation.accept", invitation)
         return Response({"user": UserSerializer(user).data})
+
+
+class ProfileView(APIView):
+    def get(self, request):
+        return Response(UserSerializer(request.user).data)
+
+    def patch(self, request):
+        allowed = {"first_name", "last_name", "company", "phone"}
+        if set(request.data) - allowed:
+            raise ValidationError("Only name, company, and phone can be edited here.")
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        audit(request, "profile.update", request.user)
+        return Response(serializer.data)
 
 
 class PublicBriefCreateView(generics.CreateAPIView):
@@ -201,24 +231,27 @@ class PublicBriefCreateView(generics.CreateAPIView):
     throttle_classes = [PublicFormThrottle]
     serializer_class = PublicBriefCreateSerializer
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
+        key = request.data.get("idempotency_key")
+        existing = ProjectBrief.objects.filter(idempotency_key=key, deleted_at__isnull=True).first() if key else None
+        if existing:
+            return Response({"id": str(existing.pk), "upload_token": issue_token("upload", existing.pk)})
+        verify_form_guard(request)
         if not verify_turnstile(request.data.get("turnstile_token"), client_ip(request)):
             return Response({"detail": "Please complete the security check."}, status=400)
-        key = request.data.get("idempotency_key")
-        existing = ProjectBrief.objects.filter(idempotency_key=key).first() if key else None
-        if existing:
-            return Response(ProjectBriefSerializer(existing).data)
-        response = super().create(request, *args, **kwargs)
-        brief = ProjectBrief.objects.get(pk=response.data["id"])
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            with transaction.atomic():
+                brief = serializer.save()
+        except IntegrityError:
+            brief = ProjectBrief.objects.get(idempotency_key=key, deleted_at__isnull=True)
+            return Response({"id": str(brief.pk), "upload_token": issue_token("upload", brief.pk)})
         audit(request, "brief.create", brief)
-        send_mail(
-            f"New project brief: {brief.company}",
-            f"{brief.name} submitted a new project brief. Review it at {settings.FRONTEND_URL}/dashboard.",
-            None,
-            [settings.ADMIN_NOTIFICATION_EMAIL],
-            fail_silently=True,
-        )
-        return response
+        queue_email("New project brief", f"A new brief is ready to review at {settings.FRONTEND_URL}/dashboard.", [settings.ADMIN_NOTIFICATION_EMAIL])
+        queue_email("Thanks for sharing your project", "Your project brief reached Cartez. He will review it and reply personally. You can also request a free consultation at " + settings.FRONTEND_URL + "/#book", [brief.email])
+        return Response({"id": str(brief.pk), "upload_token": issue_token("upload", brief.pk)}, status=201)
 
 
 class AvailabilityView(APIView):
@@ -243,36 +276,69 @@ class AvailabilityView(APIView):
 
 class PublicAppointmentCreateView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
-    authentication_classes = []
     throttle_classes = [PublicFormThrottle]
     serializer_class = PublicAppointmentSerializer
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        if not verify_turnstile(request.data.get("turnstile_token"), client_ip(request)):
-            return Response({"detail": "Please complete the security check."}, status=400)
         key = request.data.get("idempotency_key")
         existing = Appointment.objects.filter(idempotency_key=key).first() if key else None
         if existing:
-            return Response(AppointmentSerializer(existing).data)
+            return Response({"id": str(existing.pk), "status": existing.status, "manage_token": issue_token("appointment", existing.pk)})
+        verify_form_guard(request)
+        if not verify_turnstile(request.data.get("turnstile_token"), client_ip(request)):
+            return Response({"detail": "Please complete the security check."}, status=400)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        starts_at = serializer.validated_data["starts_at"]
-        if starts_at not in available_starts(starts_at.astimezone(ZoneInfo("America/New_York")).date()):
-            return Response({"starts_at": ["That time is no longer available."]}, status=409)
+        data = dict(serializer.validated_data)
+        data.pop("turnstile_token", None)
+        if request.user.is_authenticated:
+            data.update(client=request.user, email=request.user.email)
         try:
-            appointment = serializer.save()
+            with transaction.atomic():
+                appointment = save_appointment(data)
         except IntegrityError:
-            return Response({"starts_at": ["That time is no longer available."]}, status=409)
+            existing = Appointment.objects.filter(idempotency_key=key).first()
+            if existing:
+                return Response({"id": str(existing.pk), "status": existing.status, "manage_token": issue_token("appointment", existing.pk)})
+            return Response({"detail": "That time is no longer available."}, status=409)
         audit(request, "appointment.create", appointment)
-        send_mail(
-            "New consultation request",
-            f"{appointment.first_name} {appointment.last_name} requested {appointment.starts_at}.",
-            None,
-            [settings.ADMIN_NOTIFICATION_EMAIL],
-            fail_silently=True,
-        )
-        return Response(AppointmentSerializer(appointment).data, status=201)
+        return Response({"id": str(appointment.pk), "status": appointment.status, "manage_token": issue_token("appointment", appointment.pk)}, status=201)
+
+
+class GuestAppointmentView(APIView):
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def appointment(self, request, pk):
+        require_token(request.query_params.get("token") or request.data.get("token"), "appointment", pk, 90 * 86400)
+        return get_object_or_404(Appointment, pk=pk, deleted_at__isnull=True)
+
+    def get(self, request, pk):
+        appointment = self.appointment(request, pk)
+        if request.query_params.get("download") == "calendar":
+            response = HttpResponse(calendar_text(appointment), content_type="text/calendar")
+            response["Content-Disposition"] = 'attachment; filename="consultation.ics"'
+            response["Cache-Control"] = "private, no-store"
+            return response
+        return Response({key: value for key, value in AppointmentSerializer(appointment).data.items()
+                         if key in ["id", "first_name", "last_name", "starts_at", "ends_at", "status"]})
+
+    @transaction.atomic
+    def post(self, request, pk):
+        appointment = self.appointment(request, pk)
+        if appointment.starts_at <= timezone.now() or appointment.status in ["cancelled", "completed"]:
+            raise ValidationError("This appointment can no longer be changed online. Please contact Cartez.")
+        if request.data.get("action") == "cancel":
+            data = {"status": "cancelled"}
+        elif request.data.get("action") == "reschedule":
+            from rest_framework.fields import DateTimeField
+            data = {"starts_at": DateTimeField().run_validation(request.data.get("starts_at")), "status": "pending"}
+        else:
+            raise ValidationError("Choose cancel or reschedule.")
+        appointment = save_appointment(data, appointment)
+        audit(request, "appointment.guest_update", appointment)
+        return Response({"id": str(appointment.pk), "status": appointment.status})
 
 
 class AdminBriefViewSet(viewsets.ModelViewSet):
@@ -289,7 +355,7 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     @transaction.atomic
     def invite(self, request, pk=None):
-        brief = self.get_object()
+        brief = ProjectBrief.objects.select_for_update().get(pk=self.get_object().pk)
         email = brief.email.lower()
         user, created = User.objects.get_or_create(
             email=email,
@@ -302,11 +368,13 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
                 "phone": brief.phone,
             },
         )
+        if user.role != User.Role.CLIENT:
+            raise ValidationError("Use a client email address for the project invitation.")
         project, project_created = Project.objects.get_or_create(
             brief=brief,
             defaults={
                 "client": user,
-                "name": request.data.get("project_name") or f"{brief.company} website",
+                "name": request.data.get("project_name") or f"{brief.company or brief.name} website",
                 "target_launch_date": brief.launch_date,
             },
         )
@@ -325,24 +393,22 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
         brief.status = ProjectBrief.Status.ACCEPTED
         brief.save(update_fields=["client", "status", "updated_at"])
         if not created and user.is_active:
-            send_mail(
+            queue_email(
                 "A project was added to your Marc-D portal",
                 f"Sign in to view {project.name}: {settings.FRONTEND_URL}/sign-in",
-                None,
                 [email],
             )
             audit(request, "client.project_link", project)
-            return Response({"detail": "Existing client notified.", "project": ProjectSerializer(project).data})
+            return Response({"detail": "Portal access email queued for delivery.", "project": ProjectSerializer(project).data})
         invitation, raw = Invitation.issue(email=email, invited_by=request.user, project=project)
         url = f"{settings.FRONTEND_URL}/accept-invitation?token={raw}"
-        send_mail(
+        queue_email(
             "Your Marc-D client portal invitation",
             f"Set up your client portal within 48 hours: {url}",
-            None,
             [email],
         )
         audit(request, "client.invite", invitation, {"project_id": str(project.id)})
-        return Response({"detail": "Invitation sent.", "project": ProjectSerializer(project).data})
+        return Response({"detail": "Invitation queued for delivery.", "project": ProjectSerializer(project).data})
 
 
 class AdminProjectViewSet(viewsets.ModelViewSet):
@@ -362,12 +428,10 @@ class AdminProjectViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         audit(request, "project.status", project, {"status": project.status})
-        send_mail(
+        queue_email(
             f"{project.name} status update",
             f"Your project is now in {project.get_status_display()}. View details: {settings.FRONTEND_URL}/dashboard",
-            None,
             [project.client.email],
-            fail_silently=True,
         )
         return Response(ProjectSerializer(project).data)
 
@@ -406,32 +470,38 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return queryset if self.request.user.is_admin else queryset.filter(client=self.request.user)
 
     def perform_create(self, serializer):
-        starts_at = serializer.validated_data["starts_at"]
-        if starts_at not in available_starts(starts_at.astimezone(ZoneInfo("America/New_York")).date()):
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError({"starts_at": "That time is no longer available."})
-        requested_client = serializer.validated_data.pop("client", None)
-        serializer.save(
-            client=requested_client if self.request.user.is_admin else self.request.user,
-            ends_at=starts_at + timedelta(minutes=30),
-            idempotency_key=str(uuid.uuid4()),
-        )
+        data = dict(serializer.validated_data)
+        requested_client = data.pop("client", None)
+        data["client"] = requested_client if self.request.user.is_admin else self.request.user
+        if not self.request.user.is_admin:
+            data.update(email=self.request.user.email, status="pending")
+        data["idempotency_key"] = str(uuid.uuid4())
+        serializer.instance = save_appointment(data)
+        audit(self.request, "appointment.create", serializer.instance)
 
     def perform_update(self, serializer):
-        starts_at = serializer.validated_data.get("starts_at", serializer.instance.starts_at)
-        if starts_at != serializer.instance.starts_at:
-            slots = available_starts(starts_at.astimezone(ZoneInfo("America/New_York")).date())
-            if starts_at not in slots:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError({"starts_at": "That time is no longer available."})
-        appointment = serializer.save(ends_at=starts_at + timedelta(minutes=30))
-        audit(self.request, "appointment.update", appointment)
+        data = dict(serializer.validated_data)
+        if not self.request.user.is_admin:
+            if serializer.instance.starts_at <= timezone.now() or serializer.instance.status in ["cancelled", "completed"]:
+                raise ValidationError("This consultation can no longer be changed online. Please contact Cartez.")
+            data.pop("client", None)
+            data["email"] = self.request.user.email
+            if "starts_at" in data and data["starts_at"] != serializer.instance.starts_at:
+                data["status"] = "pending"
+        serializer.instance = save_appointment(data, serializer.instance)
+        audit(self.request, "appointment.update", serializer.instance)
 
     def perform_destroy(self, instance):
-        instance.status = Appointment.Status.CANCELLED
-        instance.deleted_at = timezone.now()
-        instance.save(update_fields=["status", "deleted_at", "updated_at"])
+        if not self.request.user.is_admin and (instance.starts_at <= timezone.now() or instance.status in ["cancelled", "completed"]):
+            raise ValidationError("This consultation can no longer be changed online. Please contact Cartez.")
+        save_appointment({"status": "cancelled"}, instance)
         audit(self.request, "appointment.cancel", instance)
+
+    @action(detail=True, methods=["get"])
+    def calendar(self, request, pk=None):
+        response = HttpResponse(calendar_text(self.get_object()), content_type="text/calendar")
+        response["Content-Disposition"] = 'attachment; filename="consultation.ics"'
+        return response
 
 
 class ConversationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -441,7 +511,7 @@ class ConversationViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = Conversation.objects.select_related(
             "project", "project__client"
         ).prefetch_related("messages").order_by("-updated_at")
-        return queryset if self.request.user.is_admin else queryset.filter(project__client=self.request.user)
+        return queryset if self.request.user.is_admin else queryset.filter(project__client=self.request.user, project__deleted_at__isnull=True)
 
     @action(detail=True, methods=["post"])
     def messages(self, request, pk=None):
@@ -457,12 +527,10 @@ class ConversationViewSet(viewsets.ReadOnlyModelViewSet):
             else User.objects.filter(role=User.Role.ADMIN, is_active=True).values_list("email", flat=True).first()
         )
         if recipient:
-            send_mail(
+            queue_email(
                 f"New message: {conversation.subject}",
                 f"A new portal message is waiting at {settings.FRONTEND_URL}/dashboard/messages.",
-                None,
                 [recipient],
-                fail_silently=True,
             )
         return Response(MessageSerializer(message).data, status=201)
 
@@ -479,90 +547,9 @@ class AssetViewSet(
         queryset = Asset.objects.filter(deleted_at__isnull=True, uploaded=True)
         if self.request.user.is_admin:
             return queryset
-        return queryset.filter(models.Q(owner=self.request.user) | models.Q(project__client=self.request.user))
+        return queryset.filter(models.Q(owner=self.request.user) | models.Q(project__client=self.request.user, project__deleted_at__isnull=True) | models.Q(brief__client=self.request.user, brief__deleted_at__isnull=True))
 
     def perform_destroy(self, instance):
         instance.deleted_at = timezone.now()
         instance.save(update_fields=["deleted_at", "updated_at"])
         audit(self.request, "asset.archive", instance)
-
-
-class AssetPrepareView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        group = request.data.get("group")
-        content_type = request.data.get("content_type")
-        size = int(request.data.get("size", 0))
-        original_name = str(request.data.get("name", ""))[:255]
-        brief = None
-        project = None
-        owner = request.user if request.user.is_authenticated else None
-
-        allowed_extensions = {
-            "image/jpeg": {".jpg", ".jpeg"},
-            "image/png": {".png"},
-            "image/webp": {".webp"},
-            "application/pdf": {".pdf"},
-        }
-        extension = "." + original_name.rsplit(".", 1)[-1].lower() if "." in original_name else ""
-        if content_type not in allowed_extensions or extension not in allowed_extensions.get(content_type, set()):
-            return Response({"detail": "Unsupported file type."}, status=400)
-        if size <= 0 or size > settings.MAX_UPLOAD_FILE_BYTES:
-            return Response({"detail": "Files must be 5 MB or smaller."}, status=400)
-
-        if request.user.is_authenticated:
-            project_id = request.data.get("project")
-            project = get_object_or_404(Project, pk=project_id, deleted_at__isnull=True)
-            if not request.user.is_admin and project.client_id != request.user.id:
-                return Response(status=403)
-            if group not in {Asset.Group.PROJECT, Asset.Group.MESSAGE}:
-                return Response({"detail": "Invalid project asset group."}, status=400)
-        else:
-            brief = get_object_or_404(ProjectBrief, pk=request.data.get("brief"))
-            if brief.idempotency_key != request.data.get("idempotency_key"):
-                return Response(status=403)
-            if group not in {Asset.Group.INSPIRATION, Asset.Group.BRAND}:
-                return Response({"detail": "Invalid brief asset group."}, status=400)
-            group_assets = brief.assets.filter(group=group, deleted_at__isnull=True)
-            if group_assets.count() >= settings.MAX_UPLOAD_FILES_PER_GROUP:
-                return Response({"detail": "No more than 12 files are allowed per group."}, status=400)
-            total_bytes = (
-                brief.assets.filter(deleted_at__isnull=True).aggregate(total=models.Sum("size"))["total"] or 0
-            )
-            if total_bytes + size > settings.MAX_BRIEF_UPLOAD_BYTES:
-                return Response({"detail": "Combined brief uploads cannot exceed 25 MB."}, status=400)
-
-        object_name = f"{'projects' if project else 'briefs'}/{project.pk if project else brief.pk}/{uuid.uuid4()}"
-        asset = Asset.objects.create(
-            owner=owner,
-            brief=brief,
-            project=project,
-            group=group,
-            object_name=object_name,
-            original_name=original_name,
-            content_type=content_type,
-            size=size,
-        )
-        return Response({"asset": AssetSerializer(asset).data, "upload_url": signed_upload_url(asset)}, status=201)
-
-
-class AssetFinalizeView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request, pk):
-        asset = get_object_or_404(Asset, pk=pk, deleted_at__isnull=True)
-        if request.user.is_authenticated:
-            project = asset.project
-            if not request.user.is_admin and (not project or project.client_id != request.user.id):
-                return Response(status=403)
-        elif not asset.brief or asset.brief.idempotency_key != request.data.get("idempotency_key"):
-            return Response(status=403)
-        valid, message = validate_uploaded_blob(asset)
-        if not valid:
-            asset.delete()
-            return Response({"detail": message}, status=400)
-        asset.uploaded = True
-        asset.save(update_fields=["uploaded", "updated_at"])
-        audit(request, "asset.finalize", asset)
-        return Response(AssetSerializer(asset).data)

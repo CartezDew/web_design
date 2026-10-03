@@ -20,3 +20,15 @@ class Message(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+
+
+class EmailDelivery(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    recipients = models.JSONField(default=list)
+    calendar = models.TextField(blank=True)
+    attempts = models.PositiveIntegerField(default=0)
+    last_error = models.CharField(max_length=100, blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

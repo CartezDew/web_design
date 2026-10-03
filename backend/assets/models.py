@@ -25,6 +25,7 @@ class Asset(SoftDeleteModel, TimeStampedModel):
     content_type = models.CharField(max_length=100)
     size = models.PositiveIntegerField()
     uploaded = models.BooleanField(default=False)
+    request_key = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]

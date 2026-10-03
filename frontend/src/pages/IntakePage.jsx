@@ -23,7 +23,13 @@ import {
   validContactEmail,
 } from "../components/LeadContactContext";
 import FilePicker from "../components/FilePicker";
-import { apiRequest, uploadAsset, releaseAsset } from "../api";
+import {
+  apiRequest,
+  uploadAsset,
+  releaseAsset,
+  preparePublicForm,
+} from "../api";
+import FormSpamTrap from "../components/FormSpamTrap";
 import Reveal from "../Reveal";
 import IntakeModal from "../components/IntakeModal";
 import {
@@ -77,6 +83,10 @@ export default function IntakePage({
   const [token, setToken] = useState("");
   const key = useRef("");
   const challenge = useRef(null);
+  const spamTrap = useRef(null);
+  useEffect(() => {
+    preparePublicForm().catch(() => {});
+  }, []);
   const heading = useRef(null);
   const errorHeading = useRef(null);
   useEffect(() => {
@@ -136,6 +146,7 @@ export default function IntakePage({
             ...buildBriefPayload(form),
             idempotency_key: key.current,
             turnstile_token: token,
+            contact_fax: spamTrap.current?.value || "",
           }),
         });
         setBrief(saved);
@@ -279,6 +290,7 @@ export default function IntakePage({
             }
           </p>
           <form className="form-stack" onSubmit={send}>
+            <FormSpamTrap inputRef={spamTrap} />
             {error && (
               <div ref={errorHeading} tabIndex="-1" className="intake-error">
                 <Notice error={error} />

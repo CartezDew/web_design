@@ -66,3 +66,8 @@ class Appointment(SoftDeleteModel, TimeStampedModel):
             ),
             models.CheckConstraint(condition=Q(ends_at__gt=models.F("starts_at")), name="appointment_end_after_start"),
         ]
+
+
+class BookingLock(models.Model):
+    """Singleton row used to serialize bookings for the one-consultant calendar."""
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1)

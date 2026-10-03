@@ -14,6 +14,5 @@ fi
 export DATABASE_URL="${MIGRATION_DATABASE_URL}"
 export ALLOW_PRODUCTION_MIGRATIONS=yes
 python manage.py migrate --noinput
-python manage.py seed_availability
 unset ALLOW_PRODUCTION_MIGRATIONS
 unset DATABASE_URL

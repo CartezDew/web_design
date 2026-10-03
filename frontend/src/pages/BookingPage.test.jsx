@@ -12,7 +12,11 @@ import BookingPage, { ManageBooking } from "./BookingPage";
 import { apiRequest } from "../api";
 import { consultationDate, formatConsultation } from "../content/scheduling";
 
-vi.mock("../api", () => ({ apiRequest: vi.fn(), API_BASE: "/api/v1" }));
+vi.mock("../api", () => ({
+  apiRequest: vi.fn(),
+  preparePublicForm: vi.fn().mockResolvedValue(),
+  API_BASE: "/api/v1",
+}));
 vi.mock("../Reveal", () => ({
   default: ({ as: Element = "div", children, delay, ...props }) => (
     <Element {...props}>{children}</Element>

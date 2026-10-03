@@ -1,17 +1,52 @@
 [build]
   base = "frontend"
   command = "npm run build"
-  publish = "dist"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/dashboard"
+  to = "/__spa-fallback.html"
   status = 200
+[[redirects]]
+  from = "/dashboard/*"
+  to = "/__spa-fallback.html"
+  status = 200
+[[redirects]]
+  from = "/sign-in"
+  to = "/__spa-fallback.html"
+  status = 200
+[[redirects]]
+  from = "/reset-password"
+  to = "/__spa-fallback.html"
+  status = 200
+[[redirects]]
+  from = "/accept-invitation"
+  to = "/__spa-fallback.html"
+  status = 200
+[[redirects]]
+  from = "/book/manage"
+  to = "/__spa-fallback.html"
+  status = 200
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404
 
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+    Referrer-Policy = "no-referrer"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     X-Frame-Options = "DENY"
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+[[headers]]
+  for = "/dashboard/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "api.middleware.PrivateApiResponseMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -109,6 +110,9 @@ CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_DOMAIN = env("CSRF_COOKIE_DOMAIN", default=None)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=DJANGO_ENV == "production")
+# Railway probes this one database readiness endpoint over internal HTTP.
+# All client, authentication, and admin endpoints still require HTTPS.
+SECURE_REDIRECT_EXEMPT = [r"^api/v1/health/$"]
 SECURE_HSTS_SECONDS = 31536000 if DJANGO_ENV == "production" else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = DJANGO_ENV == "production"
 SECURE_HSTS_PRELOAD = DJANGO_ENV == "production"
@@ -131,8 +135,8 @@ REST_FRAMEWORK = {
 }
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Marc-D Group <noreply@marcdbycartez.com>")
-ADMIN_NOTIFICATION_EMAIL = env("ADMIN_NOTIFICATION_EMAIL", default="info@marcdbycartez.com")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Cartez Dewberry <letsbuild@marcdbycartez.com>")
+ADMIN_NOTIFICATION_EMAIL = env("ADMIN_NOTIFICATION_EMAIL", default="letsbuild@marcdbycartez.com")
 EMAIL_BACKEND = (
     "anymail.backends.resend.EmailBackend"
     if env("RESEND_API_KEY", default="")
@@ -143,10 +147,25 @@ ANYMAIL = {"RESEND_API_KEY": env("RESEND_API_KEY", default="")}
 GOOGLE_CLOUD_PROJECT = env("GOOGLE_CLOUD_PROJECT", default="")
 GS_BUCKET_NAME = env("GS_BUCKET_NAME", default="")
 GS_CREDENTIALS_JSON = env("GS_CREDENTIALS_JSON", default="")
+UPLOAD_STORAGE_BACKEND = env("UPLOAD_STORAGE_BACKEND", default="gcs")
+S3_ENDPOINT_URL = env("S3_ENDPOINT_URL", default="")
+S3_BUCKET_NAME = env("S3_BUCKET_NAME", default="")
+S3_REGION = env("S3_REGION", default="auto")
+S3_ACCESS_KEY_ID = env("S3_ACCESS_KEY_ID", default="")
+S3_SECRET_ACCESS_KEY = env("S3_SECRET_ACCESS_KEY", default="")
+S3_ADDRESSING_STYLE = env("S3_ADDRESSING_STYLE", default="virtual")
+S3_BACKUP_ENDPOINT_URL = env("S3_BACKUP_ENDPOINT_URL", default="")
+S3_BACKUP_BUCKET_NAME = env("S3_BACKUP_BUCKET_NAME", default="")
+S3_BACKUP_REGION = env("S3_BACKUP_REGION", default="auto")
+S3_BACKUP_ACCESS_KEY_ID = env("S3_BACKUP_ACCESS_KEY_ID", default="")
+S3_BACKUP_SECRET_ACCESS_KEY = env("S3_BACKUP_SECRET_ACCESS_KEY", default="")
+UPLOAD_BACKUP_REQUIRED = env.bool("UPLOAD_BACKUP_REQUIRED", default=DJANGO_ENV == "production")
 TURNSTILE_SECRET_KEY = env("TURNSTILE_SECRET_KEY", default="")
 TURNSTILE_REQUIRED = env.bool("TURNSTILE_REQUIRED", default=DJANGO_ENV == "production")
+NATIVE_FORM_PROTECTION = env.bool("NATIVE_FORM_PROTECTION", default=False)
+TRUST_RAILWAY_PROXY = env.bool("TRUST_RAILWAY_PROXY", default=False)
 
-MAX_UPLOAD_FILES_PER_GROUP = 12
+MAX_UPLOAD_FILES = 12
 MAX_UPLOAD_FILE_BYTES = 5 * 1024 * 1024
 MAX_BRIEF_UPLOAD_BYTES = 25 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024

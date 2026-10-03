@@ -7,8 +7,6 @@ from api.views import (
     AdminUserViewSet,
     AppointmentViewSet,
     AssetViewSet,
-    AssetFinalizeView,
-    AssetPrepareView,
     AvailabilityOverrideViewSet,
     AvailabilityRuleViewSet,
     AvailabilityView,
@@ -22,7 +20,11 @@ from api.views import (
     PublicAppointmentCreateView,
     PublicBriefCreateView,
     SessionView,
+    ProfileView,
+    GuestAppointmentView,
 )
+
+from api.uploads import AssetPrepareView, AssetFinalizeView, AssetReleaseView
 
 router = DefaultRouter()
 router.register("projects", ClientProjectViewSet, basename="projects")
@@ -38,6 +40,7 @@ router.register("admin/availability-overrides", AvailabilityOverrideViewSet, bas
 urlpatterns = [
     path("health/", HealthView.as_view()),
     path("auth/csrf/", CsrfView.as_view()),
+    path("auth/profile/", ProfileView.as_view()),
     path("auth/session/", SessionView.as_view()),
     path("auth/password-reset/", PasswordResetRequestView.as_view()),
     path("auth/password-reset/confirm/", PasswordResetConfirmView.as_view()),
@@ -45,6 +48,8 @@ urlpatterns = [
     path("public/briefs/", PublicBriefCreateView.as_view()),
     path("public/availability/", AvailabilityView.as_view()),
     path("public/appointments/", PublicAppointmentCreateView.as_view()),
+    path("public/appointments/<uuid:pk>/manage/", GuestAppointmentView.as_view()),
+    path("assets/<uuid:pk>/release/", AssetReleaseView.as_view()),
     path("assets/prepare/", AssetPrepareView.as_view()),
     path("assets/<uuid:pk>/finalize/", AssetFinalizeView.as_view()),
     path("", include(router.urls)),

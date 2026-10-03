@@ -8,7 +8,8 @@ import {
   validContactEmail,
 } from "../components/LeadContactContext";
 import { Field, Notice } from "../components/Controls";
-import { API_BASE, apiRequest } from "../api";
+import { API_BASE, apiRequest, preparePublicForm } from "../api";
+import FormSpamTrap from "../components/FormSpamTrap";
 import consultingMeeting from "../../assets/websites/consulting_meeting.webp";
 import ConsultationDatePicker from "../components/ConsultationDatePicker";
 import Reveal from "../Reveal";
@@ -176,6 +177,10 @@ export default function BookingPage() {
   const [refresh, setRefresh] = useState(0);
   const key = useRef("");
   const challenge = useRef(null);
+  const spamTrap = useRef(null);
+  useEffect(() => {
+    preparePublicForm().catch(() => {});
+  }, []);
   const requiredErrors = {
     ...(!slot && { slot: "Choose an available date and time." }),
     ...(!form.first_name.trim() && { first_name: "Enter your first name." }),
@@ -211,6 +216,7 @@ export default function BookingPage() {
           starts_at: slot,
           idempotency_key: key.current,
           turnstile_token: token,
+          contact_fax: spamTrap.current?.value || "",
         }),
       });
       setSaved(data);
@@ -303,6 +309,7 @@ export default function BookingPage() {
             noValidate
             aria-busy={working}
           >
+            <FormSpamTrap inputRef={spamTrap} />
             {attempted && !ready && (
               <div
                 className="notice notice--error booking-validation"

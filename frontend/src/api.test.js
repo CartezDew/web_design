@@ -6,6 +6,38 @@ afterEach(() => {
 });
 
 describe("apiRequest", () => {
+  it("shares the prefetched guard and preserves the spam trap value on public submits", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            csrfToken: "csrf",
+            formGuard: {
+              token: "signed-form-guard",
+              waitMs: 0,
+              maxAgeMs: 7200000,
+            },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "saved" }), { status: 201 }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    const { preparePublicForm, apiRequest } = await import("./api");
+    await Promise.all([preparePublicForm(), preparePublicForm()]);
+    await apiRequest("/public/briefs/", {
+      method: "POST",
+      body: JSON.stringify({ contact_fax: "", name: "Alex" }),
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({
+      name: "Alex",
+      contact_fax: "",
+      form_guard: "signed-form-guard",
+    });
+  });
   it("does not report a successful save when hosting returns an HTML fallback", async () => {
     vi.stubGlobal(
       "fetch",

@@ -4,6 +4,9 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(
 );
 let csrfToken = "";
 let csrfRequest = null;
+let formGuard = null;
+let guardReadyAt = 0;
+let guardExpiresAt = 0;
 export class ApiError extends Error {
   constructor(message, status, details) {
     super(message);
@@ -15,6 +18,7 @@ export class ApiError extends Error {
 export function resetCsrf() {
   csrfToken = "";
   csrfRequest = null;
+  formGuard = null;
 }
 async function getCsrfToken() {
   if (csrfToken) return csrfToken;
@@ -26,13 +30,20 @@ async function getCsrfToken() {
             "Unable to start a secure session. Please try again.",
             response.status,
           );
-        csrfToken = (await response.json()).csrfToken;
+        const session = await response.json();
+        csrfToken = session.csrfToken;
+        formGuard = session.formGuard;
+        guardReadyAt = Date.now() + (formGuard?.waitMs || 0);
+        guardExpiresAt = Date.now() + (formGuard?.maxAgeMs || 0) - 5000;
         return csrfToken;
       })
       .finally(() => {
         csrfRequest = null;
       });
   return csrfRequest;
+}
+export function preparePublicForm() {
+  return getCsrfToken();
 }
 function errorMessage(details) {
   if (typeof details === "string") return details;
@@ -52,8 +63,25 @@ export async function apiRequest(path, options = {}) {
   const method = options.method || "GET";
   const headers = new Headers(options.headers || {});
   try {
+    const publicSubmission =
+      method.toUpperCase() === "POST" &&
+      ["/public/briefs/", "/public/appointments/"].includes(path);
+    if (publicSubmission && formGuard && Date.now() >= guardExpiresAt)
+      resetCsrf();
     if (!["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase()))
       headers.set("X-CSRFToken", await getCsrfToken());
+    if (publicSubmission && formGuard) {
+      const remaining = guardReadyAt - Date.now();
+      if (remaining > 0)
+        await new Promise((resolve) => setTimeout(resolve, remaining));
+      options = {
+        ...options,
+        body: JSON.stringify({
+          ...JSON.parse(options.body || "{}"),
+          form_guard: formGuard.token,
+        }),
+      };
+    }
     if (
       options.body &&
       !(options.body instanceof FormData) &&

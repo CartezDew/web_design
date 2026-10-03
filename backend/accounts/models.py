@@ -13,7 +13,7 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email is required")
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).strip().lower()
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -74,3 +74,9 @@ class Invitation(models.Model):
 
     def is_valid(self):
         return self.accepted_at is None and self.expires_at > timezone.now()
+
+
+class RequestLimit(models.Model):
+    key = models.CharField(max_length=64, primary_key=True)
+    window = models.DateTimeField()
+    count = models.PositiveIntegerField(default=0)

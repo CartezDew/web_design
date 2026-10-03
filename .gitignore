@@ -20,3 +20,6 @@ backend/.venv/
 # Editor
 .vscode/
 .idea/
+
+# React Router generated types
+frontend/.react-router/

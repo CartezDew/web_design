@@ -5,14 +5,14 @@ The React site lives in `frontend/` and deploys to Netlify. Django lives in `bac
 - `https://marcdbycartez.com` and `https://www.marcdbycartez.com` for React
 - `https://api.marcdbycartez.com` for Django
 - Railway PostgreSQL for application records
-- a private Google Cloud Storage bucket for uploaded files
+- a private Railway storage bucket for uploaded files, plus a separate private file backup bucket
 - Resend for invitations, resets, messages, and status notifications
 
 Never paste production secrets into source files, chat prompts, screenshots, or terminal commands that will be committed.
 
 ## 1. Run locally
 
-Requirements: Node 20+, Python 3.11+, and PostgreSQL 15+.
+Requirements: Node 22+, Python 3.11+, and PostgreSQL 15+.
 
 ```bash
 cp frontend/.env.example frontend/.env
@@ -22,7 +22,6 @@ python3 -m venv backend/.venv
 source backend/.venv/bin/activate
 pip install -r backend/requirements.txt
 python backend/manage.py migrate
-python backend/manage.py seed_availability
 python backend/manage.py createsuperuser
 python backend/manage.py runserver
 ```
@@ -40,7 +39,7 @@ Open `http://localhost:5173`. Django is at `http://localhost:8000`; the emergenc
 1. Create a Railway project and add PostgreSQL.
 2. Add a service from this Git repository.
 3. Set its root directory to `backend`.
-4. Railway reads `backend/railway.json`; it runs `bin/release.sh` before deployment and `bin/start.sh` for the web process.
+4. Set the commands directly in Railway Settings: pre-deploy `bash bin/release.sh`, start `bash bin/start.sh`, health check `/api/v1/health/`. This service does not load `backend/railway.json`. Migrations run during pre-deploy; static assets are collected during startup because Railway does not persist the pre-deploy container’s filesystem into the running app.
 5. Generate a Railway domain initially, then add `api.marcdbycartez.com` as a custom domain.
 6. At the DNS provider for `marcdbycartez.com`, create the CNAME Railway displays.
 7. Wait for Railway TLS to become active before enabling the frontend production API URL.
@@ -91,44 +90,53 @@ DEBUG=false
 SECRET_KEY=<generated 50+ character secret>
 DATABASE_URL=<runtime PostgreSQL URL>
 MIGRATION_DATABASE_URL=<migration PostgreSQL URL>
-ALLOWED_HOSTS=api.marcdbycartez.com
+ALLOWED_HOSTS=api.marcdbycartez.com,webdesign-production-9e10.up.railway.app,healthcheck.railway.app
 CORS_ALLOWED_ORIGINS=https://marcdbycartez.com,https://www.marcdbycartez.com
 CSRF_TRUSTED_ORIGINS=https://marcdbycartez.com,https://www.marcdbycartez.com
 CSRF_COOKIE_DOMAIN=.marcdbycartez.com
 FRONTEND_URL=https://marcdbycartez.com
 SECURE_SSL_REDIRECT=true
-DEFAULT_FROM_EMAIL=Marc-D Group <noreply@marcdbycartez.com>
-ADMIN_NOTIFICATION_EMAIL=info@marcdbycartez.com
+DEFAULT_FROM_EMAIL=Cartez Dewberry <letsbuild@marcdbycartez.com>
+ADMIN_NOTIFICATION_EMAIL=letsbuild@marcdbycartez.com
 RESEND_API_KEY=<Resend key>
-GOOGLE_CLOUD_PROJECT=<project id>
-GS_BUCKET_NAME=<private bucket name>
-GS_CREDENTIALS_JSON=<single-line service account JSON>
-TURNSTILE_SECRET_KEY=<Cloudflare secret>
-TURNSTILE_REQUIRED=true
+UPLOAD_STORAGE_BACKEND=s3
+UPLOAD_BACKUP_REQUIRED=true
+S3_ADDRESSING_STYLE=virtual
+S3_ENDPOINT_URL=${{client-uploads.ENDPOINT}}
+S3_BUCKET_NAME=${{client-uploads.BUCKET}}
+S3_REGION=${{client-uploads.REGION}}
+S3_ACCESS_KEY_ID=${{client-uploads.ACCESS_KEY_ID}}
+S3_SECRET_ACCESS_KEY=${{client-uploads.SECRET_ACCESS_KEY}}
+S3_BACKUP_ENDPOINT_URL=${{client-upload-backups.ENDPOINT}}
+S3_BACKUP_BUCKET_NAME=${{client-upload-backups.BUCKET}}
+S3_BACKUP_REGION=${{client-upload-backups.REGION}}
+S3_BACKUP_ACCESS_KEY_ID=${{client-upload-backups.ACCESS_KEY_ID}}
+S3_BACKUP_SECRET_ACCESS_KEY=${{client-upload-backups.SECRET_ACCESS_KEY}}
+NATIVE_FORM_PROTECTION=true
+TURNSTILE_REQUIRED=false
+# Optional future Turnstile setup:
+TURNSTILE_SECRET_KEY=
 ```
 
 After the first successful deployment:
 
 ```bash
-railway run python manage.py createsuperuser
+railway ssh --service web_design --environment production
+# Inside the Railway container, enter the admin password interactively:
+python manage.py createsuperuser
 ```
 
-Use your admin email. The custom dashboard is `/dashboard`; Django Admin is for emergency/internal maintenance.
+Use your admin email. The custom dashboard is `/dashboard`; Django Admin is a read-only inspection surface; use the portal for business changes.
 
-## 5. Google Cloud Storage
+## 5. Private Railway uploads
 
-1. Create a dedicated Google Cloud project and a regional bucket.
-2. Disable public access and enforce public-access prevention.
-3. Keep uniform bucket-level access enabled.
-4. Create a service account dedicated to this backend and grant object create/read/delete access only to this bucket.
-5. Create a JSON key, place the complete JSON into Railway's `GS_CREDENTIALS_JSON`, then store the downloaded key in a password manager and remove the local copy.
-6. Apply browser CORS:
+The production project has private `client-uploads` and `client-upload-backups` buckets in US East. Use the reference variables above; never copy their actual credentials into local scripts. Google Cloud and Cloudflare accounts are not required for file storage. Legacy GCS code remains available only for existing integrations.
 
-```bash
-gcloud storage buckets update gs://YOUR_BUCKET --cors-file=backend/gcs-cors.json
-```
+Contacts, URLs, project answers, appointments, messages, and file ownership metadata live in PostgreSQL. Image and PDF bytes live in the private upload bucket. Temporary signed PUT/GET links expire after ten minutes. The backend checks the stored length, declared type, magic bytes, and image decoding before copying the verified bytes to a new random `files/` key. The original upload link cannot overwrite the accepted file. A second copy with the same key must succeed in the private backup bucket before the database marks the asset uploaded.
 
-The database stores ownership, size, MIME type, and random object names. The bucket remains private. Upload and download links expire after ten minutes. Django confirms object size, MIME type, and magic bytes before marking an upload complete.
+Railway storage currently has no object versioning, lifecycle rules, or object locks. The second bucket protects against an accidental primary-object loss; it is not protection against compromise of the Railway project or both bucket credentials. No permanent deletion job is enabled. Pending/rejected uploads remain private and consume storage until an approved cleanup policy is implemented. Browser CORS is limited to the two site HTTPS origins and the localhost/127.0.0.1 development origins on port 5173. Real PNG and PDF signed uploads, verified backup bytes, authorized downloads, and denial of unsigned downloads were checked in Railway on October 2, 2026. The actual frontend intake flow must also be checked before launch.
+
+To recover a missing accepted file, look up its `object_name` in the asset record, read that exact key from `client-upload-backups`, and restore the bytes to the primary bucket without changing ownership or object names. Verify size/type and a checksum before declaring recovery complete. Recover PostgreSQL separately using PITR or a volume backup. Do not restore over production as a test.
 
 ## 6. Resend and Turnstile
 
@@ -139,11 +147,13 @@ In Resend:
 3. Create a restricted production API key.
 4. Confirm the `DEFAULT_FROM_EMAIL` sender uses the verified domain.
 
-In Cloudflare Turnstile:
+The current site uses built-in form protection: a signed, expiring form-start token, a one-second minimum form age, a hidden spam-trap field, and a shared PostgreSQL limit of ten public submissions per IP per hour. These are lightweight checks, not a CAPTCHA or a guarantee against sophisticated bots. Login has separate persistent limits. Keep `TRUST_RAILWAY_PROXY=true` only behind the Railway edge.
+
+If adding Cloudflare Turnstile later:
 
 1. Create a widget for `marcdbycartez.com`, `www.marcdbycartez.com`, and localhost for development.
 2. Put the secret in Railway as `TURNSTILE_SECRET_KEY`.
-3. Put the public site key in Netlify as `VITE_TURNSTILE_SITE_KEY`.
+3. Put the public site key in Netlify as `VITE_TURNSTILE_SITE_KEY`, and set `TURNSTILE_REQUIRED=true` in Railway only after both keys are configured.
 
 ## 7. Netlify
 
@@ -151,16 +161,17 @@ Create a Netlify site from the same repository. The root `netlify.toml` already 
 
 - Base directory: `frontend`
 - Build command: `npm run build`
-- Publish directory: `dist`
-- Node version: 20 or newer
+- Publish directory: `dist/client`
+- Node version: 22
 
-Leave the Netlify UI base directory set to `frontend` if it asks. The publish directory stays `dist`, relative to `frontend`.
+Leave the Netlify UI base directory set to `frontend` if it asks. The publish directory stays `dist/client`, relative to `frontend`.
 
 Set:
 
 ```text
 VITE_API_BASE_URL=https://api.marcdbycartez.com/api/v1
-VITE_TURNSTILE_SITE_KEY=<public site key>
+VITE_SITE_URL=https://marcdbycartez.com
+VITE_TURNSTILE_SITE_KEY=
 ```
 
 Add `marcdbycartez.com` and `www.marcdbycartez.com` as custom domains. `netlify.toml` provides SPA redirects so `/sign-in`, invitation links, password-reset links, and dashboard routes load directly.
@@ -184,21 +195,16 @@ Run these before deployment:
 ```bash
 npm --prefix frontend test
 npm --prefix frontend run build
-backend/.venv/bin/python backend/manage.py test api
+backend/.venv/bin/python backend/manage.py test api --settings=config.test_settings --noinput
 backend/.venv/bin/python backend/manage.py makemigrations --check --dry-run
 backend/.venv/bin/python backend/manage.py check
 ```
 
 ## 10. Backups and restore drills
 
-Enable Railway backups/PITR if the current plan supports them. Also schedule an encrypted daily logical backup from a trusted job:
+Railway PostgreSQL point-in-time recovery is enabled. Daily, weekly, and monthly volume snapshots are scheduled. A manual snapshot completed on October 2, 2026 at 22:54 Eastern (222 MB). The private PITR archive bucket is separate from both client-file buckets; do not repurpose it.
 
-```bash
-pg_dump "$MIGRATION_DATABASE_URL" --format=custom --no-owner --file="marcd-$(date +%F).dump"
-gcloud storage cp "marcd-$(date +%F).dump" gs://YOUR_PRIVATE_BACKUP_BUCKET/
-```
-
-Use a separate private backup bucket with retention/versioning and narrower credentials than the upload bucket. Never restore over production as a test. Restore into a new temporary database, run Django checks, compare record counts, verify a sample of briefs/projects/appointments, then destroy the temporary environment only after the drill is documented.
+Database backups cover records and asset references, not client-file bytes. Every newly accepted Railway upload is separately copied to `client-upload-backups` before being marked complete. Both copies are in the same Railway project and region. A restore drill into an isolated environment remains required before launch; never restore over production to test recovery. Check backups after schema deployments and after changing retention or storage settings.
 
 ## 11. Production smoke test
 
@@ -209,4 +215,46 @@ Use a separate private backup bucket with retention/versioning and narrower cred
 5. As the client, view only that client's project, upload an asset, send a message, and book/cancel an appointment.
 6. As admin, reply, change project status, block a date, and confirm the public calendar updates.
 7. Verify invitation, password-reset, message, and status emails in Resend.
-8. Confirm assets are private in GCS and only short-lived signed downloads work.
+8. Confirm assets are private in Railway and only short-lived signed downloads work.
+
+## Redesign additions (October 2026)
+
+The frontend now uses React Router prerendering. Netlify publishes **`dist/client`** with Node 22. The single public landing page has prerendered HTML, metadata, a canonical link, and a sitemap entry. Former public routes redirect to its section anchors. Private routes use `__spa-fallback.html` and `noindex`. Set `VITE_SITE_URL` to the verified public origin before building; the current `marcdbycartez.com` value is provisional. Keep the API on a subdomain of that same registrable domain so secure SameSite=Lax session cookies work. Netlify preview domains need their own same-site API proxy or a dedicated test setup; do not weaken production cookie settings to support them.
+
+The development Vite server proxies `/api` to `127.0.0.1:8000`, so leave `VITE_API_BASE_URL=/api/v1` locally. Run the frontend at `http://127.0.0.1:5173`. Add this exact origin to `CSRF_TRUSTED_ORIGINS` and `CORS_ALLOWED_ORIGINS` when using a directly addressed API. `npm --prefix frontend run preview` serves the actual built files at `http://127.0.0.1:4173`, including private-route fallbacks, and proxies local API requests. The preview server is only for local verification.
+
+### Upload limits and storage lifecycle
+
+An inquiry and all its linked project attachments share one quota: **12 active files, 5 MiB per file, 25 MiB combined**. The UI labels these limits MB. Accepted formats are JPG/JPEG, PNG, WebP, and PDF. Reservation retries reuse a UUID and do not consume a second slot. Pending reservations expire after 20 minutes. Upload and download URLs last 10 minutes; a guest intake upload token lasts one hour. Clients can continue adding files after accepting their invitation.
+
+The signed PUT requires the declared MIME type and exact content length. Finalization verifies the actual object size and signature; images also undergo decoding and a dimension check. The validated object generation is copied from `pending/` to an immutable random `files/` key. This prevents an unexpired PUT URL from overwriting an accepted file. Downloads are attachments, never public object URLs.
+
+Railway does not currently support native lifecycle rules. There is no pending-object cleanup job enabled. Soft-deleted accepted objects are retained until a separately approved retention/deletion process is defined. No permanent client-file deletion job is enabled. Verify browser CORS and signed content-length uploads against a staging bucket before launch, including Safari and a 5 MiB boundary file.
+
+### Calendar and email operations
+
+Business availability is entered in the admin portal in America/New_York. Public booking, email confirmations, guest booking management and client/admin portals all display Eastern time (EST/EDT), using America/New_York for daylight-saving changes. Visitors cannot select a different time zone. Calendar downloads preserve the correct appointment instant; calendar applications may display it in their own configured zone. There is a 60-day booking window and 30-minute consultation length. Pending requests reserve their slot, and the admin confirms them. Cancellations release slots. A signed 90-day management link lets a guest reschedule, cancel, or download an ICS entry. There is no Google/Outlook calendar sync. Admins must keep website availability aligned with their other commitments. Production deployment no longer seeds default hours.
+
+All invitation, password-reset, inquiry, message, project-status, and booking notifications use the `EmailDelivery` outbox. Configure a separate Railway cron service, rooted at `backend`, to run `python manage.py retry_emails` every five minutes. Give it the runtime database URL and email credentials; no migration credentials, web health check, or web start command. It exits after a bounded batch. Railway runs the configured start command on schedule; see [Railway cron documentation](https://docs.railway.com/cron-jobs). Monitor unsent rows and retry failures. After ten attempts, investigate before resetting attempts. A crash after the provider accepts a message but before the database records success can cause a duplicate; delivery is not exactly-once.
+
+Set `TRUST_RAILWAY_PROXY=true` only on a backend reached through Railway's public edge, where `X-Real-IP` is provided by the proxy. Keep it false for direct local servers. This is used for authentication throttling, public forms, Turnstile and audit records; arbitrary `X-Forwarded-For` is not trusted. Verify with your actual ingress topology before launch. [Railway request headers](https://docs.railway.com/networking/public-networking/specs-and-limits).
+
+### Test isolation and launch status
+
+Use this command for the default isolated tests:
+
+```bash
+backend/.venv/bin/python backend/manage.py test api --settings=config.test_settings --noinput
+```
+
+This explicitly selects an in-memory SQLite test database and disables external email/storage credentials. The two concurrency tests require PostgreSQL and skip on SQLite. For PostgreSQL, create a disposable local cluster and a separate settings module importing `config.test_settings`, overriding only `DATABASES` with that cluster and a test database name. Never point tests at Railway production. The implementation was also tested against a private local PostgreSQL 17 cluster, including concurrent booking and upload reservation tests.
+
+Before launch, connect Railway, verify the final domain, supply Resend and the chosen bot-protection settings, configure actual business hours and the email retry cron, review the forward migrations, verify a backup, and approve the production deployment. Test real email delivery, invitation/reset links, cross-subdomain cookies, the Railway browser upload/download flow, and calendar downloads in staging. Analytics is intentionally absent. The backend is being deployed separately from the frontend; consult the Railway deployment status and provider verification results before accepting real client submissions. Production DNS, admin sign-in, email delivery, bot protection, and actual business hours must be completed before launch.
+
+### Verified Railway deployment (October 2, 2026)
+
+Project: `compassionate-amazement`, production environment, backend service `web_design`. The generated HTTPS URL is `https://webdesign-production-9e10.up.railway.app`; `/api/v1/health/` returns `{"status":"ok"}` and checks the database. The approved restricted PostgreSQL roles are active. Private `client-uploads` and `client-upload-backups` buckets are connected by Railway variable references.
+
+The actual production-built frontend was tested through an isolated local preview bridge to Railway: intake modal → required contact details → project answers/URLs → PNG and PDF file picker → successful saved confirmation. Contact details, both URLs, goal/features/notes, and two uploaded asset records were verified in PostgreSQL. Primary and backup file bytes had matching checksums. Unsigned downloads returned 403. No frontend warning/error logs appeared in this flow. Temporary browser test access was removed. A clearly marked “Railway Storage QA” brief and tiny diagnostic objects remain as verification evidence; they are not real client data.
+
+The API custom domain is configured in Railway and needs a DNS CNAME: `api` → `2c46dxbl.up.railway.app`. The domain currently uses `ns29.domaincontrol.com` and `ns30.domaincontrol.com`; it does not appear in the signed-in Netlify team's DNS zone list. Finish DNS at the actual authoritative provider, then confirm TLS and the frontend's `VITE_API_BASE_URL`. Email keys, the first admin account, real business hours, an outbox retry job, and a recovery drill remain before a complete launch.

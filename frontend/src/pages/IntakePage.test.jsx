@@ -9,6 +9,7 @@ vi.mock("../api", () => ({
   apiRequest: vi.fn(),
   uploadAsset: vi.fn(),
   releaseAsset: vi.fn(),
+  preparePublicForm: vi.fn().mockResolvedValue(),
 }));
 
 beforeEach(() => vi.clearAllMocks());

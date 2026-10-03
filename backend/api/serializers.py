@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "email", "first_name", "last_name", "company", "phone", "role", "is_admin"]
-        read_only_fields = ["role"]
+        read_only_fields = ["id", "email", "role", "is_admin"]
 
 
 class AssetSerializer(serializers.ModelSerializer):
@@ -34,11 +34,19 @@ class AssetSerializer(serializers.ModelSerializer):
         if not obj.uploaded:
             return None
         from api.storage import signed_download_url
-        return signed_download_url(obj)
+        try:
+            return signed_download_url(obj)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Signed download unavailable for asset %s", obj.pk)
+            return None
 
 
 class ProjectBriefSerializer(serializers.ModelSerializer):
-    assets = AssetSerializer(many=True, read_only=True)
+    assets = serializers.SerializerMethodField()
+
+    def get_assets(self, obj):
+        return AssetSerializer(obj.assets.filter(deleted_at__isnull=True, uploaded=True), many=True).data
 
     class Meta:
         model = ProjectBrief
@@ -52,6 +60,7 @@ class ProjectBriefSerializer(serializers.ModelSerializer):
 
 
 class PublicBriefCreateSerializer(ProjectBriefSerializer):
+    overview = serializers.CharField(required=True, allow_blank=False, max_length=10000)
     idempotency_key = serializers.CharField(write_only=True, max_length=100)
     turnstile_token = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
@@ -79,7 +88,15 @@ class ProjectSerializer(serializers.ModelSerializer):
     brief_id = serializers.PrimaryKeyRelatedField(
         source="brief", queryset=ProjectBrief.objects.all(), write_only=True, required=False, allow_null=True
     )
-    assets = AssetSerializer(many=True, read_only=True)
+    assets = serializers.SerializerMethodField()
+
+    def get_assets(self, obj):
+        from django.db.models import Q
+        query = Q(project=obj)
+        if obj.brief_id:
+            query |= Q(brief_id=obj.brief_id)
+        return AssetSerializer(Asset.objects.filter(query, deleted_at__isnull=True, uploaded=True), many=True).data
+
     status_history = ProjectStatusHistorySerializer(many=True, read_only=True)
     brief = ProjectBriefSerializer(read_only=True)
 
@@ -113,6 +130,16 @@ class ProjectStatusUpdateSerializer(serializers.Serializer):
 
 
 class AvailabilityRuleSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        start = attrs.get("start_time", getattr(self.instance, "start_time", None))
+        end = attrs.get("end_time", getattr(self.instance, "end_time", None))
+        step = attrs.get("slot_minutes", getattr(self.instance, "slot_minutes", 30))
+        if not start or not end or end <= start or not 30 <= step <= 240:
+            raise serializers.ValidationError("Use increasing hours and a slot interval of 30–240 minutes.")
+        if not 0 <= attrs.get("weekday", getattr(self.instance, "weekday", 0)) <= 6:
+            raise serializers.ValidationError("Choose a day from Monday to Sunday.")
+        return attrs
+
     class Meta:
         model = AvailabilityRule
         fields = "__all__"
@@ -126,8 +153,11 @@ class AvailabilityOverrideSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def validate(self, attrs):
-        if not attrs.get("is_blocked") and (not attrs.get("start_time") or not attrs.get("end_time")):
-            raise serializers.ValidationError("Open overrides require start and end times.")
+        blocked = attrs.get("is_blocked", getattr(self.instance, "is_blocked", False))
+        start = attrs.get("start_time", getattr(self.instance, "start_time", None))
+        end = attrs.get("end_time", getattr(self.instance, "end_time", None))
+        if not blocked and (not start or not end or end <= start):
+            raise serializers.ValidationError("Open overrides require increasing start and end times.")
         return attrs
 
 
@@ -150,13 +180,13 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def validate_project(self, project):
         request = self.context.get("request")
-        if request and not request.user.is_admin and project.client_id != request.user.id:
+        if project and request and not request.user.is_admin and project.client_id != request.user.id:
             raise serializers.ValidationError("Choose one of your own projects.")
         return project
 
     def validate_status(self, value):
         request = self.context.get("request")
-        if request and not request.user.is_admin and self.instance and value != self.instance.status:
+        if request and not request.user.is_admin and value != (self.instance.status if self.instance else "pending"):
             raise serializers.ValidationError("Clients cannot change appointment status directly.")
         return value
 

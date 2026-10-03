@@ -1,8 +1,10 @@
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
+from unittest.mock import patch
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db import OperationalError
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -18,6 +20,7 @@ from scheduling.models import Appointment, AvailabilityRule
 def brief_data(key="brief-key"):
     return {
         "company": "Acme",
+        "overview": "A clear website for a growing local business.",
         "name": "Alex Client",
         "email": "alex@example.com",
         "idempotency_key": key,
@@ -25,6 +28,17 @@ def brief_data(key="brief-key"):
 
 
 class PublicApiTests(TestCase):
+    def test_health_checks_database_connectivity(self):
+        response = self.client.get("/api/v1/health/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
+
+    def test_health_returns_generic_unavailable_when_database_fails(self):
+        with patch("api.views.connection.cursor", side_effect=OperationalError("private database detail")):
+            response = self.client.get("/api/v1/health/")
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json(), {"status": "unavailable"})
+
     def test_brief_is_idempotent(self):
         response = self.client.post("/api/v1/public/briefs/", brief_data(), content_type="application/json")
         self.assertEqual(response.status_code, 201)
