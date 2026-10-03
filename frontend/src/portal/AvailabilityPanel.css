@@ -1,0 +1,53 @@
+.availability-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.availability-timezone {
+  font-size: 12px;
+  margin-bottom: 24px;
+}
+.availability-layout .form-stack {
+  margin-top: 24px;
+}
+.availability-layout .button {
+  align-self: flex-start;
+  font-size: 12px;
+}
+.availability-list {
+  padding: 0;
+  list-style: none;
+  margin-top: 25px;
+}
+.availability-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  padding: 15px 0;
+}
+.availability-list span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.availability-list strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.availability-list button {
+  font-size: 10px;
+  color: var(--red);
+  border: 0;
+  background: none;
+  padding: 8px;
+}
+@media (max-width: 1000px) {
+  .availability-layout {
+    grid-template-columns: 1fr;
+  }
+}

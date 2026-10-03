@@ -1,0 +1,114 @@
+.services {
+  background: var(--surface);
+}
+.services-layout {
+  display: grid;
+  grid-template-columns: 0.8fr 1.35fr;
+  gap: 8%;
+}
+.services-intro h2 {
+  font-size: clamp(32px, 3.4vw, 47px);
+}
+.services-intro > p:last-child {
+  margin-top: 26px;
+  max-width: 370px;
+  font-size: 15px;
+}
+.service-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 24px;
+  align-items: start;
+  gap: 18px;
+  padding: 25px 0;
+  border-top: 1px solid #ceced1;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.service-list > div:last-child .service-detail {
+  border-bottom: 1px solid #ceced1;
+}
+.service-number {
+  font-size: 11px;
+  padding-top: 5px;
+}
+.service-row h3 {
+  font-size: clamp(22px, 2vw, 28px);
+  letter-spacing: -0.045em;
+}
+.service-row p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.service-row > svg {
+  margin-top: 4px;
+  transition: transform 0.2s;
+}
+.service-row:hover {
+  color: var(--red);
+}
+.service-row:hover > svg {
+  transform: translate(3px, -3px);
+}
+@media (max-width: 760px) {
+  .services-layout {
+    grid-template-columns: 1fr;
+    gap: 38px;
+  }
+  .services-intro > p:last-child {
+    max-width: 540px;
+  }
+  .service-row {
+    grid-template-columns: 25px 1fr 22px;
+    gap: 12px;
+    padding: 22px 0;
+  }
+  .service-row h3 {
+    font-size: 22px;
+  }
+}
+
+.service-row {
+  cursor: pointer;
+  list-style: none;
+}
+.service-row::-webkit-details-marker {
+  display: none;
+}
+.service-row:hover > svg {
+  transform: none;
+}
+.service-detail[open] .service-row > svg {
+  transform: rotate(180deg);
+}
+.service-description {
+  padding: 0 42px 30px 50px;
+  font-size: 14px;
+}
+.service-description p + p {
+  margin-top: 16px;
+}
+.service-description h4 {
+  font-size: 18px;
+  margin: 24px 0 12px;
+  letter-spacing: -0.03em;
+}
+.service-description ul {
+  padding-left: 20px;
+  color: var(--muted);
+}
+.service-description li {
+  margin-block: 10px;
+}
+.service-description .text-link {
+  margin-top: 22px;
+  white-space: normal;
+}
+.service-description strong {
+  color: var(--ink);
+}
+@media (max-width: 760px) {
+  .service-description {
+    padding: 0 0 25px 37px;
+  }
+}

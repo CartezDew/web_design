@@ -1,0 +1,82 @@
+.messages-layout {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 28px;
+}
+.messages-layout > nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-right: 1px solid var(--line);
+  padding-right: 20px;
+}
+.messages-layout > nav > button:not(.button) {
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 12px;
+  padding: 12px;
+  line-height: 1.6;
+}
+.messages-layout > nav > button.is-active {
+  background: #fff2f2;
+  color: var(--red);
+}
+.message-history {
+  max-height: 460px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 25px;
+}
+.message-history article {
+  align-self: flex-start;
+  background: var(--surface);
+  padding: 16px 20px;
+  border-radius: 8px;
+  max-width: 90%;
+}
+.message-history article.is-own {
+  align-self: flex-end;
+  background: #fff4f4;
+}
+.message-history strong {
+  font-size: 11px;
+}
+.message-history p {
+  font-size: 13px;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 7px 0;
+}
+.message-history time {
+  font-size: 9px;
+  color: var(--muted);
+}
+.message-thread .button {
+  align-self: flex-end;
+  font-size: 12px;
+}
+.portal-panel .panel-heading .button {
+  min-height: 40px;
+  font-size: 11px;
+}
+@media (max-width: 900px) {
+  .messages-layout {
+    grid-template-columns: 1fr;
+  }
+  .messages-layout > nav {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    flex-direction: row;
+    overflow: auto;
+    padding: 0 0 15px;
+  }
+  .messages-layout > nav > button {
+    flex-shrink: 0;
+    max-width: 180px;
+  }
+}

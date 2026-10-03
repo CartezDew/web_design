@@ -1,0 +1,65 @@
+import { Link } from "react-router-dom";
+import { ArrowUpRight, Check } from "lucide-react";
+import { packages } from "../content/site";
+import Reveal from "../Reveal";
+import "./Pricing.css";
+export default function Pricing() {
+  return (
+    <section className="pricing section shell" id="pricing">
+      <p className="section-label">
+        <span>05</span> Clear starting points
+      </p>
+      <div className="section-heading">
+        <h2>Start where you are.</h2>
+        <p>
+          Choose a starting point and let’s build from there. Every project gets
+          a clear scope before the work begins.
+        </p>
+      </div>
+      <div className="pricing-grid">
+        {packages.map((item, i) => (
+          <Reveal
+            as="article"
+            className={
+              item.featured ? "price-plan price-plan--featured" : "price-plan"
+            }
+            key={item.name}
+            delay={i * 0.06}
+          >
+            <h3>{item.name}</h3>
+            <p className="price-description">{item.description}</p>
+            <p className="price-amount">
+              {item.price}
+              <span>+</span>
+            </p>
+            <span className="price-note">Starting price · {item.timeline}</span>
+            <ul>
+              {item.features.map((feature) => (
+                <li key={feature}>
+                  <Check size={15} />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <Link
+              className="button button--red"
+              to={`/?package=${item.name.toLowerCase()}#start-a-project`}
+            >
+              Start a project <ArrowUpRight size={16} />
+            </Link>
+          </Reveal>
+        ))}
+      </div>
+      <div className="pricing-footnote">
+        <p>
+          Need an app, e-commerce, authentication, or a custom dashboard?{" "}
+          <strong>Custom projects start at $2,500.</strong>
+        </p>
+        <p>
+          Final pricing and timelines depend on scope. Third-party fees are
+          separate. Additional work is agreed before it begins.
+        </p>
+      </div>
+    </section>
+  );
+}

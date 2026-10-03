@@ -1,0 +1,65 @@
+.contact-cta {
+  color: #fff;
+  background: var(--ink);
+}
+.contact-cta .section-label {
+  color: #ddd;
+}
+.contact-cta .section-label span {
+  color: #ff7070;
+}
+.contact-cta h2 {
+  max-width: 1150px;
+  font-size: clamp(40px, 5.4vw, 74px);
+  line-height: 1.12;
+}
+.contact-cta-copy {
+  max-width: 650px;
+  font-size: 18px;
+  margin: 28px 0 32px;
+  color: #ccc;
+}
+.contact-cta .text-link {
+  color: #fff;
+}
+.contact-cta-details {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  border-top: 1px solid #45454a;
+  margin-top: 65px;
+  padding-top: 24px;
+}
+.contact-cta-details > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.contact-cta-details span {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #ccc;
+}
+.contact-cta-details a {
+  font-size: 19px;
+  text-decoration: none;
+}
+.contact-cta-details a:hover {
+  color: #ff9b9b;
+}
+@media (max-width: 650px) {
+  .contact-cta h2 {
+    font-size: 42px;
+  }
+  .contact-cta-copy {
+    font-size: 16px;
+  }
+  .contact-cta-details {
+    margin-top: 42px;
+    flex-direction: column;
+  }
+  .contact-cta-details a {
+    font-size: 18px;
+  }
+}

@@ -1,0 +1,37 @@
+.privacy-section {
+  padding-block: 30px 0;
+}
+.privacy-disclosure {
+  border-block: 1px solid var(--line);
+}
+.privacy-disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 26px;
+  cursor: pointer;
+  list-style: none;
+}
+.privacy-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.privacy-disclosure > summary h2 {
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+.privacy-disclosure[open] > summary svg {
+  transform: rotate(180deg);
+}
+.privacy-copy {
+  max-width: 760px;
+  padding-bottom: 30px;
+}
+.privacy-copy h3 {
+  font-size: 19px;
+  margin: 28px 0 12px;
+  letter-spacing: -0.03em;
+}
+.privacy-copy p {
+  font-size: 14px;
+}

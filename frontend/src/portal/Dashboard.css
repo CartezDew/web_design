@@ -1,0 +1,308 @@
+.portal-app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  background: var(--surface);
+}
+.portal-sidebar {
+  background: #fff;
+  border-right: 1px solid var(--line);
+  padding: 36px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.portal-person {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 35px 0;
+  font-size: 13px;
+}
+.portal-person span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.portal-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.portal-sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  font-size: 13px;
+  text-decoration: none;
+  text-transform: capitalize;
+  border-radius: 6px;
+}
+.portal-sidebar nav a.active {
+  color: var(--red);
+  background: #fff2f2;
+}
+.portal-sidebar nav a:hover {
+  background: var(--surface);
+}
+.portal-signout {
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 18px 0 0;
+  margin-top: auto;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.portal-main {
+  padding: 38px clamp(22px, 3.7vw, 60px);
+  min-width: 0;
+}
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.portal-header h1 {
+  font-size: clamp(28px, 2.9vw, 40px);
+}
+.portal-header .section-label {
+  margin-bottom: 12px;
+}
+.portal-header p:last-child {
+  font-size: 13px;
+  margin-top: 13px;
+}
+.portal-header .text-link {
+  font-size: 11px;
+}
+.portal-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.portal-panel h2 {
+  font-size: 26px;
+  margin-bottom: 14px;
+}
+.portal-panel h3 {
+  font-size: 21px;
+}
+.portal-panel > p {
+  font-size: 13px;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+.portal-panel .section-label {
+  font-size: 9px;
+  margin-bottom: 10px;
+}
+.portal-panel .text-link {
+  font-size: 12px;
+}
+.portal-loading {
+  padding: 100px var(--gutter);
+  text-align: center;
+}
+.profile-panel {
+  max-width: 660px;
+}
+.profile-panel .form-stack {
+  margin-top: 25px;
+}
+.profile-panel .button {
+  align-self: flex-start;
+}
+.profile-panel a {
+  font-size: 12px;
+}
+.portal-quick-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+.portal-quick-links a {
+  padding: 24px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+}
+.portal-quick-links strong {
+  font-size: 13px;
+}
+.portal-quick-links span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.portal-quick-links svg {
+  color: var(--red);
+}
+.project-progress {
+  display: flex;
+  margin: 32px 0 36px;
+  gap: 0;
+}
+.project-progress > div {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-transform: capitalize;
+  font-size: 10px;
+  color: var(--muted);
+}
+.project-progress > div:before {
+  content: "";
+  height: 1px;
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 100%;
+  background: var(--line);
+}
+.project-progress > div:last-child:before {
+  display: none;
+}
+.project-progress > div > span {
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: white;
+  position: relative;
+}
+.project-progress .is-complete:before {
+  background: var(--red);
+}
+.project-progress .is-complete > span {
+  border-color: var(--red);
+  background: var(--red);
+}
+.project-progress > div[aria-current="step"] > span {
+  outline: 3px solid #f5baba;
+  outline-offset: 3px;
+}
+.status-label {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--red);
+  background: #fff2f2;
+  padding: 5px 10px;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.portal-main > .notice {
+  margin-bottom: 20px;
+}
+@media (max-width: 900px) {
+  .portal-app {
+    grid-template-columns: 180px 1fr;
+  }
+  .portal-sidebar {
+    padding: 25px 16px;
+  }
+  .portal-main {
+    padding: 28px 20px;
+  }
+  .portal-header {
+    flex-wrap: wrap;
+  }
+  .portal-panel {
+    padding: 22px;
+  }
+  .project-progress > div {
+    font-size: 9px;
+  }
+}
+@media (max-width: 650px) {
+  .portal-app {
+    display: block;
+  }
+  .portal-sidebar {
+    position: relative;
+    height: auto;
+    padding: 20px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+  }
+  .portal-person {
+    margin: 0;
+    text-align: right;
+  }
+  .portal-sidebar nav {
+    grid-column: 1/-1;
+    display: flex;
+    flex-direction: row;
+    overflow: auto;
+    gap: 5px;
+  }
+  .portal-sidebar nav a {
+    font-size: 11px;
+    padding: 10px;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .portal-sidebar nav a svg {
+    width: 15px;
+  }
+  .portal-signout {
+    position: static;
+    grid-column: 1/-1;
+    border: 0;
+    display: flex;
+    margin-top: 0;
+    padding-top: 0;
+  }
+  .portal-sidebar nav {
+    padding-bottom: 3px;
+  }
+  .portal-main {
+    padding: 28px 16px;
+  }
+  .portal-quick-links {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .project-progress {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .project-progress > div {
+    flex-basis: 28%;
+    font-size: 10px;
+  }
+  .portal-sidebar:has(a.active[href="/dashboard/profile"]) .portal-signout {
+    display: flex;
+    position: static;
+    grid-column: 1/-1;
+  }
+  .portal-header h1 {
+    font-size: 30px;
+  }
+}

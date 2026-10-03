@@ -1,0 +1,46 @@
+.about {
+  display: grid;
+  grid-template-columns: 0.78fr 1.3fr;
+  gap: 9%;
+  align-items: center;
+}
+.about-portrait {
+  max-width: 400px;
+}
+.about-portrait img {
+  width: 100%;
+  aspect-ratio: 0.88;
+  object-fit: cover;
+  object-position: center 25%;
+  border-radius: 4px;
+}
+.about-copy h2 {
+  max-width: 670px;
+  font-size: clamp(32px, 3.4vw, 48px);
+}
+.about-copy > p:not(.section-label) {
+  margin-top: 25px;
+  max-width: 600px;
+  font-size: 15px;
+  line-height: 1.9;
+}
+.about-copy .text-link {
+  margin-top: 28px;
+  color: var(--red);
+}
+@media (max-width: 650px) {
+  .about {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .about-portrait {
+    width: 72%;
+    max-width: 300px;
+  }
+  .about-portrait img {
+    aspect-ratio: 1;
+  }
+  .about-copy h2 {
+    font-size: 34px;
+  }
+}

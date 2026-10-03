@@ -1,0 +1,168 @@
+.intake-layout {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 9%;
+  align-items: start;
+}
+.intake-intro h2 {
+  font-size: clamp(38px, 4vw, 56px);
+}
+.intake-intro > p:not(.section-label) {
+  font-size: 15px;
+  line-height: 1.85;
+  margin-top: 25px;
+  max-width: 420px;
+}
+.personal-note {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 36px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+.personal-note img {
+  width: 62px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.personal-note strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.personal-note p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 5px;
+}
+.intake-help a {
+  color: var(--ink);
+}
+.intake-form-panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 32px;
+}
+.intake-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 30px;
+  list-style: none;
+  font-size: 10px;
+  color: var(--muted);
+}
+.intake-steps li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.intake-steps li > span {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+}
+.intake-steps .is-current {
+  color: var(--red);
+}
+.intake-steps .is-current > span {
+  border-color: var(--red);
+  background: var(--red);
+  color: white;
+}
+.intake-form-panel h3 {
+  font-size: 27px;
+  margin-bottom: 26px;
+  outline: none;
+}
+.intake-form-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+  margin-top: 6px;
+}
+.intake-form-nav .text-link {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.intake-form-nav .button {
+  font-size: 12px;
+  gap: 12px;
+  padding-inline: 18px;
+}
+.brief-review {
+  background: var(--surface);
+  border-radius: 7px;
+  padding: 18px;
+  font-size: 12px;
+}
+.brief-review p {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.brief-review strong {
+  font-weight: 600;
+}
+.form-success {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+  padding: 20px 0;
+}
+.form-success > svg {
+  color: var(--red);
+}
+.form-success h3 {
+  font-size: 34px;
+  margin: 0;
+}
+.form-success p {
+  font-size: 14px;
+}
+.form-success .button {
+  font-size: 12px;
+}
+.form-success > a:last-child {
+  font-size: 13px;
+}
+@media (max-width: 900px) {
+  .intake-layout {
+    gap: 5%;
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+  .intake-form-panel {
+    padding: 24px;
+  }
+}
+@media (max-width: 700px) {
+  .intake-layout {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .intake-intro > p:not(.section-label) {
+    max-width: 560px;
+  }
+  .intake-form-panel {
+    padding: 22px 18px;
+  }
+  .personal-note {
+    margin-top: 22px;
+  }
+  .intake-intro .intake-help {
+    font-size: 13px;
+  }
+  .intake-steps {
+    font-size: 9px;
+  }
+}

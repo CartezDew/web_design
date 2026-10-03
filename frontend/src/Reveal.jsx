@@ -1,30 +1,46 @@
-import { motion, useReducedMotion } from 'framer-motion'
-
-const EASE = [0.22, 0.61, 0.36, 1]
-
-const viewport = { once: true, amount: 0.2, margin: '0px 0px -12% 0px' }
-
-function Reveal({ as = 'div', delay = 0, distance = 26, hover, children, ...rest }) {
-  const reducedMotion = useReducedMotion()
-  const Element = motion[as]
-
-  if (reducedMotion) {
-    const Static = as
-    return <Static {...rest}>{children}</Static>
-  }
-
+import { useEffect, useRef } from "react";
+export default function Reveal({
+  as: Element = "div",
+  delay = 0,
+  children,
+  ...props
+}) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (
+      !ref.current ||
+      !("IntersectionObserver" in window) ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.animate?.(
+              [
+                { opacity: 0, transform: "translateY(22px)" },
+                { opacity: 1, transform: "translateY(0)" },
+              ],
+              {
+                duration: 600,
+                delay: delay * 1000,
+                easing: "cubic-bezier(.22,.61,.36,1)",
+                fill: "backwards",
+              },
+            );
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 },
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [delay]);
   return (
-    <Element
-      initial={{ opacity: 0, y: distance }}
-      whileInView={{ opacity: 1, y: 0 }}
-      whileHover={hover}
-      viewport={viewport}
-      transition={{ duration: 0.55, ease: EASE, delay }}
-      {...rest}
-    >
+    <Element ref={ref} {...props}>
       {children}
     </Element>
-  )
+  );
 }
-
-export default Reveal

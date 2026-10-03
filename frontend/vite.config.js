@@ -1,11 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
+import { defineConfig } from "vite";
+import { reactRouter } from "@react-router/dev/vite";
 export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: './src/test-setup.js',
-    globals: true,
-  },
-})
+  plugins: [reactRouter()],
+  server: { host: "127.0.0.1", proxy: { "/api": "http://127.0.0.1:8000" } },
+});

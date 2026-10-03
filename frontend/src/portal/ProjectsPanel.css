@@ -1,0 +1,185 @@
+.brief-list {
+  margin-top: 20px;
+}
+.brief-item {
+  border-top: 1px solid var(--line);
+}
+.brief-item summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.brief-item summary::-webkit-details-marker {
+  display: none;
+}
+.brief-item summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.brief-item summary strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.brief-item summary span:not(.status-label) {
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.brief-detail {
+  border-top: 1px dashed var(--line);
+  padding: 20px 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.brief-detail h3 {
+  font-size: 14px;
+  letter-spacing: 0;
+  margin-bottom: 6px;
+}
+.brief-detail p {
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.brief-detail > a {
+  font-size: 12px;
+}
+.brief-detail .button {
+  align-self: flex-start;
+  font-size: 12px;
+}
+.stored-files {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 22px;
+}
+.stored-files li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.stored-files li > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.stored-files strong {
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.stored-files small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.stored-files a,
+.stored-files button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+}
+.stored-files a:hover,
+.stored-files button:hover {
+  color: var(--red);
+}
+.project-columns {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 32px;
+  border-top: 1px solid var(--line);
+  padding-top: 25px;
+  margin-top: 25px;
+}
+.project-columns > section + section {
+  border-left: 1px solid var(--line);
+  padding-left: 30px;
+}
+.project-columns h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+.project-history {
+  padding: 0 0 0 18px;
+  list-style: none;
+}
+.project-history li {
+  border-left: 1px solid var(--line);
+  position: relative;
+  padding: 0 0 24px 18px;
+}
+.project-history li:before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  background: var(--red);
+  border-radius: 50%;
+}
+.project-history strong {
+  text-transform: capitalize;
+  font-size: 12px;
+  font-weight: 600;
+}
+.project-history p {
+  font-size: 12px;
+  margin-top: 5px;
+}
+.project-history time {
+  font-size: 10px;
+  color: var(--muted);
+}
+.project-admin-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+}
+.project-admin-controls .custom-select {
+  min-width: 190px;
+}
+.project-admin-controls .button {
+  font-size: 12px;
+  min-height: 48px;
+}
+.project-edit {
+  padding: 25px 0;
+  max-width: 600px;
+}
+.project-columns .button {
+  font-size: 12px;
+  margin-top: 20px;
+}
+.project-panel > .notice {
+  margin-bottom: 18px;
+}
+@media (max-width: 900px) {
+  .project-columns {
+    grid-template-columns: 1fr;
+  }
+  .project-columns > section + section {
+    border: 0;
+    border-top: 1px solid var(--line);
+    padding: 25px 0 0;
+  }
+  .project-admin-controls {
+    flex-wrap: wrap;
+  }
+  .brief-item summary {
+    gap: 12px;
+  }
+}
