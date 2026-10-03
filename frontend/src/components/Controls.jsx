@@ -1,3 +1,4 @@
+import { useId } from "react";
 import {
   Button,
   Select,
@@ -32,15 +33,32 @@ import { parseDate } from "@internationalized/date";
 import "./Controls.css";
 export function Field({ label, hint, error, multiline = false, ...props }) {
   const Element = multiline ? "textarea" : "input";
+  const id = useId();
+  const describedBy = [
+    hint && `${id}-hint`,
+    error && `${id}-error`,
+    props["aria-describedby"],
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
     <label className="field">
-      <span>
+      <span id={`${id}-label`}>
         {label}
         {props.required && <span aria-hidden="true"> *</span>}
       </span>
-      <Element {...props} aria-invalid={!!error || undefined} />
-      {hint && <small>{hint}</small>}
-      {error && <small className="field-error">{error}</small>}
+      <Element
+        {...props}
+        aria-labelledby={props["aria-labelledby"] || `${id}-label`}
+        aria-invalid={!!error || undefined}
+        aria-describedby={describedBy || undefined}
+      />
+      {hint && <small id={`${id}-hint`}>{hint}</small>}
+      {error && (
+        <small id={`${id}-error`} className="field-error">
+          {error}
+        </small>
+      )}
     </label>
   );
 }
@@ -112,11 +130,14 @@ export function ChoiceGroup({ label, value, onChange, options }) {
     </RadioGroup>
   );
 }
-export function CalendarBody() {
+export function CalendarBody({ consultation = false }) {
   return (
     <>
       <header className="calendar-header">
-        <Heading />
+        <div className="calendar-month">
+          {consultation && <span>Let’s find a time</span>}
+          <Heading />
+        </div>
         <div>
           <Button slot="previous" aria-label="Previous month">
             <ChevronLeft size={18} />
@@ -131,7 +152,25 @@ export function CalendarBody() {
           {(day) => <CalendarHeaderCell>{day}</CalendarHeaderCell>}
         </CalendarGridHeader>
         <CalendarGridBody>
-          {(date) => <CalendarCell className="calendar-cell" date={date} />}
+          {(date) => (
+            <CalendarCell className="calendar-cell" date={date}>
+              {({ formattedDate, isToday, isDisabled, isUnavailable }) => (
+                <>
+                  <span>{formattedDate}</span>
+                  {consultation && isToday && <i aria-hidden="true">Today</i>}
+                  {consultation &&
+                    !isToday &&
+                    !isDisabled &&
+                    !isUnavailable && (
+                      <i
+                        className="calendar-available-dot"
+                        aria-hidden="true"
+                      />
+                    )}
+                </>
+              )}
+            </CalendarCell>
+          )}
         </CalendarGridBody>
       </CalendarGrid>
     </>
@@ -143,18 +182,23 @@ export function CustomCalendar({
   min,
   max,
   isDateUnavailable,
+  consultation = false,
 }) {
   return (
     <Calendar
       aria-label="Choose a consultation date"
-      className="custom-calendar"
+      className={
+        consultation
+          ? "custom-calendar consultation-calendar"
+          : "custom-calendar"
+      }
       value={value ? parseDate(value) : null}
       onChange={(date) => onChange(date.toString())}
       minValue={min ? parseDate(min) : undefined}
       maxValue={max ? parseDate(max) : undefined}
       isDateUnavailable={isDateUnavailable}
     >
-      <CalendarBody />
+      <CalendarBody consultation={consultation} />
     </Calendar>
   );
 }

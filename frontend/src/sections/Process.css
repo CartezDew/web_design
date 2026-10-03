@@ -28,13 +28,8 @@
 .process-steps article:last-child {
   padding-right: 0;
 }
-.process-steps article > span {
-  font-size: 22px;
-  color: #ff7070;
-  font-weight: 600;
-}
 .process-steps h3 {
-  margin: 12px 0 17px;
+  margin: 0 0 17px;
   font-size: 30px;
 }
 .process-steps p {
@@ -64,8 +59,8 @@
     border-bottom: 1px solid #45454a;
   }
   .process-steps h3 {
-    display: inline;
-    margin-left: 18px;
+    display: block;
+    margin-left: 0;
   }
   .process-steps p {
     margin-top: 16px;

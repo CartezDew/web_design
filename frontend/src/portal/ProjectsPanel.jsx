@@ -68,6 +68,10 @@ export function BriefsPanel({ compact = false }) {
               {[
                 ["overview", "The idea"],
                 ["goal", "Goal"],
+                ["mission", "Audience and differentiators"],
+                ["domain", "Current website or domain"],
+                ["success", "What success looks like"],
+                ["offerings", "Products or services"],
                 ["features", "Pages and features"],
                 ["package", "Starting package"],
                 ["launch_date", "Target launch"],

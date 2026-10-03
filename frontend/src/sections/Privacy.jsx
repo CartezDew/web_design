@@ -48,9 +48,11 @@ export default function Privacy() {
           <p>
             You can update profile details in your portal. To request access,
             correction, or deletion of your information, email{" "}
-            <a href="mailto:info@marc-d.com">info@marc-d.com</a>. Please avoid
-            uploading passwords, payment-card information, or other sensitive
-            material that is not needed for your project.
+            <a href="mailto:letsbuild@marcdbycartez.com">
+              letsbuild@marcdbycartez.com
+            </a>
+            . Please avoid uploading passwords, payment-card information, or
+            other sensitive material that is not needed for your project.
           </p>
         </div>
       </details>

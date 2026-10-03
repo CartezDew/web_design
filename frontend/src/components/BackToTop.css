@@ -1,0 +1,64 @@
+.back-to-top {
+  display: none;
+}
+@media (max-width: 549.98px) {
+  .back-to-top {
+    position: fixed;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    color: white;
+    border: 1px solid #ffffff80;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 6px 22px #be03033d;
+    animation: back-to-top-glow 3.6s ease-in-out infinite;
+  }
+  .back-to-top svg {
+    animation: back-to-top-arrow 2.8s ease-in-out infinite;
+  }
+  .back-to-top:is(:hover, :focus-visible) {
+    animation-play-state: paused;
+    background: var(--red-hover);
+  }
+  .back-to-top:is(:hover, :focus-visible) svg {
+    animation-play-state: paused;
+  }
+  .back-to-top:active {
+    scale: 0.95;
+  }
+}
+@keyframes back-to-top-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 6px 22px #be030338,
+      0 0 0 0 #be030312;
+  }
+  50% {
+    box-shadow:
+      0 6px 26px #be030366,
+      0 0 0 5px #be030310;
+  }
+}
+@keyframes back-to-top-arrow {
+  0%,
+  65%,
+  100% {
+    transform: translateY(1px);
+  }
+  35% {
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top,
+  .back-to-top svg {
+    animation: none;
+  }
+}

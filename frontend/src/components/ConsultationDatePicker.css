@@ -1,0 +1,275 @@
+/* Main's calendar appearance, paired with accessible keyboard/date handling. */
+.consultation-date-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  padding: 14px 16px;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+.consultation-date-trigger:hover:not(:disabled) {
+  border-color: #be030380;
+  box-shadow: 0 10px 25px -18px #be0303a6;
+  transform: translateY(-1px);
+}
+.consultation-date-trigger:active:not(:disabled) {
+  transform: scale(0.99);
+}
+.consultation-date-trigger:focus-visible {
+  outline: 3px solid #be030320;
+  outline-offset: 3px;
+  border-color: var(--red);
+}
+.consultation-date-trigger:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.consultation-date-trigger > span {
+  display: grid;
+  gap: 5px;
+}
+.consultation-date-trigger small {
+  color: #475569;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.consultation-date-trigger strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.consultation-date-trigger > svg {
+  color: var(--red);
+  flex-shrink: 0;
+  transition: transform 180ms ease;
+}
+.consultation-date-trigger:hover > svg {
+  transform: rotate(-8deg) scale(1.08);
+}
+.consultation-date-trigger.has-value {
+  border-color: #be03034d;
+  background: #fffafa;
+}
+.consultation-date-trigger.has-value strong {
+  color: var(--red);
+}
+.consultation-date-trigger.has-value > span {
+  animation: consultation-feedback 280ms ease;
+}
+.consultation-calendar-panel {
+  margin-top: 10px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: white;
+  box-shadow: 0 24px 60px -22px #0f172a52;
+  transform-origin: top center;
+  animation: consultation-calendar-open 200ms ease;
+}
+.consultation-calendar .calendar-month {
+  display: grid;
+  gap: 3px;
+}
+.consultation-calendar .calendar-month > span {
+  color: var(--red);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.consultation-calendar .calendar-header {
+  gap: 12px;
+}
+.consultation-calendar .calendar-header h2 {
+  font-size: 1.05rem;
+}
+.consultation-calendar .calendar-header button {
+  color: #0f172a;
+  border-radius: 50%;
+  background: #f8fafc;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+.consultation-calendar
+  .calendar-header
+  button:is(:hover, [data-focus-visible]):not(:disabled) {
+  color: white;
+  border-color: var(--red);
+  background: var(--red);
+  transform: scale(1.06);
+}
+.consultation-calendar .calendar-header button:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.consultation-calendar .calendar-header button:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+.consultation-calendar .calendar-grid {
+  border-spacing: 5px;
+}
+.consultation-calendar .calendar-grid th {
+  font-size: 0.61rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.consultation-calendar .calendar-cell {
+  position: relative;
+  min-width: 0;
+  min-height: 48px;
+  padding: 2px;
+  color: #0f172a;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  font-size: 0.76rem;
+  font-weight: 650;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+.consultation-calendar .calendar-cell i {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  color: var(--red);
+  font-size: 0.42rem;
+  font-style: normal;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+.consultation-calendar .calendar-cell .calendar-available-dot {
+  width: 3px;
+  height: 3px;
+  margin-inline: auto;
+  bottom: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.consultation-calendar
+  .calendar-cell[data-hovered]:not([data-disabled], [data-unavailable]) {
+  color: var(--red);
+  border-color: #be030340;
+  background: #be03030f;
+  box-shadow: 0 7px 16px -10px #be0303cc;
+  transform: translateY(-2px) scale(1.04);
+}
+.consultation-calendar
+  .calendar-cell[data-pressed]:not([data-disabled], [data-unavailable]) {
+  transform: scale(0.88);
+}
+.consultation-calendar .calendar-cell[data-today]:not([data-selected]) {
+  border-color: #be030359;
+}
+.consultation-calendar .calendar-cell[data-selected] {
+  color: white;
+  border-color: var(--red);
+  background: var(--red);
+  box-shadow: 0 9px 20px -10px #be0303cc;
+  animation: consultation-calendar-selected 380ms
+    cubic-bezier(0.2, 0.8, 0.2, 1.2);
+}
+.consultation-calendar .calendar-cell[data-selected] i {
+  color: white;
+}
+.consultation-calendar .calendar-cell:is([data-disabled], [data-unavailable]) {
+  color: #94a3b8;
+  background: transparent;
+  cursor: not-allowed;
+  text-decoration: none;
+  opacity: 0.55;
+}
+.consultation-calendar-panel .calendar-help {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.66rem;
+  line-height: 1.6;
+}
+@keyframes consultation-calendar-open {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes consultation-calendar-selected {
+  0% {
+    transform: scale(0.72);
+  }
+  55% {
+    transform: scale(1.13);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes consultation-feedback {
+  from {
+    opacity: 0.5;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 420px) {
+  .consultation-calendar-panel {
+    padding: 14px 8px;
+  }
+  .consultation-calendar .calendar-grid {
+    border-spacing: 2px;
+  }
+  .consultation-calendar .calendar-cell {
+    min-height: 42px;
+  }
+  .consultation-calendar .calendar-header {
+    padding-inline: 6px;
+  }
+  .consultation-calendar .calendar-header h2 {
+    font-size: 0.9rem;
+  }
+  .consultation-calendar .calendar-month > span {
+    font-size: 0.53rem;
+  }
+  .consultation-calendar-panel .calendar-help {
+    margin-inline: 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .consultation-date-trigger,
+  .consultation-date-trigger > svg,
+  .consultation-calendar .calendar-header button,
+  .consultation-calendar .calendar-cell {
+    transition: none;
+    transform: none !important;
+  }
+  .consultation-calendar-panel,
+  .consultation-calendar .calendar-cell[data-selected],
+  .consultation-date-trigger.has-value > span {
+    animation: none;
+  }
+}

@@ -92,14 +92,15 @@ export const services = [
   {
     number: "04",
     title: "SEO + AI search (AEO)",
-    copy: "Structure and content built to be understood by people, Google, and AI tools like ChatGPT and Claude.",
+    copy: "Search engine optimization (SEO) helps Google understand your site. Answer engine optimization (AEO) makes your business information and answers clearer for AI tools like ChatGPT and Claude.",
     value:
       "Help people and search systems understand what you do through clear answers, crawlable content, and strong technical foundations. Search placement is never guaranteed.",
     includes: [
       "Technical SEO: speed, structured data (schema), sitemaps, and metadata",
-      "Answer-engine optimization: llms.txt, FAQ content, and AI crawler policies",
+      "Answer-engine optimization (AEO): clear service answers, FAQs, and accurate business information",
+      "Crawler access and content structure that support Google and AI search discovery",
       "Redesigns that make an existing site readable to AI crawlers",
-      "Analytics that show which search engines and AI tools send you traffic",
+      "Search Console setup and optional analytics to measure search traffic after launch",
     ],
     proof: "Leapfrog SEO/AEO dashboard · marc-d.com",
   },
@@ -210,7 +211,7 @@ export const faqs = [
   {
     question: "How does pricing work?",
     answer:
-      "Package prices are starting points based on the listed hours and features. After the intake and discovery call, you receive a scope that explains the deliverables and estimated cost. E-commerce, authentication, APIs, dashboards, large content migrations, or other custom functionality may require a custom quote. No out-of-scope work is added without your approval.",
+      "Package prices are starting points based on the listed features and agreed scope. After the intake and discovery call, you receive a scope that explains the deliverables and estimated cost. E-commerce, authentication, APIs, dashboards, large content migrations, or other custom functionality may require a custom quote. No out-of-scope work is added without your approval.",
   },
   {
     question: "What should I share during the initial project intake?",
@@ -220,7 +221,17 @@ export const faqs = [
   {
     question: "What are SEO and AEO?",
     answer:
-      "SEO (Search Engine Optimization) helps search engines such as Google understand and rank your website. AEO (Answer Engine Optimization) structures your content so AI tools and answer engines—such as ChatGPT, Claude, Gemini, and Perplexity—can understand, cite, and recommend your business. A strong website should account for both.",
+      "SEO (search engine optimization) helps search engines crawl and understand your website. AEO (answer engine optimization) makes your services, expertise, and answers easier for search and AI tools to interpret. I focus on helpful content, clear headings, fast pages, metadata, structured data, and appropriate crawler access. These foundations support discovery; no one can guarantee a Google ranking or an AI recommendation.",
+  },
+  {
+    question: "Can we talk before I complete the project form?",
+    answer:
+      "Yes. Book a free 30-minute consultation if you prefer to talk it through. If you send a brief first, only your name, email, and a short description are required. Share what you know; we will clarify your goals, audience, content, and features together before agreeing on a scope.",
+  },
+  {
+    question: "Who will I work with, and what happens after launch?",
+    answer:
+      "You work directly with me, Cartez, through discovery, design, development, and launch. Before launch, we test the agreed features and review how you will manage the site. I provide a handoff for the work in scope. Ongoing maintenance, hosting, content updates, and analytics can be discussed as part of your project plan.",
   },
   {
     question: "What is an API integration?",
@@ -269,18 +280,18 @@ portfolio.forEach((project, i) => {
 export const processSteps = [
   [
     "Listen",
-    "We start with a real conversation to understand your goals, challenges, and what success looks like.",
+    "Share a brief or book a free call. We clarify your audience, goals, content, budget, and what success looks like, then agree on a scope and estimate.",
   ],
   [
     "Design",
-    "I turn insights into a clear strategy and thoughtful design that fits your business.",
+    "I map the pages and customer journey, then share a design for your feedback before we move into development.",
   ],
   [
     "Build",
-    "I develop with focus, keeping you in the loop and turning ideas into working solutions.",
+    "I build the agreed features and keep you involved with progress updates. We review the experience on desktop and mobile before launch.",
   ],
   [
     "Launch",
-    "We get it live, check the details, and make sure you know how to move forward.",
+    "We connect your domain, check the forms and search foundations, and walk through the handoff. We also agree on any ongoing support you need.",
   ],
 ];

@@ -3,19 +3,17 @@ import { ArrowUpRight, Check } from "lucide-react";
 import { packages } from "../content/site";
 import Reveal from "../Reveal";
 import "./Pricing.css";
-export default function Pricing() {
+export default function Pricing({ onPlan }) {
   return (
     <section className="pricing section shell" id="pricing">
-      <p className="section-label">
-        <span>05</span> Clear starting points
-      </p>
-      <div className="section-heading">
+      <p className="section-label">Clear starting points</p>
+      <Reveal className="section-heading" distance={20}>
         <h2>Start where you are.</h2>
         <p>
           Choose a starting point and let’s build from there. Every project gets
           a clear scope before the work begins.
         </p>
-      </div>
+      </Reveal>
       <div className="pricing-grid">
         {packages.map((item, i) => (
           <Reveal
@@ -44,6 +42,19 @@ export default function Pricing() {
             <Link
               className="button button--red"
               to={`/?package=${item.name.toLowerCase()}#start-a-project`}
+              aria-haspopup="dialog"
+              onClick={(event) => {
+                if (
+                  onPlan &&
+                  !event.metaKey &&
+                  !event.ctrlKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  onPlan(event.currentTarget, item.name);
+                }
+              }}
             >
               Start a project <ArrowUpRight size={16} />
             </Link>

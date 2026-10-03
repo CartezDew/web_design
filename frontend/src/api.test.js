@@ -79,3 +79,30 @@ describe("apiRequest", () => {
     });
   });
 });
+
+it.each([429, 503])(
+  "replaces technical HTTP %s errors with helpful visitor-facing copy",
+  async (status) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            detail: "Request was throttled. Expected available in 143 seconds.",
+          }),
+          { status },
+        ),
+      ),
+    );
+    const { apiRequest } = await import("./api");
+    await expect(apiRequest("/public/availability/")).rejects.toMatchObject({
+      status,
+      message: expect.stringContaining("Please try again"),
+    });
+    try {
+      await apiRequest("/public/availability/");
+    } catch (error) {
+      expect(error.message).not.toMatch(/throttled|143 seconds/);
+    }
+  },
+);

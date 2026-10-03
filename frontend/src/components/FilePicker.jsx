@@ -112,6 +112,7 @@ export default function FilePicker({
         <input
           className="sr-only"
           type="file"
+          aria-label="Add images, screenshots, or PDFs"
           multiple
           accept="image/jpeg,image/png,image/webp,application/pdf"
           disabled={disabled}
@@ -122,7 +123,7 @@ export default function FilePicker({
         />
         <Upload size={23} />
         <strong>Drop your files here, or browse</strong>
-        <span>Images, screenshots, and PDFs</span>
+        <span>JPG, PNG, WebP, and PDF</span>
         <small>Up to 12 files · 5 MB each · 25 MB total</small>
       </label>
       <p className="file-usage">

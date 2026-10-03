@@ -13,27 +13,17 @@
   margin-top: 26px;
   max-width: 470px;
 }
-.booking-person {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  margin-top: 34px;
+.consultation-photo {
+  margin-top: 30px;
+  border-radius: 20px;
+  overflow: hidden;
 }
-.booking-person img {
-  width: 130px;
-  height: 146px;
+.consultation-photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.15;
   object-fit: cover;
-  object-position: 50% 30%;
-  border-radius: 8px;
-}
-.booking-person h3 {
-  font-size: 21px;
-  letter-spacing: -0.04em;
-}
-.booking-person p {
-  font-size: 12px;
-  margin-top: 12px;
-  line-height: 1.7;
+  object-position: 50% 65%;
 }
 .booking-agenda {
   padding: 0;
@@ -47,16 +37,6 @@
   padding-top: 22px;
   align-items: flex-start;
 }
-.booking-agenda li > span {
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  width: 28px;
-  height: 28px;
-  font-size: 11px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
 .booking-agenda strong {
   font-size: 13px;
   font-weight: 600;
@@ -68,22 +48,34 @@
 .booking-panel {
   padding: 30px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 20px;
   background: #fff;
-}
-.booking-heading h3 {
-  font-size: 27px;
-  margin-bottom: 9px;
-}
-.booking-heading > span {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 11px;
-  color: var(--muted);
+  box-shadow: 0 25px 60px -25px #0f172a33;
 }
 .booking-heading {
-  margin-bottom: 26px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.booking-heading .booking-heading-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: var(--red);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -10px #be0303b3;
+}
+.booking-heading h3 {
+  font-size: 20px;
+  font-weight: 800;
+}
+.booking-heading p {
+  font-size: 12px;
+  margin-top: 4px;
 }
 .slot-picker .custom-calendar {
   margin-inline: auto;
@@ -108,7 +100,14 @@
   display: flex;
   justify-content: center;
   padding: 10px 13px;
-  min-width: 95px;
+  min-width: 102px;
+  align-items: center;
+  gap: 5px;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
   flex: 1;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -127,12 +126,58 @@
   outline-offset: 3px;
 }
 .time-slot.is-selected {
-  background: var(--ink);
+  background: var(--red);
   color: white;
-  border-color: var(--ink);
+  border-color: var(--red);
+  animation: consultation-calendar-selected 300ms ease;
 }
 .time-slot:hover {
-  border-color: var(--ink);
+  border-color: var(--red);
+  transform: translateY(-2px);
+}
+.time-slot:active {
+  transform: scale(0.97);
+}
+.time-slot-check {
+  display: none;
+}
+.time-slot.is-selected .time-slot-check {
+  display: block;
+}
+.booking-selection-feedback:empty {
+  display: none;
+}
+.booking-selection-feedback p {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border: 1px solid #be03031a;
+  border-radius: 10px;
+  background: #fff8f8;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.65;
+  animation: consultation-feedback 240ms ease;
+}
+.booking-selection-feedback svg {
+  color: var(--red);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.booking-selection-feedback strong {
+  color: #0f172a;
+}
+@media (prefers-reduced-motion: reduce) {
+  .time-slot {
+    transition: none;
+    transform: none !important;
+  }
+  .time-slot.is-selected,
+  .booking-selection-feedback p {
+    animation: none;
+  }
 }
 .availability-error {
   display: grid;
@@ -166,13 +211,6 @@
   .booking-panel {
     padding: 22px;
   }
-  .booking-person {
-    gap: 16px;
-  }
-  .booking-person img {
-    width: 95px;
-    height: 112px;
-  }
 }
 @media (max-width: 650px) {
   .booking-layout {
@@ -185,17 +223,49 @@
   .booking-intro > p:not(.section-label) {
     font-size: 15px;
   }
-  .booking-person img {
-    width: 88px;
-    height: 97px;
-  }
   .booking-agenda {
     display: none;
   }
   .booking-panel {
     padding: 24px 18px;
   }
-  .booking-person h3 {
-    font-size: 18px;
-  }
+}
+
+.booking-heading .booking-timezone {
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.6;
+}
+.booking-contact {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 18px;
+}
+.booking-contact legend {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.booking-contact:disabled input {
+  background: #f1f2f4;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+.booking-submit[data-incomplete],
+.booking-submit[data-incomplete]:hover {
+  background: #e2e5e9;
+  color: #515b6b;
+  border-color: #e2e5e9;
+  box-shadow: none;
+  transform: none;
+}
+.booking-validation ul {
+  padding-left: 18px;
+  margin-top: 8px;
+}
+.booking-validation:focus {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
 }

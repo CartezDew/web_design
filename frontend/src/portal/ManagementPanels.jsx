@@ -9,6 +9,10 @@ import {
   CustomDatePicker,
   Notice,
 } from "../components/Controls";
+import {
+  CONSULTATION_TIME_LABEL,
+  formatConsultation,
+} from "../content/scheduling";
 import { SlotPicker } from "../pages/BookingPage";
 import { useRecords } from "./useRecords";
 import { More } from "./Dashboard";
@@ -168,17 +172,15 @@ export function AppointmentsPanel() {
               : "No consultations yet."}
           </p>
         )}
+        <p className="form-help">
+          All meetings and scheduling use {CONSULTATION_TIME_LABEL}.
+        </p>
         <div className="appointment-list">
           {records.data.map((item) => (
             <article key={item.id}>
               <div className="appointment-summary">
                 <div>
-                  <strong>
-                    {new Date(item.starts_at).toLocaleString([], {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </strong>
+                  <strong>{formatConsultation(item.starts_at)}</strong>
                   <p>
                     {item.first_name} {item.last_name} · {item.email}
                   </p>
@@ -331,8 +333,8 @@ export function AvailabilityPanel() {
         success={success}
       />
       <p className="availability-timezone">
-        Business hours are in America/New_York. Clients see slots in their
-        selected time zone.
+        All availability and appointments use {CONSULTATION_TIME_LABEL}. Clients
+        see the same Eastern times when booking and in their portal.
       </p>
       <div className="availability-layout">
         <section className="portal-panel">
@@ -370,7 +372,14 @@ export function AvailabilityPanel() {
               <li key={item.id}>
                 <span>
                   <strong>{weekdays[item.weekday]}</strong>
-                  {item.start_time.slice(0, 5)}–{item.end_time.slice(0, 5)}
+                  {times.find(
+                    (time) => time.value === item.start_time.slice(0, 5),
+                  )?.label || item.start_time.slice(0, 5)}
+                  –
+                  {times.find(
+                    (time) => time.value === item.end_time.slice(0, 5),
+                  )?.label || item.end_time.slice(0, 5)}{" "}
+                  · Eastern
                 </span>
                 <button
                   disabled={working}

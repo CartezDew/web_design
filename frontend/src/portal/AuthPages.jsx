@@ -6,7 +6,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, House } from "lucide-react";
 import { apiRequest, resetCsrf } from "../api";
 import { useAuth } from "../AuthContext";
 
@@ -242,9 +242,15 @@ export function AcceptInvitationPage() {
 function AuthLayout({ eyebrow, title, children }) {
   return (
     <main className="auth-page">
-      <Link className="wordmark" to="/" aria-label="Home">
-        C<span>/</span>D
-      </Link>
+      <header className="auth-header">
+        <Link className="wordmark" to="/" aria-label="Home">
+          C<span>/</span>D
+        </Link>
+        <Link className="auth-home-link" to="/" aria-label="Back to home">
+          <House size={20} aria-hidden="true" />
+          <span>Home</span>
+        </Link>
+      </header>
       <section className="auth-card">
         <p className="kicker">{eyebrow}</p>
         <h1>{title}</h1>

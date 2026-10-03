@@ -1,4 +1,6 @@
 import { ArrowUpRight, ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { portfolio } from "../content/site";
 import { stories } from "../content/stories";
 import Reveal from "../Reveal";
@@ -6,11 +8,20 @@ import "./Work.css";
 
 export function ProjectCard({ project, index = 0 }) {
   const story = stories[project.slug];
+  const [storyOpen, setStoryOpen] = useState(false);
+  const { hash, key } = useLocation();
+  const projectId = `project-${project.slug}`;
+  const storyId = `${projectId}-story`;
+  useEffect(() => {
+    if (hash === `#${projectId}`) setStoryOpen(true);
+  }, [hash, key, projectId]);
   return (
     <Reveal
       as="article"
       className={`work-item work-item--${project.slug}`}
+      id={projectId}
       delay={index * 0.05}
+      scale={0.98}
     >
       <div className="work-image">
         <img
@@ -26,10 +37,27 @@ export function ProjectCard({ project, index = 0 }) {
         <h3>{project.title}</h3>
         <span>{story.intro}</span>
       </div>
-      <details className="work-story" id={`project-${project.slug}`}>
-        <summary>
-          Behind the project <ChevronDown size={17} />
-        </summary>
+      <div className="work-actions">
+        <button
+          className="project-story-button"
+          type="button"
+          aria-expanded={storyOpen}
+          aria-controls={storyId}
+          onClick={() => setStoryOpen((open) => !open)}
+        >
+          Behind the project <ChevronDown size={17} aria-hidden="true" />
+        </button>
+        <a
+          className="project-live-link"
+          href={project.url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Visit ${project.title} website (opens a new tab)`}
+        >
+          Visit website <ArrowUpRight size={17} aria-hidden="true" />
+        </a>
+      </div>
+      <div className="work-story" id={storyId} hidden={!storyOpen}>
         <div className="work-story-copy">
           <h4>The challenge</h4>
           <p>{story.challenge}</p>
@@ -51,16 +79,7 @@ export function ProjectCard({ project, index = 0 }) {
             </a>
           )}
         </div>
-      </details>
-      <a
-        className="text-link project-live-link"
-        href={project.url}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={`Visit ${project.title} (opens a new tab)`}
-      >
-        Visit live project <ArrowUpRight size={16} />
-      </a>
+      </div>
     </Reveal>
   );
 }
@@ -68,10 +87,8 @@ export function ProjectCard({ project, index = 0 }) {
 export default function Work() {
   return (
     <section className="work section shell" id="work">
-      <p className="section-label">
-        <span>01</span> Selected work
-      </p>
-      <div className="section-heading">
+      <p className="section-label">Selected work</p>
+      <Reveal className="section-heading" distance={20}>
         <h2>
           Good ideas.
           <br />
@@ -81,7 +98,7 @@ export default function Work() {
           Different businesses. Different challenges. The same care for the
           details that make an experience work.
         </p>
-      </div>
+      </Reveal>
       <div className="work-grid">
         {portfolio.slice(0, 2).map((project, index) => (
           <ProjectCard key={project.slug} project={project} index={index} />

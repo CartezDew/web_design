@@ -69,14 +69,18 @@ export async function apiRequest(path, options = {}) {
     if (response.status === 204) return null;
     const data = await response.json().catch(() => {
       throw new ApiError(
-        "The service is temporarily unavailable. Please try again or email info@marc-d.com.",
+        "The service is temporarily unavailable. Please try again or email letsbuild@marcdbycartez.com.",
         response.status || 502,
       );
     });
     if (!response.ok) {
       if (response.status === 403) resetCsrf();
       throw new ApiError(
-        errorMessage(data.error?.details || data),
+        response.status === 429
+          ? "Please try again shortly. Your information is still here. If you need help, email letsbuild@marcdbycartez.com."
+          : response.status >= 500
+            ? "The service is temporarily unavailable. Your information is still here. Please try again or email letsbuild@marcdbycartez.com."
+            : errorMessage(data.error?.details || data),
         response.status,
         data.error?.details || data,
       );
@@ -85,7 +89,7 @@ export async function apiRequest(path, options = {}) {
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(
-      "We couldn’t reach the server. Your information is still here. Please try again, or email info@marc-d.com.",
+      "We couldn’t reach the server. Your information is still here. Please try again, or email letsbuild@marcdbycartez.com.",
       0,
     );
   }

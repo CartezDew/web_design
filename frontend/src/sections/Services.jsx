@@ -2,13 +2,14 @@ import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { services } from "../content/site";
 import { JsonLd, siteUrl } from "../content/seo";
+import websiteShowcase from "../../assets/websites/website_images.webp";
 import Reveal from "../Reveal";
 import "./Services.css";
 const short = [
   "Strategic, modern websites that look great and do real work.",
   "Custom applications built around the way your business works.",
   "Connect your tools and data. Automate what matters.",
-  "Help people and search systems understand your business.",
+  "SEO for search engines. Clear answers for AI search (AEO).",
   "Practical AI tools and creative content with a clear purpose.",
   "Stronger foundations for a safer, more reliable business.",
   "Get your project live, then keep moving forward.",
@@ -17,29 +18,39 @@ export default function Services() {
   return (
     <section className="services section" id="services">
       <div className="shell services-layout">
-        <Reveal className="services-intro">
-          <p className="section-label">
-            <span>02</span> Services
-          </p>
+        <Reveal className="services-intro" direction="left" distance={18}>
+          <p className="section-label">What I do</p>
           <h2>
-            The right tools.
+            Useful design.
             <br />
-            For your next chapter.
+            Solid engineering.
           </h2>
           <p>
             From your first website to the systems behind your business. I
             connect design and development to what you actually need.
           </p>
+          <img
+            className="services-showcase"
+            src={websiteShowcase}
+            alt="Cartez Dewberry website displayed responsively on a laptop and mobile phone"
+            width="560"
+            height="355"
+            loading="lazy"
+          />
         </Reveal>
         <div className="service-list">
           {services.map((service, i) => (
-            <Reveal key={service.slug} delay={i * 0.03}>
+            <Reveal
+              key={service.slug}
+              delay={i * 0.04}
+              direction="right"
+              distance={18}
+            >
               <details
                 className="service-detail"
                 id={`service-${service.slug}`}
               >
                 <summary className="service-row">
-                  <span className="service-number">{service.number}</span>
                   <div>
                     <h3>
                       {i === 5
@@ -84,6 +95,7 @@ export default function Services() {
             url: `${siteUrl}/#service-${service.slug}`,
             provider: {
               "@type": "Person",
+              "@id": `${siteUrl}/#cartez`,
               name: "Cartez Dewberry",
               url: siteUrl,
             },

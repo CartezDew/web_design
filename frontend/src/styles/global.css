@@ -304,3 +304,36 @@ summary:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* Shared microinteractions from the main design; section motion stays in its own CSS. */
+.button {
+  transition:
+    background 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+.button:hover {
+  box-shadow: 0 12px 24px -10px rgba(15, 23, 42, 0.35);
+}
+.button:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+.button svg,
+.text-link svg,
+.linkedin-link svg:last-child {
+  transition: transform 220ms ease;
+}
+.button:hover svg,
+.text-link:hover svg,
+.linkedin-link:hover svg:last-child {
+  transform: translateX(3px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .button:hover,
+  .button:active:not(:disabled),
+  .button:hover svg,
+  .text-link:hover svg,
+  .linkedin-link:hover svg:last-child {
+    transform: none;
+  }
+}

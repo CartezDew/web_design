@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, Menu, X } from "lucide-react";
+import AboutMenu from "./AboutMenu";
 import "./SiteLayout.css";
 export function Logo() {
   return (
@@ -41,8 +42,6 @@ export function SiteHeader() {
           {[
             ["/#work", "Work"],
             ["/#services", "Services"],
-            ["/#about", "About"],
-            ["/#pricing", "Pricing"],
           ].map(([to, text]) => (
             <Link
               key={to}
@@ -57,6 +56,16 @@ export function SiteHeader() {
               {text}
             </Link>
           ))}
+          <AboutMenu navigationOpen={open} onNavigate={() => setOpen(false)} />
+          <Link
+            to="/#pricing"
+            onClick={() => setOpen(false)}
+            aria-current={
+              pathname === "/" && hash === "#pricing" ? "location" : undefined
+            }
+          >
+            Pricing
+          </Link>
           <Link
             className="button button--red nav-cta"
             to="/#contact"

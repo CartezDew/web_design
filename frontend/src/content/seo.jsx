@@ -12,7 +12,14 @@ export function pageMeta(title, description, path = "/", noindex = false) {
     { property: "og:url", content: url },
     { property: "og:type", content: "website" },
     { property: "og:image", content: siteUrl + "/social-preview.webp" },
+    {
+      property: "og:image:alt",
+      content: "Cartez Dewberry — custom web design and development",
+    },
     { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: siteUrl + "/social-preview.webp" },
     ...(noindex ? [{ name: "robots", content: "noindex, nofollow" }] : []),
   ];
 }
