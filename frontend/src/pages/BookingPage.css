@@ -248,7 +248,8 @@
   font-weight: 700;
   margin-bottom: 8px;
 }
-.booking-contact:disabled input {
+.booking-contact:disabled input,
+.booking-contact--locked input {
   background: #f1f2f4;
   color: #6b7280;
   cursor: not-allowed;

@@ -183,6 +183,7 @@
   min-width: 0;
   min-height: 550px;
   padding: 72px 28px;
+  overflow-x: clip;
 }
 .hero-card {
   position: relative;

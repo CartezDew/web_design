@@ -62,10 +62,21 @@ it("locks contact fields until a slot is selected and reveals errors only after 
   );
   const request = screen.getByRole("button", { name: "Request consultation" });
   expect(request).toHaveAttribute("data-incomplete", "true");
-  expect(screen.getByRole("textbox", { name: "First name" })).toBeDisabled();
-  expect(screen.getByRole("textbox", { name: "Email address" })).toBeDisabled();
+  expect(screen.getByRole("textbox", { name: "First name" })).toHaveAttribute(
+    "readonly",
+  );
+  expect(
+    screen.getByRole("textbox", { name: "Email address" }),
+  ).toHaveAttribute("readonly");
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   expect(screen.queryByText("Your time zone")).not.toBeInTheDocument();
+  fireEvent.focus(screen.getByRole("textbox", { name: "First name" }));
+  expect(
+    within(screen.getByRole("alert")).getByText(
+      "Choose an available date and time.",
+    ),
+  ).toBeInTheDocument();
+  expect(screen.queryByText("Enter your first name.")).not.toBeInTheDocument();
   fireEvent.click(request);
   const summary = screen.getByRole("alert");
   expect(
@@ -84,7 +95,9 @@ it("locks contact fields until a slot is selected and reveals errors only after 
   );
   fireEvent.click(screen.getByRole("button", { name: "Choose a test date" }));
   fireEvent.click(screen.getByRole("radio", { name: "10:00 AM" }));
-  expect(screen.getByRole("textbox", { name: "First name" })).toBeEnabled();
+  expect(
+    screen.getByRole("textbox", { name: "First name" }),
+  ).not.toHaveAttribute("readonly");
   fireEvent.change(screen.getByRole("textbox", { name: "First name" }), {
     target: { value: " Alex " },
   });
@@ -93,6 +106,10 @@ it("locks contact fields until a slot is selected and reveals errors only after 
   });
   fireEvent.change(screen.getByRole("textbox", { name: "Email address" }), {
     target: { value: "invalid" },
+  });
+  expect(request).toHaveAttribute("data-incomplete", "true");
+  fireEvent.change(screen.getByRole("textbox", { name: "Email address" }), {
+    target: { value: "alex@example.con" },
   });
   expect(request).toHaveAttribute("data-incomplete", "true");
   fireEvent.change(screen.getByRole("textbox", { name: "Email address" }), {
@@ -128,7 +145,9 @@ it("keeps validation quiet while choosing a slot and locks fields again when the
     ).toBeEnabled(),
   );
   fireEvent.click(screen.getByRole("button", { name: "Choose a test date" }));
-  expect(screen.getByRole("textbox", { name: "First name" })).toBeDisabled();
+  expect(screen.getByRole("textbox", { name: "First name" })).toHaveAttribute(
+    "readonly",
+  );
   fireEvent.click(screen.getByRole("radio", { name: "10:00 AM" }));
   fireEvent.change(screen.getByRole("textbox", { name: "First name" }), {
     target: { value: "Alex" },
@@ -136,7 +155,9 @@ it("keeps validation quiet while choosing a slot and locks fields again when the
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   expect(screen.queryByText("Enter your last name.")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Choose a test date" }));
-  expect(screen.getByRole("textbox", { name: "First name" })).toBeDisabled();
+  expect(screen.getByRole("textbox", { name: "First name" })).toHaveAttribute(
+    "readonly",
+  );
   expect(screen.getByRole("textbox", { name: "First name" })).toHaveValue(
     "Alex",
   );
@@ -180,7 +201,10 @@ it("shares contact edits in both directions and prevents intake progression with
   const intake = within(
     screen.getByRole("region", { name: "Tell me what you’re building." }),
   );
-  expect(intake.getByRole("button", { name: "Continue" })).toBeDisabled();
+  expect(intake.getByRole("button", { name: "Continue" })).toHaveAttribute(
+    "data-incomplete",
+    "true",
+  );
   await waitFor(() =>
     expect(
       booking.getByRole("button", { name: "Choose a test date" }),
@@ -203,7 +227,10 @@ it("shares contact edits in both directions and prevents intake progression with
   expect(intake.getByRole("textbox", { name: "Email address" })).toHaveValue(
     "alex@example.test",
   );
-  expect(intake.getByRole("button", { name: "Continue" })).toBeDisabled();
+  expect(intake.getByRole("button", { name: "Continue" })).toHaveAttribute(
+    "data-incomplete",
+    "true",
+  );
   fireEvent.change(intake.getByRole("textbox", { name: "Your name" }), {
     target: { value: "Mary Ann Client" },
   });
@@ -223,11 +250,22 @@ it("shares contact edits in both directions and prevents intake progression with
     intake.getByRole("textbox", { name: "What do you have in mind?" }),
     { target: { value: "A website with online bookings." } },
   );
-  expect(intake.getByRole("button", { name: "Continue" })).toBeEnabled();
+  expect(intake.getByRole("button", { name: "Continue" })).not.toHaveAttribute(
+    "data-incomplete",
+  );
   fireEvent.change(intake.getByRole("textbox", { name: "Email address" }), {
     target: { value: "invalid" },
   });
-  expect(intake.getByRole("button", { name: "Continue" })).toBeDisabled();
+  expect(intake.getByRole("button", { name: "Continue" })).toHaveAttribute(
+    "data-incomplete",
+    "true",
+  );
+  fireEvent.click(intake.getByRole("button", { name: "Continue" }));
+  expect(
+    within(intake.getByRole("alert")).getByText(
+      "Enter a real email address, like name@example.com.",
+    ),
+  ).toBeInTheDocument();
   fireEvent.change(intake.getByRole("textbox", { name: "Email address" }), {
     target: { value: "mary@example.test" },
   });

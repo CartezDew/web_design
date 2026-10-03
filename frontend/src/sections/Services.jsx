@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { services } from "../content/site";
 import { JsonLd, siteUrl } from "../content/seo";
+import { servedCountry, servedRegions } from "../content/locations";
 import websiteShowcase from "../../assets/websites/website_images.webp";
 import Reveal from "../Reveal";
 import "./Services.css";
@@ -41,15 +42,14 @@ export default function Services() {
         </Reveal>
         <div className="service-list">
           {services.map((service, i) => (
-            <Reveal
-              key={service.slug}
-              direction="right"
-              distance={18}
-            >
+            <Reveal key={service.slug} direction="right" distance={18}>
               <details
                 className="service-detail"
                 id={`service-${service.slug}`}
-                onToggle={(event) => { if (event.currentTarget.open) track("service_view", { service_interest: service.slug }); }}
+                onToggle={(event) => {
+                  if (event.currentTarget.open)
+                    track("service_view", { service_interest: service.slug });
+                }}
               >
                 <summary className="service-row">
                   <div>
@@ -100,6 +100,10 @@ export default function Services() {
               name: "Cartez Dewberry",
               url: siteUrl,
             },
+            areaServed: [
+              { "@type": "Country", name: servedCountry },
+              ...servedRegions.map(({ name }) => ({ "@type": "State", name })),
+            ],
           })),
         }}
       />

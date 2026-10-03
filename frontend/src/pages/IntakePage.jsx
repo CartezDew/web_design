@@ -1,5 +1,9 @@
 import { track, trackSaved, failureClass } from "../analytics/client";
-import { businessTypes, serviceInterests, leadProperties } from "../analytics/catalog";
+import {
+  businessTypes,
+  serviceInterests,
+  leadProperties,
+} from "../analytics/catalog";
 import { useFormAnalytics } from "../analytics/useFormAnalytics";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -78,19 +82,41 @@ export default function IntakePage({
   const form = { ...details, name: contact.name, email: contact.email };
   const stepId = ["contact", "direction", "review"][step];
   const formAnalytics = useFormAnalytics("brief", stepId);
-  const contactReady =
-    !!form.name.trim() &&
-    validContactEmail(form.email) &&
-    !!form.overview.trim();
+  const contactErrors = {
+    ...(!form.name.trim() && { name: "Enter your name." }),
+    ...(!validContactEmail(form.email) && {
+      email: "Enter a real email address, like name@example.com.",
+    }),
+    ...(!form.overview.trim() && {
+      overview: "Tell me what you have in mind.",
+    }),
+  };
+  const contactReady = Object.keys(contactErrors).length === 0;
   const [files, setFiles] = useState([]);
   const [brief, setBrief] = useState(null);
   const [working, setWorking] = useState(false);
   const [complete, setComplete] = useState(false);
+  const [attempted, setAttempted] = useState(false);
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
   const key = useRef("");
   const challenge = useRef(null);
   const spamTrap = useRef(null);
+  const validationSummary = useRef(null);
+  const verificationError =
+    step === 2 && !brief && import.meta.env.VITE_TURNSTILE_SITE_KEY && !token
+      ? {
+          verification:
+            "Complete the security check before sending your brief.",
+        }
+      : {};
+  const requiredErrors =
+    step === 0
+      ? contactErrors
+      : step === 2
+        ? { ...(!contactReady ? contactErrors : {}), ...verificationError }
+        : {};
+  const ready = Object.keys(requiredErrors).length === 0;
   useEffect(() => {
     preparePublicForm().catch(() => {});
   }, []);
@@ -111,16 +137,42 @@ export default function IntakePage({
   }, [modalOpen, selectedPackage, brief]);
   const update = (name, value) => {
     formAnalytics.start();
-    if (["business_type", "service_interest", "goal", "package", "content_readiness"].includes(name))
-      track("form_choice", { form_type: "brief", step_id: stepId, field_id: name, ...leadProperties({ ...form, [name]: value }) });
+    if (
+      [
+        "business_type",
+        "service_interest",
+        "goal",
+        "package",
+        "content_readiness",
+      ].includes(name)
+    )
+      track("form_choice", {
+        form_type: "brief",
+        step_id: stepId,
+        field_id: name,
+        ...leadProperties({ ...form, [name]: value }),
+      });
     if (name === "name" || name === "email") updateContact(name, value);
     else setForm((f) => ({ ...f, [name]: value }));
   };
   const move = (n) => {
-    if (n !== step) track("form_step_view", { form_type: "brief", step_id: ["contact", "direction", "review"][n] });
+    if (n !== step)
+      track("form_step_view", {
+        form_type: "brief",
+        step_id: ["contact", "direction", "review"][n],
+      });
     setStep(n);
+    setAttempted(false);
     setError("");
     requestAnimationFrame(() => heading.current?.focus());
+  };
+  const showValidation = () => {
+    track("form_submit_error", {
+      form_type: "brief",
+      step_id: stepId,
+      failure_class: "validation",
+    });
+    requestAnimationFrame(() => validationSummary.current?.focus());
   };
   const remove = async (item) => {
     setError("");
@@ -134,11 +186,13 @@ export default function IntakePage({
   const send = async (e) => {
     e.preventDefault();
     if (working) return;
+    setAttempted(true);
     if (!brief && !contactReady) {
-      move(0);
-      setError(
-        "Enter your name, a valid email address, and a short project idea before continuing.",
-      );
+      if (step !== 0) {
+        setStep(0);
+        setError("");
+      }
+      showValidation();
       return;
     }
     if (step < 2) {
@@ -146,7 +200,14 @@ export default function IntakePage({
       move(step + 1);
       return;
     }
-    track("form_submit_attempt", { form_type: "brief", ...leadProperties(form) });
+    if (Object.keys(verificationError).length) {
+      showValidation();
+      return;
+    }
+    track("form_submit_attempt", {
+      form_type: "brief",
+      ...leadProperties(form),
+    });
     setWorking(true);
     setError("");
     if (!key.current) key.current = crypto.randomUUID();
@@ -194,7 +255,11 @@ export default function IntakePage({
           );
           track("upload_outcome", { form_type: "brief", outcome: "success" });
         } catch (uploadError) {
-          track("upload_outcome", { form_type: "brief", outcome: "error", failure_class: failureClass(uploadError) });
+          track("upload_outcome", {
+            form_type: "brief",
+            outcome: "error",
+            failure_class: failureClass(uploadError),
+          });
           setFiles((all) =>
             all.map((i) =>
               i.key === item.key
@@ -207,7 +272,11 @@ export default function IntakePage({
       }
       setComplete(true);
     } catch (e) {
-      if (!saved) track("form_submit_error", { form_type: "brief", failure_class: failureClass(e) });
+      if (!saved)
+        track("form_submit_error", {
+          form_type: "brief",
+          failure_class: failureClass(e),
+        });
       setError(
         saved
           ? `Your brief is saved. Some files still need to upload. ${e.message}`
@@ -308,9 +377,28 @@ export default function IntakePage({
               ][step]
             }
           </p>
-          <form className="form-stack" onSubmit={send} onFocusCapture={formAnalytics.start}
-            onInvalidCapture={() => track("form_submit_error", { form_type: "brief", step_id: stepId, failure_class: "validation" })}>
+          <form
+            className="form-stack"
+            onSubmit={send}
+            onFocusCapture={formAnalytics.start}
+            noValidate
+          >
             <FormSpamTrap inputRef={spamTrap} />
+            {attempted && !ready && (
+              <div
+                className="notice notice--error intake-validation"
+                role="alert"
+                tabIndex={-1}
+                ref={validationSummary}
+              >
+                <strong>A few details are still needed.</strong>
+                <ul>
+                  {Object.values(requiredErrors).map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {error && (
               <div ref={errorHeading} tabIndex="-1" className="intake-error">
                 <Notice error={error} />
@@ -339,6 +427,7 @@ export default function IntakePage({
                       autoComplete="name"
                       required
                       maxLength={200}
+                      error={attempted ? contactErrors.name : undefined}
                       value={form.name}
                       onChange={(e) => update("name", e.target.value)}
                     />
@@ -349,6 +438,7 @@ export default function IntakePage({
                       type="email"
                       maxLength={254}
                       required
+                      error={attempted ? contactErrors.email : undefined}
                       value={form.email}
                       onChange={(e) => update("email", e.target.value)}
                     />
@@ -371,10 +461,18 @@ export default function IntakePage({
                     />
                   </div>
                   <div className="form-row">
-                    <CustomSelect label="Business category (optional)" value={form.business_type}
-                      onChange={(value) => update("business_type", value)} options={businessTypes} />
-                    <CustomSelect label="Service you’re interested in (optional)" value={form.service_interest}
-                      onChange={(value) => update("service_interest", value)} options={serviceInterests} />
+                    <CustomSelect
+                      label="Business category (optional)"
+                      value={form.business_type}
+                      onChange={(value) => update("business_type", value)}
+                      options={businessTypes}
+                    />
+                    <CustomSelect
+                      label="Service you’re interested in (optional)"
+                      value={form.service_interest}
+                      onChange={(value) => update("service_interest", value)}
+                      options={serviceInterests}
+                    />
                   </div>
                   <Field
                     label="What do you have in mind?"
@@ -382,6 +480,7 @@ export default function IntakePage({
                     required
                     maxLength={10000}
                     placeholder="What does your business do, and what should your new website or app help people do?"
+                    error={attempted ? contactErrors.overview : undefined}
                     value={form.overview}
                     onChange={(e) => update("overview", e.target.value)}
                   />
@@ -573,7 +672,11 @@ export default function IntakePage({
                             .map(([key, label]) => (
                               <div key={key}>
                                 <dt>{label}</dt>
-                                <dd>{[...businessTypes, ...serviceInterests].find((item) => item.value === form[key])?.label || form[key]}</dd>
+                                <dd>
+                                  {[...businessTypes, ...serviceInterests].find(
+                                    (item) => item.value === form[key],
+                                  )?.label || form[key]}
+                                </dd>
                               </div>
                             ))}
                         </dl>
@@ -625,8 +728,12 @@ export default function IntakePage({
               )}
               <button
                 className="button button--red"
-                data-analytics-id={step < 2 ? "form_brief_continue" : "form_brief_submit"}
-                disabled={working || (step === 0 && !contactReady)}
+                data-analytics-id={
+                  step < 2 ? "form_brief_continue" : "form_brief_submit"
+                }
+                disabled={working}
+                data-incomplete={!ready || undefined}
+                aria-describedby="intake-submit-help"
               >
                 {working
                   ? "Saving your project…"
@@ -638,6 +745,10 @@ export default function IntakePage({
                 <ArrowRight size={16} />
               </button>
             </div>
+            <p className="form-help" id="intake-submit-help">
+              {!ready &&
+                "Complete the required details to continue. Press the button to see what’s missing. "}
+            </p>
           </form>
           <p className="intake-draft-note">
             You can close and reopen this form without losing your answers.

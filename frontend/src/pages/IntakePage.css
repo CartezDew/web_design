@@ -166,6 +166,14 @@
   outline: 2px solid var(--red);
   outline-offset: 4px;
 }
+.intake-validation ul {
+  padding-left: 18px;
+  margin-top: 8px;
+}
+.intake-validation:focus {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
 .intake-discovery-details {
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -242,13 +250,13 @@
   border-bottom: 1px solid #aeb6b1;
   border-radius: 0;
   background: transparent;
-  font-size: 0.86rem;
+  font-size: 16px;
 }
 .intake-form-panel .field textarea {
   border: 1px solid #c9ceca;
   border-radius: 0;
   padding: 13px;
-  font-size: 0.86rem;
+  font-size: 16px;
 }
 .intake-form-panel .field :is(input, textarea):focus {
   border-color: var(--red);
@@ -466,7 +474,9 @@
   }
 }
 
-.intake-form-nav .button:disabled {
+.intake-form-nav .button:disabled,
+.intake-form-nav .button[data-incomplete],
+.intake-form-nav .button[data-incomplete]:hover {
   background: #e2e5e9;
   color: #515b6b;
   border-color: #e2e5e9;

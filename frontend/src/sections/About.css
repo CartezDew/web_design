@@ -4,7 +4,7 @@
 }
 .about {
   display: grid;
-  grid-template-columns: 0.82fr 1fr;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
   gap: 100px;
   align-items: center;
   padding-block: 140px;

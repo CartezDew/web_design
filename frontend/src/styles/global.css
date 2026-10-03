@@ -4,16 +4,24 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 100px;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 body {
   margin: 0;
-  min-width: 280px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   color: var(--ink);
   background: #fff;
   font-family: var(--body);
   font-size: 16px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+}
+#main {
+  overflow-x: clip;
 }
 button,
 input,

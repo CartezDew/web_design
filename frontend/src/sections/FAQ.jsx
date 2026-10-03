@@ -2,6 +2,7 @@ import { track } from "../analytics/client";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { faqs } from "../content/site";
+import { JsonLd, siteUrl } from "../content/seo";
 import Reveal from "../Reveal";
 import "./FAQ.css";
 export default function FAQ() {
@@ -26,8 +27,14 @@ export default function FAQ() {
         </Reveal>
         <div className="faq-list">
           {faqs.map((faq, index) => (
-            <details key={faq.question} className="faq-item"
-              onToggle={(event) => { if (event.currentTarget.open) track("faq_open", { faq_id: `faq_${index + 1}` }); }}>
+            <details
+              key={faq.question}
+              className="faq-item"
+              onToggle={(event) => {
+                if (event.currentTarget.open)
+                  track("faq_open", { faq_id: `faq_${index + 1}` });
+              }}
+            >
               <summary>
                 <strong>{faq.question}</strong>
                 <ChevronDown size={19} />
@@ -37,6 +44,18 @@ export default function FAQ() {
           ))}
         </div>
       </div>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "@id": `${siteUrl}/#faq-page`,
+          mainEntity: faqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: { "@type": "Answer", text: faq.answer },
+          })),
+        }}
+      />
     </section>
   );
 }

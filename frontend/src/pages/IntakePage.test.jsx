@@ -14,6 +14,52 @@ vi.mock("../api", () => ({
 
 beforeEach(() => vi.clearAllMocks());
 
+it("shows required field errors after Continue, matching the booking form", () => {
+  render(
+    <MemoryRouter>
+      <LeadContactProvider>
+        <IntakePage />
+      </LeadContactProvider>
+    </MemoryRouter>,
+  );
+  const continueButton = screen.getByRole("button", { name: "Continue" });
+  expect(continueButton).toBeEnabled();
+  expect(continueButton).toHaveAttribute("data-incomplete", "true");
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  fireEvent.click(continueButton);
+  const summary = screen.getByRole("alert");
+  expect(summary).toHaveTextContent("Enter your name.");
+  expect(summary).toHaveTextContent(
+    "Enter a real email address, like name@example.com.",
+  );
+  expect(summary).toHaveTextContent("Tell me what you have in mind.");
+  expect(screen.getByRole("textbox", { name: /Your name/ })).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  fireEvent.change(screen.getByLabelText("Your name", { exact: false }), {
+    target: { value: "Alex Client" },
+  });
+  fireEvent.change(screen.getByLabelText("Email address", { exact: false }), {
+    target: { value: "alex@example.con" },
+  });
+  fireEvent.change(
+    screen.getByLabelText("What do you have in mind?", { exact: false }),
+    { target: { value: "A booking website for my business." } },
+  );
+  expect(summary).toHaveTextContent(
+    "Enter a real email address, like name@example.com.",
+  );
+  expect(summary).not.toHaveTextContent("Enter your name.");
+  fireEvent.change(screen.getByLabelText("Email address", { exact: false }), {
+    target: { value: "alex@example.com" },
+  });
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(continueButton).not.toHaveAttribute("data-incomplete");
+  fireEvent.click(continueButton);
+  expect(screen.getByText("Let’s give your idea shape.")).toBeInTheDocument();
+});
+
 function startBrief() {
   render(
     <MemoryRouter>

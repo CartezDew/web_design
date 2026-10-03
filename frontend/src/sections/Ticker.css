@@ -1,6 +1,7 @@
 .ticker {
   position: relative;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: hidden;
   padding: 18px 0;
   color: #fff;
   background: #05070b;

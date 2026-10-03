@@ -110,7 +110,9 @@ export function SiteFooter() {
           >
             LinkedIn ↗
           </a>
-          <Link to="/#analytics-settings" data-analytics-ignore>Privacy settings</Link>
+          <Link to="/#analytics-settings" data-analytics-ignore>
+            Privacy settings
+          </Link>
         </div>
       </div>
     </footer>
@@ -140,7 +142,8 @@ function SectionNavigation() {
       const disclosure = target.closest("details");
       if (disclosure) disclosure.open = true;
       target.scrollIntoView({ block: "start" });
-      if (hash === "#analytics-settings") target.querySelector("h3")?.focus({ preventScroll: true });
+      if (hash === "#analytics-settings")
+        target.querySelector("h3")?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
   }, [pathname, hash, key]);

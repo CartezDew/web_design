@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -10,10 +10,22 @@ import { ArrowUp } from "lucide-react";
 import "./BackToTop.css";
 
 export default function BackToTop() {
-  const [visible, setVisible] = useState(false);
+  const [pastThreshold, setPastThreshold] = useState(false);
+  const [footerInView, setFooterInView] = useState(false);
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, "change", (y) => setVisible(y > 500));
+  useMotionValueEvent(scrollY, "change", (y) => setPastThreshold(y > 500));
+  useEffect(() => {
+    const footer = document.querySelector(".site-footer");
+    if (!footer || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setFooterInView(entry.isIntersecting),
+      { rootMargin: "0px 0px -12% 0px", threshold: 0 },
+    );
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
+  const visible = pastThreshold && !footerInView;
   return (
     <AnimatePresence>
       {visible && (
@@ -22,10 +34,13 @@ export default function BackToTop() {
           className="back-to-top"
           aria-label="Back to top"
           title="Back to top"
-          initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
-          transition={{ duration: reduceMotion ? 0 : 0.2 }}
+          exit={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+          transition={{
+            duration: reduceMotion ? 0 : 0.28,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
           onClick={() =>
             window.scrollTo({
               top: 0,

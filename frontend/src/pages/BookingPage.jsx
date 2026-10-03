@@ -38,13 +38,22 @@ export function SlotPicker({ value, onChange, refresh = 0 }) {
       .then((data) => {
         if (active) {
           setDays(data);
-          track("booking_availability", { form_type: "booking", availability: data.some((day) => day.slots.length) ? "available" : "empty" });
+          track("booking_availability", {
+            form_type: "booking",
+            availability: data.some((day) => day.slots.length)
+              ? "available"
+              : "empty",
+          });
         }
       })
       .catch((e) => {
         if (active) {
           setError(e.message);
-          track("booking_availability", { form_type: "booking", availability: "error", failure_class: failureClass(e) });
+          track("booking_availability", {
+            form_type: "booking",
+            availability: "error",
+            failure_class: failureClass(e),
+          });
           setDays([]);
         }
       })
@@ -176,6 +185,7 @@ export default function BookingPage() {
   const { contact: form, updateContact: change } = useLeadContact();
   const [slot, setSlot] = useState("");
   const [attempted, setAttempted] = useState(false);
+  const [slotPrompted, setSlotPrompted] = useState(false);
   const validationSummary = useRef(null);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
@@ -193,7 +203,7 @@ export default function BookingPage() {
     ...(!form.first_name.trim() && { first_name: "Enter your first name." }),
     ...(!form.last_name.trim() && { last_name: "Enter your last name." }),
     ...(!validContactEmail(form.email) && {
-      email: "Enter a valid email address.",
+      email: "Enter a real email address, like name@example.com.",
     }),
     ...(import.meta.env.VITE_TURNSTILE_SITE_KEY &&
       !token && {
@@ -207,7 +217,10 @@ export default function BookingPage() {
     if (working) return;
     setAttempted(true);
     if (!ready) {
-      track("form_submit_error", { form_type: "booking", failure_class: "validation" });
+      track("form_submit_error", {
+        form_type: "booking",
+        failure_class: "validation",
+      });
       requestAnimationFrame(() => validationSummary.current?.focus());
       return;
     }
@@ -231,7 +244,10 @@ export default function BookingPage() {
       setSaved(data);
       trackSaved(data.id, "booking");
     } catch (e) {
-      track("form_submit_error", { form_type: "booking", failure_class: failureClass(e) });
+      track("form_submit_error", {
+        form_type: "booking",
+        failure_class: failureClass(e),
+      });
       setError(e.message);
       if (e.status === 409) {
         setSlot("");
@@ -326,7 +342,7 @@ export default function BookingPage() {
             aria-busy={working}
           >
             <FormSpamTrap inputRef={spamTrap} />
-            {attempted && !ready && (
+            {((attempted && !ready) || (slotPrompted && !slot)) && (
               <div
                 className="notice notice--error booking-validation"
                 role="alert"
@@ -335,33 +351,49 @@ export default function BookingPage() {
               >
                 <strong>A few details are still needed.</strong>
                 <ul>
-                  {Object.values(requiredErrors).map((message) => (
+                  {(attempted
+                    ? Object.values(requiredErrors)
+                    : ["Choose an available date and time."]
+                  ).map((message) => (
                     <li key={message}>{message}</li>
                   ))}
                 </ul>
               </div>
             )}
-            <SlotPicker value={slot} onChange={(value) => {
-              setSlot(value);
-              formAnalytics.start();
-              if (value) track("booking_slot_selected", { form_type: "booking" });
-            }} refresh={refresh} />
+            <SlotPicker
+              value={slot}
+              onChange={(value) => {
+                setSlot(value);
+                setSlotPrompted(false);
+                formAnalytics.start();
+                if (value)
+                  track("booking_slot_selected", { form_type: "booking" });
+              }}
+              refresh={refresh}
+            />
             <fieldset
-              className="booking-contact"
-              disabled={!slot || working}
+              className={`booking-contact${!slot ? " booking-contact--locked" : ""}`}
+              disabled={working}
               aria-describedby="booking-contact-help"
+              onFocusCapture={(event) => {
+                if (slot || !event.target.matches("input")) return;
+                setSlotPrompted(true);
+                event.target.blur();
+                requestAnimationFrame(() => validationSummary.current?.focus());
+              }}
             >
               <legend>Your contact details</legend>
               <p id="booking-contact-help" className="form-help">
                 {slot
                   ? "All three fields are required so I can confirm your call."
-                  : "Choose a date and time above to unlock your contact details."}
+                  : "Choose a date and time above before entering your contact details."}
               </p>
               <div className="form-row">
                 <Field
                   label="First name"
                   autoComplete="given-name"
                   maxLength={100}
+                  readOnly={!slot}
                   error={attempted ? requiredErrors.first_name : undefined}
                   required
                   value={form.first_name}
@@ -371,6 +403,7 @@ export default function BookingPage() {
                   label="Last name"
                   autoComplete="family-name"
                   maxLength={100}
+                  readOnly={!slot}
                   error={attempted ? requiredErrors.last_name : undefined}
                   required
                   value={form.last_name}
@@ -381,6 +414,7 @@ export default function BookingPage() {
                 label="Email address"
                 autoComplete="email"
                 maxLength={254}
+                readOnly={!slot}
                 error={attempted ? requiredErrors.email : undefined}
                 type="email"
                 required
@@ -457,7 +491,10 @@ export function ManageBooking() {
           : "Check your email to confirm your new time within one hour.",
       );
     } catch (e) {
-      track("form_submit_error", { form_type: "booking", failure_class: failureClass(e) });
+      track("form_submit_error", {
+        form_type: "booking",
+        failure_class: failureClass(e),
+      });
       setError(e.message);
     } finally {
       setWorking(false);

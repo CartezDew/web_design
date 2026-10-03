@@ -11,10 +11,12 @@ let observer;
 
 function play(element, wait) {
   const { delay, distance, direction, scale } = settings.get(element);
+  const motion =
+    window.matchMedia("(max-width: 760px)").matches ? "up" : direction;
   const offset =
-    direction === "left"
+    motion === "left"
       ? `${-distance}px 0`
-      : direction === "right"
+      : motion === "right"
         ? `${distance}px 0`
         : `0 ${distance}px`;
   element.dataset.revealed = "";

@@ -51,6 +51,4 @@ export function useLeadContact() {
   return context;
 }
 
-export function validContactEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
+export { validContactEmail } from "./email";
