@@ -137,12 +137,20 @@ REST_FRAMEWORK = {
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Cartez Dewberry <letsbuild@marcdbycartez.com>")
 ADMIN_NOTIFICATION_EMAIL = env("ADMIN_NOTIFICATION_EMAIL", default="letsbuild@marcdbycartez.com")
-EMAIL_BACKEND = (
-    "anymail.backends.resend.EmailBackend"
-    if env("RESEND_API_KEY", default="")
-    else "django.core.mail.backends.console.EmailBackend"
-)
+EMAIL_PROVIDER = env("EMAIL_PROVIDER", default="resend" if env("RESEND_API_KEY", default="") else "console")
+EMAIL_BACKENDS = {
+    "resend": "anymail.backends.resend.EmailBackend",
+    "microsoft365": "communications.microsoft_email.EmailBackend",
+    "console": "django.core.mail.backends.console.EmailBackend",
+}
+if EMAIL_PROVIDER not in EMAIL_BACKENDS:
+    raise ImproperlyConfigured("Choose a supported EMAIL_PROVIDER.")
+EMAIL_BACKEND = EMAIL_BACKENDS[EMAIL_PROVIDER]
 ANYMAIL = {"RESEND_API_KEY": env("RESEND_API_KEY", default="")}
+MICROSOFT_CLIENT_ID = env("MICROSOFT_CLIENT_ID", default="")
+MICROSOFT_TENANT_ID = env("MICROSOFT_TENANT_ID", default="")
+MICROSOFT_MAILBOX = env("MICROSOFT_MAILBOX", default="letsbuild@marcdbycartez.com").strip().lower()
+MICROSOFT_TOKEN_ENCRYPTION_KEY = env("MICROSOFT_TOKEN_ENCRYPTION_KEY", default="")
 
 GOOGLE_CLOUD_PROJECT = env("GOOGLE_CLOUD_PROJECT", default="")
 GS_BUCKET_NAME = env("GS_BUCKET_NAME", default="")

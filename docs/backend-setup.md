@@ -6,7 +6,7 @@ The React site lives in `frontend/` and deploys to Netlify. Django lives in `bac
 - `https://api.marcdbycartez.com` for Django
 - Railway PostgreSQL for application records
 - a private Railway storage bucket for uploaded files, plus a separate private file backup bucket
-- Resend for invitations, resets, messages, and status notifications
+- the existing Microsoft 365 mailbox, through Graph, for invitations, resets, messages, and status notifications
 
 Never paste production secrets into source files, chat prompts, screenshots, or terminal commands that will be committed.
 
@@ -32,7 +32,7 @@ In a second terminal, from the repository root:
 npm --prefix frontend run dev
 ```
 
-Open `http://localhost:5173`. Django is at `http://localhost:8000`; the emergency Django admin is `/django-admin/`. Email prints to the backend terminal until a Resend key is configured.
+Open `http://localhost:5173`. Django is at `http://localhost:8000`; the emergency Django admin is `/django-admin/`. Local email prints to the backend terminal with `EMAIL_PROVIDER=console`. Production console delivery is refused so queued messages cannot be falsely marked sent.
 
 ## 2. Create Railway services
 
@@ -98,7 +98,11 @@ FRONTEND_URL=https://marcdbycartez.com
 SECURE_SSL_REDIRECT=true
 DEFAULT_FROM_EMAIL=Cartez Dewberry <letsbuild@marcdbycartez.com>
 ADMIN_NOTIFICATION_EMAIL=letsbuild@marcdbycartez.com
-RESEND_API_KEY=<Resend key>
+EMAIL_PROVIDER=microsoft365
+MICROSOFT_CLIENT_ID=<public Application client ID>
+MICROSOFT_TENANT_ID=<public Directory tenant ID>
+MICROSOFT_MAILBOX=letsbuild@marcdbycartez.com
+MICROSOFT_TOKEN_ENCRYPTION_KEY=<private Fernet key stored only in Railway>
 UPLOAD_STORAGE_BACKEND=s3
 UPLOAD_BACKUP_REQUIRED=true
 S3_ADDRESSING_STYLE=virtual
@@ -118,12 +122,14 @@ TURNSTILE_REQUIRED=false
 TURNSTILE_SECRET_KEY=
 ```
 
-After the first successful deployment:
+The owner website admin is `letsbuild@marcdbycartez.com`. Its record has the portal `admin` role, no Django superuser/staff access, and an unusable password until the owner completes password setup. Once Microsoft email is authorized, use **Forgot password** on `/sign-in` and let the owner set their own password from the emailed link. Never put an owner password into chat, source, or an agent command.
+
+For a separate emergency Django administrator, only if one is needed:
 
 ```bash
 railway ssh --service web_design --environment production
 # Inside the Railway container, enter the admin password interactively:
-python manage.py createsuperuser
+/opt/venv/bin/python manage.py createsuperuser
 ```
 
 Use your admin email. The custom dashboard is `/dashboard`; Django Admin is a read-only inspection surface; use the portal for business changes.
@@ -138,14 +144,31 @@ Railway storage currently has no object versioning, lifecycle rules, or object l
 
 To recover a missing accepted file, look up its `object_name` in the asset record, read that exact key from `client-upload-backups`, and restore the bytes to the primary bucket without changing ownership or object names. Verify size/type and a checksum before declaring recovery complete. Recover PostgreSQL separately using PITR or a volume backup. Do not restore over production as a test.
 
-## 6. Resend and Turnstile
+## 6. Microsoft 365 email and form protection
 
-In Resend:
+Microsoft authentication happens in the owner's normal browser; signing in through the Codex browser is unnecessary. This connection sends through the existing Microsoft 365 mailbox and preserves its Microsoft/GoDaddy DNS records. It needs no Resend account, SMTP password, or application client secret.
 
-1. Add and verify `marcdbycartez.com`.
-2. Add the DNS records Resend provides.
-3. Create a restricted production API key.
-4. Confirm the `DEFAULT_FROM_EMAIL` sender uses the verified domain.
+In the owner's signed-in browser:
+
+1. Open [Microsoft Entra](https://entra.microsoft.com), then **Entra ID → App registrations → New registration**.
+2. Name it **Marc'd Website Email**. Choose **Accounts in this organizational directory only** and leave the redirect URI empty.
+3. In **API permissions**, add **Microsoft Graph → Delegated permissions → Mail.Send**. Remove the default `User.Read` permission. Do not add application-wide mailbox permissions.
+4. In **Authentication**, enable **Allow public client flows**. A redirect URI and client secret are unnecessary for device-code authorization.
+5. From **Overview**, copy the **Application (client) ID** and **Directory (tenant) ID** into the corresponding Railway variables. These identifiers are public; passwords, access tokens, and refresh tokens are private. If app registration or consent is blocked by tenant policy, the Microsoft 365 administrator must enable the specific app/permission; do not weaken MFA or tenant security defaults.
+
+The server uses a tenant-specific MSAL public client and requests delegated `Mail.Send`, plus MSAL's standard sign-in/refresh scopes. This grants sending access for the signed-in mailbox, with no inbox-reading or calendar permissions. The backend accepts only an account whose username matches `MICROSOFT_MAILBOX`. See [Microsoft's device-code documentation](https://learn.microsoft.com/en-us/entra/msal/python/getting-started/acquiring-tokens#device-code-flow).
+
+Generate a Fernet encryption key privately and store it in `MICROSOFT_TOKEN_ENCRYPTION_KEY` on the backend. Reference that same Railway variable from the email worker; do not generate a new key during each deploy. Keep an access-controlled recovery copy separately from the database backup. Changing or losing the key requires mailbox reauthorization.
+
+After deployment, run in the Railway backend container:
+
+```bash
+/opt/venv/bin/python manage.py authorize_microsoft_email
+```
+
+The command displays Microsoft's verification URL and a short-lived user code. The owner opens that URL in their normal browser, enters the code, signs in as `letsbuild@marcdbycartez.com`, and reviews/approves the sending permission. The command prints neither private device codes nor tokens. Its successful authorization cache is encrypted in PostgreSQL, outside dashboard/admin/API exposure. The backend and worker share it and silently refresh access; concurrent refreshes cannot overwrite a newer cache. Revoked consent, changed registrations, or tenant sign-in policies can require the owner to run the same authorization command again.
+
+Test delivery to the owner before enabling the scheduled worker. Graph HTTP 202 means provider acceptance, not confirmed inbox delivery; verify the actual received message and password-reset link. Messages are saved to the mailbox's Sent Items. See [Microsoft Graph sendMail](https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0). Resend remains a supported optional provider with `EMAIL_PROVIDER=resend` and its API key, but is not the selected production service.
 
 The current site uses built-in form protection: a signed, expiring form-start token, a one-second minimum form age, a hidden spam-trap field, and a shared PostgreSQL limit of ten public submissions per IP per hour. These are lightweight checks, not a CAPTCHA or a guarantee against sophisticated bots. Login has separate persistent limits. Keep `TRUST_RAILWAY_PROXY=true` only behind the Railway edge.
 
@@ -202,7 +225,7 @@ backend/.venv/bin/python backend/manage.py check
 
 ## 10. Backups and restore drills
 
-Railway PostgreSQL point-in-time recovery is enabled. Daily, weekly, and monthly volume snapshots are scheduled. A manual snapshot completed on October 2, 2026 at 22:54 Eastern (222 MB). The private PITR archive bucket is separate from both client-file buckets; do not repurpose it.
+Railway PostgreSQL point-in-time recovery is enabled. Daily, weekly, and monthly volume snapshots are scheduled. Manual snapshots completed on October 2, 2026 at 22:54 Eastern (222 MB) and October 3 at 00:13 Eastern (259 MB), the latter before the additive Microsoft email credential migration. The private PITR archive bucket is separate from both client-file buckets; do not repurpose it.
 
 Database backups cover records and asset references, not client-file bytes. Every newly accepted Railway upload is separately copied to `client-upload-backups` before being marked complete. Both copies are in the same Railway project and region. A restore drill into an isolated environment remains required before launch; never restore over production to test recovery. Check backups after schema deployments and after changing retention or storage settings.
 
@@ -214,7 +237,7 @@ Database backups cover records and asset references, not client-file bytes. Ever
 4. Open the invitation once, choose a strong password, and confirm reuse fails.
 5. As the client, view only that client's project, upload an asset, send a message, and book/cancel an appointment.
 6. As admin, reply, change project status, block a date, and confirm the public calendar updates.
-7. Verify invitation, password-reset, message, and status emails in Resend.
+7. Verify invitation, password-reset, message, and status emails are received through Microsoft 365, including booking calendar attachments.
 8. Confirm assets are private in Railway and only short-lived signed downloads work.
 
 ## Redesign additions (October 2026)
@@ -233,9 +256,11 @@ Railway does not currently support native lifecycle rules. There is no pending-o
 
 ### Calendar and email operations
 
-Business availability is entered in the admin portal in America/New_York. Public booking, email confirmations, guest booking management and client/admin portals all display Eastern time (EST/EDT), using America/New_York for daylight-saving changes. Visitors cannot select a different time zone. Calendar downloads preserve the correct appointment instant; calendar applications may display it in their own configured zone. There is a 60-day booking window and 30-minute consultation length. Pending requests reserve their slot, and the admin confirms them. Cancellations release slots. A signed 90-day management link lets a guest reschedule, cancel, or download an ICS entry. There is no Google/Outlook calendar sync. Admins must keep website availability aligned with their other commitments. Production deployment no longer seeds default hours.
+Business availability is edited in `/dashboard/availability` in America/New_York. The owner's initial hours are saved: Monday–Friday 10:30 AM–8 PM and Saturday–Sunday noon–9 PM, with 30-minute slots. Public booking, email confirmations, guest booking management and client/admin portals all display Eastern time (EST/EDT), using America/New_York for daylight-saving changes. Visitors cannot select a different time zone. Calendar downloads preserve the correct appointment instant; calendar applications may display it in their own configured zone. There is a 60-day booking window and 30-minute consultation length. Pending requests reserve their slot, and the admin confirms them. Cancellations release slots. A signed 90-day management link lets a guest reschedule, cancel, or download an ICS entry. There is no Google/Outlook calendar sync. Admins must keep website availability aligned with their other commitments. Production deployment does not overwrite manually entered hours.
 
-All invitation, password-reset, inquiry, message, project-status, and booking notifications use the `EmailDelivery` outbox. Configure a separate Railway cron service, rooted at `backend`, to run `python manage.py retry_emails` every five minutes. Give it the runtime database URL and email credentials; no migration credentials, web health check, or web start command. It exits after a bounded batch. Railway runs the configured start command on schedule; see [Railway cron documentation](https://docs.railway.com/cron-jobs). Monitor unsent rows and retry failures. After ten attempts, investigate before resetting attempts. A crash after the provider accepts a message but before the database records success can cause a duplicate; delivery is not exactly-once.
+All invitation, password-reset, inquiry, message, project-status, and booking notifications use the `EmailDelivery` outbox. A separate Railway service named `email-delivery` is prepared with root `/backend`, builder Railpack, start command `python manage.py retry_emails`, empty pre-deploy commands, no health check, no public domain, and restart policy Never. Configure these directly in Railway service settings; new services cannot opt into the deprecated `railway.json`/`railway.toml` configuration. The web service retains its existing settings. The worker has no migration credentials or storage keys.
+
+The worker references the backend's runtime `DATABASE_URL`, `SECRET_KEY`, `FRONTEND_URL`, sender/notification addresses, and Microsoft client/tenant/encryption settings; use `DJANGO_ENV=production`, `DEBUG=false`, `EMAIL_PROVIDER=microsoft365`, and the configured mailbox. Connect `CartezDew/web_design` on `resigned` and enable the five-minute cron schedule only after successful authorization and a received test message. The worker exits after a batch of at most 100 queued messages; HTTP requests have timeouts, and authorization is checked before consuming retry attempts. Railway runs the start command on schedule; see [Railway cron documentation](https://docs.railway.com/cron-jobs). Monitor unsent rows and retry failures. After ten attempts, investigate before resetting attempts. A crash after the provider accepts a message but before the database records success can cause a duplicate; delivery is not exactly-once.
 
 Set `TRUST_RAILWAY_PROXY=true` only on a backend reached through Railway's public edge, where `X-Real-IP` is provided by the proxy. Keep it false for direct local servers. This is used for authentication throttling, public forms, Turnstile and audit records; arbitrary `X-Forwarded-For` is not trusted. Verify with your actual ingress topology before launch. [Railway request headers](https://docs.railway.com/networking/public-networking/specs-and-limits).
 
@@ -249,7 +274,7 @@ backend/.venv/bin/python backend/manage.py test api --settings=config.test_setti
 
 This explicitly selects an in-memory SQLite test database and disables external email/storage credentials. The two concurrency tests require PostgreSQL and skip on SQLite. For PostgreSQL, create a disposable local cluster and a separate settings module importing `config.test_settings`, overriding only `DATABASES` with that cluster and a test database name. Never point tests at Railway production. The implementation was also tested against a private local PostgreSQL 17 cluster, including concurrent booking and upload reservation tests.
 
-Before launch, connect Railway, verify the final domain, supply Resend and the chosen bot-protection settings, configure actual business hours and the email retry cron, review the forward migrations, verify a backup, and approve the production deployment. Test real email delivery, invitation/reset links, cross-subdomain cookies, the Railway browser upload/download flow, and calendar downloads in staging. Analytics is intentionally absent. The backend is being deployed separately from the frontend; consult the Railway deployment status and provider verification results before accepting real client submissions. Production DNS, admin sign-in, email delivery, bot protection, and actual business hours must be completed before launch.
+Before accepting clients, finish Microsoft app registration/authorization, confirm real email delivery, let the owner set their admin password, and enable/verify the retry schedule. Complete the isolated recovery drill and final custom-domain browser sign-in/intake/booking checks. Review forward migrations and verify a fresh backup before schema deployments. Analytics is intentionally absent. DNS/TLS, private uploads, native form protection, the portal admin record, and owner-provided business hours have been configured; email and usable admin sign-in remain pending owner authorization/password setup.
 
 ### Verified Railway deployment (October 2, 2026)
 
@@ -261,4 +286,4 @@ The domain's authoritative nameservers are now `dns1.p04.nsone.net` through `dns
 
 Netlify production deployment `6ac078ff1eb252488d185e38` published commit `68e09bf` from `resigned`. Its generated HTTPS URL is `https://marcdbycartez.netlify.app`. The deployed HTML, canonical URL, structured data, robots/sitemap, sign-in route, and intake modal were verified. The production bundle contains the custom API URL. The primary domain `https://marcdbycartez.com` has a valid automatically renewing Let's Encrypt certificate; `https://www.marcdbycartez.com` redirects to it with HTTP 301. Railway confirms API ownership and propagated routing. API HTTPS now passes certificate validation and returns HTTP 200 for health, CSRF/form guard, and unauthenticated session checks. Responses permit credentials from the exact production frontend origin and set Secure, SameSite=Lax CSRF cookies for `.marcdbycartez.com`.
 
-Netlify's authoritative nameservers, Cloudflare's public resolver, and Google's public resolver all return the new records. The local system resolver still intermittently returns the former GoDaddy site and caches a missing API name. The new homepage was displayed on the real domain before that stale resolution recurred. Domain HTTPS checks used `curl --resolve` with the authoritative destination addresses and full certificate validation; no certificate checks were bypassed. Repeat the final browser intake/sign-in flow on the custom domain once the local/ISP DNS caches expire. Email keys, the first admin account, real business hours, an outbox retry job, and a recovery drill remain before a complete launch.
+Netlify's authoritative nameservers, Cloudflare's public resolver, and Google's public resolver all return the new records. The local system resolver still intermittently returns the former GoDaddy site and caches a missing API name. The new homepage was displayed on the real domain before that stale resolution recurred. Domain HTTPS checks used `curl --resolve` with the authoritative destination addresses and full certificate validation; no certificate checks were bypassed. Repeat the final browser intake/sign-in flow on the custom domain once the local/ISP DNS caches expire. The owner admin record and initial consultation hours were subsequently saved on October 3. Microsoft authorization, the owner's admin password, verified email delivery/retry scheduling, and a recovery drill remain before a complete launch.

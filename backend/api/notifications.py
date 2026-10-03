@@ -21,13 +21,18 @@ def deliver_email(pk):
         delivery = EmailDelivery.objects.select_for_update().get(pk=pk)
         if delivery.sent_at:
             return
+        if settings.DJANGO_ENV == "production" and settings.EMAIL_PROVIDER == "console":
+            delivery.last_error = "EmailProviderNotConfigured"
+            delivery.save(update_fields=["last_error"])
+            return
         message = EmailMessage(delivery.subject, delivery.body, settings.DEFAULT_FROM_EMAIL,
                                delivery.recipients)
         if delivery.calendar:
             message.attach("consultation.ics", delivery.calendar, "text/calendar")
         delivery.attempts += 1
         try:
-            message.send(fail_silently=False)
+            if message.send(fail_silently=False) != 1:
+                raise RuntimeError("Email provider did not accept the message.")
             delivery.sent_at = timezone.now()
             delivery.last_error = ""
         except Exception as error:

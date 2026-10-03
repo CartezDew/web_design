@@ -32,3 +32,13 @@ class EmailDelivery(models.Model):
     last_error = models.CharField(max_length=100, blank=True)
     sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class MicrosoftMailCredential(models.Model):
+    """Private OAuth cache; deliberately excluded from business APIs and Django Admin."""
+    mailbox = models.EmailField(primary_key=True)
+    client_id = models.CharField(max_length=36)
+    tenant_id = models.CharField(max_length=36)
+    encrypted_cache = models.TextField()
+    revision = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)

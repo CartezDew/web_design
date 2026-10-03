@@ -10,3 +10,6 @@ whitenoise==6.9.0
 Pillow==11.3.0
 python-magic==0.4.27
 boto3==1.43.108
+msal==1.39.0
+cryptography==50.0.2
+requests==2.34.2
