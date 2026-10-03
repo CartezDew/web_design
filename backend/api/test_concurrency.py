@@ -45,6 +45,26 @@ class ConcurrentRequestTests(TransactionTestCase):
         self.assertEqual(self.parallel(book), [201, 409])
         self.assertEqual(Appointment.objects.count(), 1)
 
+    def test_two_confirmation_posts_book_once_and_queue_one_final_receipt(self):
+        from urllib.parse import urlsplit, parse_qs
+        from api.confirmations import confirmation_link
+        from communications.models import EmailDelivery
+        from audit.models import AuditEvent
+        start = (timezone.now().astimezone(ZoneInfo('America/New_York')) + timedelta(days=2)).replace(hour=12, minute=0, second=0, microsecond=0)
+        AvailabilityRule.objects.create(weekday=start.weekday(), start_time=time(10), end_time=time(16))
+        appointment = save_appointment(dict(first_name='QA', last_name='Client', email='qa@example.test',
+            starts_at=start, idempotency_key=str(uuid.uuid4())))
+        link = urlsplit(confirmation_link('appointment', appointment))
+        payload = {key: value[0] for key, value in parse_qs(link.query).items()}
+        payload.update({key: value[0] for key, value in parse_qs(link.fragment).items()})
+        def confirm():
+            return APIClient().post('/api/v1/public/confirm/', payload, format='json').status_code
+        self.assertEqual(self.parallel(confirm), [200, 200])
+        appointment.refresh_from_db()
+        self.assertEqual(appointment.status, 'confirmed')
+        self.assertEqual(EmailDelivery.objects.count(), 4)
+        self.assertEqual(AuditEvent.objects.filter(action='appointment.email_confirmed').count(), 1)
+
     @patch('api.uploads.signed_upload_url', return_value='https://storage.example.test/put')
     def test_two_workers_cannot_reserve_a_thirteenth_file(self, _):
         user = User.objects.create_user('qa@example.test', 'long-test-password')

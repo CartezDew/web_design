@@ -39,6 +39,7 @@ class Appointment(SoftDeleteModel, TimeStampedModel):
         CONFIRMED = "confirmed", "Confirmed"
         CANCELLED = "cancelled", "Cancelled"
         COMPLETED = "completed", "Completed"
+        EXPIRED = "expired", "Unconfirmed · time released"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     client = models.ForeignKey(
@@ -50,6 +51,9 @@ class Appointment(SoftDeleteModel, TimeStampedModel):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
+    email_verified_at = models.DateTimeField(null=True, blank=True)
+    confirmation_nonce = models.UUIDField(default=uuid.uuid4, editable=False)
+    confirmation_expires_at = models.DateTimeField(null=True, blank=True)
     starts_at = models.DateTimeField(db_index=True)
     ends_at = models.DateTimeField()
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)

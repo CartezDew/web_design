@@ -185,25 +185,46 @@ export function AppointmentsPanel() {
                     {item.first_name} {item.last_name} · {item.email}
                   </p>
                 </div>
-                <span className="status-label">{item.status}</span>
+                <span className="status-label">
+                  {item.status === "pending"
+                    ? "Awaiting email confirmation"
+                    : item.status === "expired"
+                      ? "Unconfirmed · time released"
+                      : item.status}
+                </span>
               </div>
               <div className="appointment-actions">
                 {user.is_admin && (
                   <CustomSelect
                     label="Appointment status"
                     value={item.status}
-                    options={["pending", "confirmed", "completed", "cancelled"]}
+                    options={
+                      item.email_verified_at
+                        ? ["pending", "confirmed", "completed", "cancelled"]
+                        : [
+                            "pending",
+                            "cancelled",
+                            ...(item.status === "expired" ? ["expired"] : []),
+                          ]
+                    }
                     disabled={working}
                     onChange={(status) => mutate(item, { status })}
                   />
                 )}
-                <a
-                  className="text-link"
-                  href={`${API_BASE}/appointments/${item.id}/calendar/`}
-                >
-                  <Download size={14} />
-                  Calendar
-                </a>
+                {item.status === "confirmed" && (
+                  <a
+                    className="text-link"
+                    href={`${API_BASE}/appointments/${item.id}/calendar/`}
+                  >
+                    <Download size={14} />
+                    Calendar
+                  </a>
+                )}
+                {user.is_admin && (
+                  <a className="text-link" href={`mailto:${item.email}`}>
+                    Email customer
+                  </a>
+                )}
                 {!["cancelled", "completed"].includes(item.status) &&
                   new Date(item.starts_at) > new Date() && (
                     <>

@@ -54,9 +54,9 @@ class ProjectBriefSerializer(serializers.ModelSerializer):
             "id", "status", "company", "name", "email", "phone", "overview", "mission",
             "success", "pages", "goal", "offerings", "features", "inspiration_link",
             "domain", "launch_date", "brand", "integrations", "package", "referral",
-            "social_urls", "notes", "assets", "created_at", "updated_at",
+            "social_urls", "notes", "assets", "created_at", "updated_at", "email_verified_at", "confirmation_expires_at",
         ]
-        read_only_fields = ["id", "status", "assets", "created_at", "updated_at"]
+        read_only_fields = ["id", "status", "assets", "created_at", "updated_at", "email_verified_at", "confirmation_expires_at"]
 
 
 class PublicBriefCreateSerializer(ProjectBriefSerializer):
@@ -100,6 +100,12 @@ class ProjectSerializer(serializers.ModelSerializer):
     status_history = ProjectStatusHistorySerializer(many=True, read_only=True)
     brief = ProjectBriefSerializer(read_only=True)
 
+    def validate(self, attrs):
+        brief = attrs.get("brief", getattr(self.instance, "brief", None))
+        if brief and not brief.email_verified_at:
+            raise serializers.ValidationError("The customer must confirm their brief email before a project can be created or updated.")
+        return attrs
+
     class Meta:
         model = Project
         fields = [
@@ -115,6 +121,8 @@ class ProjectStatusUpdateSerializer(serializers.Serializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        if instance.brief_id and not instance.brief.email_verified_at:
+            raise serializers.ValidationError("The customer must confirm their brief email before the project can start.")
         instance.status = validated_data["status"]
         instance.save(update_fields=["status", "updated_at"])
         ProjectStatusHistory.objects.create(
@@ -174,9 +182,16 @@ class AppointmentSerializer(serializers.ModelSerializer):
         model = Appointment
         fields = [
             "id", "first_name", "last_name", "email", "starts_at", "ends_at",
-            "status", "notes", "project", "client_id", "created_at", "updated_at",
+            "status", "notes", "project", "client_id", "created_at", "updated_at", "email_verified_at", "confirmation_expires_at",
         ]
-        read_only_fields = ["id", "ends_at", "created_at", "updated_at"]
+        read_only_fields = ["id", "ends_at", "created_at", "updated_at", "email_verified_at", "confirmation_expires_at"]
+
+    def to_representation(self, instance):
+        from django.utils import timezone
+        data = super().to_representation(instance)
+        if instance.status == "pending" and instance.confirmation_expires_at and instance.confirmation_expires_at <= timezone.now():
+            data["status"] = "expired"
+        return data
 
     def validate_project(self, project):
         request = self.context.get("request")

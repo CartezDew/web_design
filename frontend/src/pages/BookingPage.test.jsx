@@ -101,7 +101,7 @@ it("locks contact fields until a slot is selected and reveals errors only after 
   expect(request).not.toHaveAttribute("data-incomplete");
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   fireEvent.click(request);
-  await screen.findByText("Your time is reserved.");
+  await screen.findByText("Check your email to confirm.");
   expect(
     screen.getByText(/December 10, 2026 at 10:00 AM EST/),
   ).toBeInTheDocument();

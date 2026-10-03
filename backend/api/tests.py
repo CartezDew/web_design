@@ -158,7 +158,7 @@ class AuthenticationAndAuthorizationTests(TestCase):
         self.assertEqual(replay.status_code, 400)
 
     def test_admin_can_approve_brief_and_create_portal(self):
-        brief = ProjectBrief.objects.create(**brief_data("approval-key"))
+        brief = ProjectBrief.objects.create(**brief_data("approval-key"), email_verified_at=timezone.now())
         api = APIClient()
         api.force_authenticate(self.admin)
         response = api.post(f"/api/v1/admin/briefs/{brief.id}/invite/", {}, format="json")

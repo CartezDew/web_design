@@ -214,8 +214,10 @@ export default function IntakePage({
           <h3>Your idea is in good hands.</h3>
           <p>
             Your brief{files.length ? " and files have" : " has"} been saved.
-            I’ll review everything and email you personally to discuss the next
-            step.
+            Check {form.email} for your confirmation link, then press Confirm
+            email. I can review your brief now; your email needs to be confirmed
+            before I create your project. The link works for 48 hours. Check
+            your junk folder if it hasn’t arrived.
           </p>
           <ol className="intake-next-steps">
             <li>We talk through your goals and clarify any open questions.</li>

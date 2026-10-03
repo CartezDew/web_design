@@ -18,6 +18,8 @@ class Command(BaseCommand):
         if settings.EMAIL_PROVIDER == "microsoft365":
             from communications.microsoft_email import access_token
             access_token()  # Fail before consuming outbox attempts if authorization needs attention.
+        from scheduling.services import expire_pending_appointments
+        expire_pending_appointments()
         ids = list(EmailDelivery.objects.filter(sent_at__isnull=True, attempts__lt=10)
                    .exclude(pk__in=options["exclude"])
                    .values_list("pk", flat=True)[:100])

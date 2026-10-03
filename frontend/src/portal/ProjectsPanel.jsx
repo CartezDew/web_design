@@ -17,11 +17,11 @@ export function BriefsPanel({ compact = false }) {
   const [working, setWorking] = useState(""),
     [error, setError] = useState(""),
     [success, setSuccess] = useState("");
-  const invite = async (brief) => {
+  const invite = async (brief, action = "invite") => {
     setWorking(brief.id);
     setError("");
     try {
-      const result = await apiRequest(`/admin/briefs/${brief.id}/invite/`, {
+      const result = await apiRequest(`/admin/briefs/${brief.id}/${action}/`, {
         method: "POST",
         body: "{}",
       });
@@ -56,6 +56,17 @@ export function BriefsPanel({ compact = false }) {
               <span className="status-label">{brief.status}</span>
             </summary>
             <div className="brief-detail">
+              <p className="form-help">
+                <strong>
+                  {brief.email_verified_at
+                    ? "Email confirmed"
+                    : "Awaiting email confirmation"}
+                </strong>
+                .{" "}
+                {brief.email_verified_at
+                  ? "You can review and accept this brief."
+                  : "The brief and files are available now. You can contact this person directly; their project can be created after they confirm."}
+              </p>
               <p>
                 <a href={`mailto:${brief.email}`}>{brief.email}</a>
                 {brief.phone && (
@@ -100,7 +111,7 @@ export function BriefsPanel({ compact = false }) {
               {
                 <button
                   className="button button--red"
-                  disabled={working === brief.id}
+                  disabled={working === brief.id || !brief.email_verified_at}
                   onClick={() => invite(brief)}
                 >
                   {working === brief.id
@@ -111,6 +122,15 @@ export function BriefsPanel({ compact = false }) {
                   <ArrowRight size={16} />
                 </button>
               }
+              {!brief.email_verified_at && (
+                <button
+                  className="button button--ghost"
+                  disabled={working === brief.id}
+                  onClick={() => invite(brief, "resend-confirmation")}
+                >
+                  Send fresh confirmation email
+                </button>
+              )}
             </div>
           </details>
         ))}

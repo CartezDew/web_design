@@ -1,6 +1,6 @@
 # Cartez Dewberry — business website and client portal
 
-A single-page scrolling React website with a Django API, public project intake, private client/admin portal, and consultation booking. The frontend stays on Netlify; the backend runs on Railway/PostgreSQL with private Railway file storage, separate upload backup copies, and built-in form spam checks. Automated email uses the owner's existing Microsoft 365 mailbox through Microsoft Graph; owner authorization is still required.
+A single-page scrolling React website with a Django API, public project intake, private client/admin portal, and consultation booking. The frontend stays on Netlify; the backend runs on Railway/PostgreSQL with private Railway file storage, separate upload backup copies, and built-in form spam checks. Automated email uses the owner's existing Microsoft 365 mailbox through Microsoft Graph; the owner mailbox is authorized and delivery has been verified.
 
 ## Run locally
 
@@ -46,4 +46,4 @@ backend/.venv/bin/python backend/manage.py makemigrations --check --dry-run --se
 
 The production preview runs at `http://127.0.0.1:4173`. It serves prerendered HTML and forwards API requests to the local Django server. PostgreSQL concurrency tests are skipped on SQLite; run them on a disposable PostgreSQL database before deployment.
 
-The Railway backend is deployed with private uploads, separate runtime/migration database roles, database PITR, and scheduled daily/weekly/monthly backups. A real browser intake with PNG and PDF files was verified against Railway, including matching backup checksums and private downloads. Netlify and API domains have valid HTTPS. The owner admin record and requested weekly consultation hours are saved; admin password setup, Microsoft authorization, email delivery verification, the retry schedule, and a recovery drill remain launch tasks. Analytics is deferred.
+The Railway backend is deployed with private uploads, separate runtime/migration database roles, database PITR, and scheduled daily/weekly/monthly backups. A real browser intake with PNG and PDF files was verified against Railway, including matching backup checksums and private downloads. Netlify and API domains have valid HTTPS. The owner admin password and requested weekly consultation hours are saved. Microsoft delivery is authorized and the Railway retry worker runs every five minutes. Customers must confirm their email before a consultation is booked or a submitted brief becomes a project; the owner receives the request details immediately. An isolated recovery drill and final client portal walkthrough remain launch checks. Analytics is deferred.

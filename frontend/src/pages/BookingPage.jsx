@@ -286,19 +286,23 @@ export default function BookingPage() {
         {saved ? (
           <div className="form-success" role="status">
             <Check size={32} />
-            <h3>Your time is reserved.</h3>
+            <h3>Check your email to confirm.</h3>
             <p>
-              Your consultation request is saved. I’ll confirm the call by email
-              and send the details for our conversation.
+              Your request is saved. A confirmation link is being sent to{" "}
+              {saved.confirmation_email || form.email}. Press Confirm
+              appointment from that email to book your call. Your selected time
+              is held for up to one hour while you confirm. Check your junk
+              folder if it hasn’t arrived.
             </p>
             <p>
               {formatConsultation(slot)} · {CONSULTATION_TIME_LABEL}
             </p>
             <Link
               className="button button--red"
+              reloadDocument
               to={`/book/manage?id=${saved.id}&token=${encodeURIComponent(saved.manage_token)}`}
             >
-              Manage your consultation <ArrowUpRight size={17} />
+              View your pending request <ArrowUpRight size={17} />
             </Link>
             <Link to="/#start-a-project">Share a brief before we talk</Link>
           </div>
@@ -388,9 +392,10 @@ export default function BookingPage() {
             <p className="form-help" id="booking-submit-help">
               {!ready &&
                 "Complete the required details to request your call. Press the button to see what’s missing. "}
-              Your time is reserved while I confirm our call. You’ll receive an
-              email with the next steps. All appointments use{" "}
-              {CONSULTATION_TIME_LABEL}. <Link to="/#privacy">Privacy</Link>
+              You’ll need to confirm using the link sent to your email before
+              your call is booked. The time is held for up to one hour. All
+              appointments use {CONSULTATION_TIME_LABEL}.{" "}
+              <Link to="/#privacy">Privacy</Link>
             </p>
           </form>
         )}
@@ -433,7 +438,7 @@ export function ManageBooking() {
       setSuccess(
         action === "cancel"
           ? "Your consultation has been cancelled."
-          : "Your new time is reserved, pending confirmation.",
+          : "Check your email to confirm your new time within one hour.",
       );
     } catch (e) {
       setError(e.message);
@@ -452,12 +457,26 @@ export function ManageBooking() {
           <p>
             Status: <strong>{appointment.status}</strong>
           </p>
-          <a
-            className="text-link"
-            href={`${API_BASE}${path}?token=${encodeURIComponent(token)}&download=calendar`}
-          >
-            <Download size={16} /> Download calendar entry
-          </a>
+          {appointment.status === "pending" && (
+            <p className="form-help">
+              This call is awaiting your email confirmation. Use the separate
+              confirmation link in your email before the hold expires.
+            </p>
+          )}
+          {appointment.status === "expired" && (
+            <p className="form-help">
+              The confirmation hold expired and this time was released. Your
+              request is still saved; choose another time or email Cartez.
+            </p>
+          )}
+          {appointment.status === "confirmed" && (
+            <a
+              className="text-link"
+              href={`${API_BASE}${path}?token=${encodeURIComponent(token)}&download=calendar`}
+            >
+              <Download size={16} /> Download calendar entry
+            </a>
+          )}
           {!["cancelled", "completed"].includes(appointment.status) &&
             new Date(appointment.starts_at) > new Date() && (
               <>

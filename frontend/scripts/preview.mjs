@@ -67,7 +67,7 @@ createServer(async (req, res) => {
       await stat(file);
     } catch {
       const privateRoute =
-        /^\/(dashboard(?:\/.*)?|sign-in|reset-password|accept-invitation|book\/manage)\/?$/.test(
+        /^\/(dashboard(?:\/.*)?|sign-in|reset-password|accept-invitation|book\/manage|confirm)\/?$/.test(
           pathname,
         );
       file = resolve(root, privateRoute ? "__spa-fallback.html" : "404.html");

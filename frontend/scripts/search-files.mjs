@@ -24,7 +24,7 @@ await writeFile(
 );
 await writeFile(
   "dist/client/robots.txt",
-  `User-agent: *\nAllow: /\nDisallow: /dashboard\nDisallow: /sign-in\nDisallow: /reset-password\nDisallow: /accept-invitation\nDisallow: /book/manage\nDisallow: /api/\n\nUser-agent: GPTBot\nDisallow: /\n\nUser-agent: ClaudeBot\nDisallow: /\n\nSitemap: ${site}/sitemap.xml\n`,
+  `User-agent: *\nAllow: /\nDisallow: /dashboard\nDisallow: /sign-in\nDisallow: /reset-password\nDisallow: /accept-invitation\nDisallow: /book/manage\nDisallow: /confirm\nDisallow: /api/\n\nUser-agent: GPTBot\nDisallow: /\n\nUser-agent: ClaudeBot\nDisallow: /\n\nSitemap: ${site}/sitemap.xml\n`,
 );
 await writeFile(
   "dist/client/llms.txt",

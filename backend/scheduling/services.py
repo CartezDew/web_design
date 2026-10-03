@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import APIException, ValidationError
 from scheduling.models import Appointment, AvailabilityOverride, AvailabilityRule, BookingLock
@@ -31,7 +32,8 @@ def available_starts(for_date, exclude_id=None):
     day_start = datetime.combine(for_date, datetime.min.time(), EASTERN)
     day_end = datetime.combine(for_date + timedelta(days=1), datetime.min.time(), EASTERN)
     booked = Appointment.objects.filter(starts_at__lt=day_end, ends_at__gt=day_start,
-        status__in=["pending", "confirmed"], deleted_at__isnull=True)
+        status__in=["pending", "confirmed"], deleted_at__isnull=True).exclude(
+        Q(status="pending", confirmation_expires_at__lte=now))
     if exclude_id:
         booked = booked.exclude(pk=exclude_id)
     intervals = list(booked.values_list("starts_at", "ends_at"))
@@ -50,10 +52,27 @@ def available_starts(for_date, exclude_id=None):
 
 
 @transaction.atomic
+def expire_pending_appointments():
+    BookingLock.objects.get_or_create(pk=1)
+    BookingLock.objects.select_for_update().get(pk=1)
+    records = Appointment.objects.select_for_update().filter(status="pending", deleted_at__isnull=True,
+                                                             confirmation_expires_at__lte=timezone.now())
+    count = 0
+    for record in records:
+        record.status = Appointment.Status.EXPIRED
+        record.save(update_fields=["status", "updated_at"])
+        from audit.models import AuditEvent
+        AuditEvent.objects.create(action="appointment.confirmation_expired", object_type="Appointment", object_id=str(record.pk))
+        count += 1
+    return count
+
+
+@transaction.atomic
 def save_appointment(data, instance=None):
     # One consultant: serialize calendar mutations before checking overlapping intervals.
     BookingLock.objects.get_or_create(pk=1)
     BookingLock.objects.select_for_update().get(pk=1)
+    expire_pending_appointments()
     if instance:
         instance = Appointment.objects.select_for_update().get(pk=instance.pk)
     elif data.get("idempotency_key"):
@@ -64,6 +83,18 @@ def save_appointment(data, instance=None):
     state = data.get("status", getattr(instance, "status", "pending"))
     if start is None or timezone.is_naive(start):
         raise ValidationError({"starts_at": "Choose an available date and time."})
+    needs_confirmation = state == "pending" and (instance is None or start != instance.starts_at or
+        data.get("email", instance.email) != instance.email or instance.status != "pending" or
+        instance.confirmation_expires_at is None)
+    if needs_confirmation:
+        import uuid
+        data.update(email_verified_at=None, confirmation_nonce=uuid.uuid4(),
+                    confirmation_expires_at=min(timezone.now() + timedelta(hours=1), start))
+    if state in ["confirmed", "completed"] and (instance is None or not instance.email_verified_at):
+        raise ValidationError("The customer must confirm their email before this consultation is booked.")
+    if instance and state in ["confirmed", "completed"] and (
+        start != instance.starts_at or data.get("email", instance.email) != instance.email):
+        raise ValidationError("Request the new time as pending so the customer can confirm it by email.")
     needs_slot = state in ["pending", "confirmed"] and (instance is None or
         start != instance.starts_at or instance.status not in ["pending", "confirmed"])
     if needs_slot and start not in available_starts(start.astimezone(EASTERN).date(), getattr(instance, "pk", None)):
@@ -80,7 +111,7 @@ def save_appointment(data, instance=None):
 
 
 def calendar_text(appointment):
-    status = {"pending": "TENTATIVE", "confirmed": "CONFIRMED", "cancelled": "CANCELLED", "completed": "CONFIRMED"}[appointment.status]
+    status = {"pending": "TENTATIVE", "confirmed": "CONFIRMED", "cancelled": "CANCELLED", "expired": "CANCELLED", "completed": "CONFIRMED"}[appointment.status]
     lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cartez Dewberry//Consultations//EN",
              "CALSCALE:GREGORIAN", "BEGIN:VEVENT", f"UID:{appointment.pk}@marcdbycartez.com",
              f"DTSTAMP:{timezone.now().astimezone(UTC):%Y%m%dT%H%M%SZ}",
@@ -101,10 +132,25 @@ def notify_appointment(appointment):
     token = issue_token("appointment", appointment.pk)
     link = f"{settings.FRONTEND_URL}/book/manage?id={appointment.pk}&token={token}"
     when = appointment.starts_at.astimezone(EASTERN).strftime("%A, %B %d at %I:%M %p %Z")
-    text = f"Your consultation is {appointment.get_status_display().lower()}: {when}.\n"
+    text = f"Hi {appointment.first_name},\n\nYour 30-minute consultation is {appointment.get_status_display().lower()}: {when}.\n"
     if appointment.status == "pending":
-        text += "Your requested time is reserved while Cartez confirms the call.\n"
+        from api.confirmations import confirmation_link
+        deadline = appointment.confirmation_expires_at.astimezone(EASTERN).strftime("%B %d at %I:%M %p %Z")
+        text += ("Your request is received, but your appointment is not booked yet. "
+                 f"Please confirm by {deadline}. The time is held for up to one hour.\n"
+                 "Open this link, then press Confirm appointment to book your call:\n"
+                 f"{confirmation_link('appointment', appointment)}\n")
+    elif appointment.status == "confirmed":
+        text += "Your appointment is booked. Cartez will email how to join before the call.\n"
     text += "All appointments are scheduled in Eastern time (EST/EDT).\n"
     text += f"View, reschedule, cancel, or download your calendar entry: {link}"
-    queue_email("Your consultation with Cartez", text, [appointment.email], calendar_text(appointment))
-    queue_email("Consultation update", f"A consultation is {appointment.status} for {when}. Review: {settings.FRONTEND_URL}/dashboard/appointments", [settings.ADMIN_NOTIFICATION_EMAIL])
+    text += "\n\nIf you didn’t request this, no action is needed. Questions? Reply to this email.\n\nCartez"
+    queue_email("Confirm your consultation with Cartez" if appointment.status == "pending" else
+                "Your consultation with Cartez", text, [appointment.email],
+                calendar_text(appointment) if appointment.status != "pending" else None)
+    queue_email("Consultation request — awaiting customer confirmation" if appointment.status == "pending" else "Consultation update",
+                f"Name: {appointment.first_name} {appointment.last_name}\nEmail: {appointment.email}\n"
+                f"Requested time: {when}\nDuration: 30 minutes\nTime zone: Eastern time (EST/EDT)\n"
+                f"Status: {appointment.get_status_display()}\nEmail confirmed: {'Yes' if appointment.email_verified_at else 'No'}\n"
+                f"Notes: {appointment.notes or 'None'}\nYou can reach out directly while awaiting confirmation.\n"
+                f"Review: {settings.FRONTEND_URL}/dashboard/appointments", [settings.ADMIN_NOTIFICATION_EMAIL])

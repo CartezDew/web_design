@@ -249,8 +249,12 @@ class PublicBriefCreateView(generics.CreateAPIView):
             brief = ProjectBrief.objects.get(idempotency_key=key, deleted_at__isnull=True)
             return Response({"id": str(brief.pk), "upload_token": issue_token("upload", brief.pk)})
         audit(request, "brief.create", brief)
-        queue_email("New project brief", f"A new brief is ready to review at {settings.FRONTEND_URL}/dashboard.", [settings.ADMIN_NOTIFICATION_EMAIL])
-        queue_email("Thanks for sharing your project", "Your project brief reached Cartez. He will review it and reply personally. You can also request a free consultation at " + settings.FRONTEND_URL + "/#book", [brief.email])
+        from api.confirmations import prepare_brief_confirmation, brief_summary
+        prepare_brief_confirmation(brief)
+        queue_email("New project brief — awaiting email confirmation",
+                    f"The brief is saved; customer email confirmation is pending. You can reach out directly now.\n\n"
+                    f"{brief_summary(brief)}\n\nReview the full brief and files (as uploads finish): "
+                    f"{settings.FRONTEND_URL}/dashboard/briefs", [settings.ADMIN_NOTIFICATION_EMAIL])
         return Response({"id": str(brief.pk), "upload_token": issue_token("upload", brief.pk)}, status=201)
 
 
@@ -284,7 +288,7 @@ class PublicAppointmentCreateView(generics.CreateAPIView):
         key = request.data.get("idempotency_key")
         existing = Appointment.objects.filter(idempotency_key=key).first() if key else None
         if existing:
-            return Response({"id": str(existing.pk), "status": existing.status, "manage_token": issue_token("appointment", existing.pk)})
+            return Response({"id": str(existing.pk), "status": existing.status, "confirmation_email": existing.email, "manage_token": issue_token("appointment", existing.pk)})
         verify_form_guard(request)
         if not verify_turnstile(request.data.get("turnstile_token"), client_ip(request)):
             return Response({"detail": "Please complete the security check."}, status=400)
@@ -300,10 +304,10 @@ class PublicAppointmentCreateView(generics.CreateAPIView):
         except IntegrityError:
             existing = Appointment.objects.filter(idempotency_key=key).first()
             if existing:
-                return Response({"id": str(existing.pk), "status": existing.status, "manage_token": issue_token("appointment", existing.pk)})
+                return Response({"id": str(existing.pk), "status": existing.status, "confirmation_email": existing.email, "manage_token": issue_token("appointment", existing.pk)})
             return Response({"detail": "That time is no longer available."}, status=409)
         audit(request, "appointment.create", appointment)
-        return Response({"id": str(appointment.pk), "status": appointment.status, "manage_token": issue_token("appointment", appointment.pk)}, status=201)
+        return Response({"id": str(appointment.pk), "status": appointment.status, "confirmation_email": appointment.email, "manage_token": issue_token("appointment", appointment.pk)}, status=201)
 
 
 class GuestAppointmentView(APIView):
@@ -317,12 +321,14 @@ class GuestAppointmentView(APIView):
     def get(self, request, pk):
         appointment = self.appointment(request, pk)
         if request.query_params.get("download") == "calendar":
+            if appointment.status != "confirmed":
+                raise ValidationError("Confirm your appointment by email before adding it to your calendar.")
             response = HttpResponse(calendar_text(appointment), content_type="text/calendar")
             response["Content-Disposition"] = 'attachment; filename="consultation.ics"'
             response["Cache-Control"] = "private, no-store"
             return response
         return Response({key: value for key, value in AppointmentSerializer(appointment).data.items()
-                         if key in ["id", "first_name", "last_name", "starts_at", "ends_at", "status"]})
+                         if key in ["id", "first_name", "last_name", "starts_at", "ends_at", "status", "email_verified_at", "confirmation_expires_at"]})
 
     @transaction.atomic
     def post(self, request, pk):
@@ -347,6 +353,27 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
     queryset = ProjectBrief.objects.filter(deleted_at__isnull=True).prefetch_related("assets")
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
+    def perform_update(self, serializer):
+        old_email = serializer.instance.email
+        brief = serializer.save()
+        if brief.email.lower() != old_email.lower():
+            from api.confirmations import prepare_brief_confirmation
+            prepare_brief_confirmation(brief)
+        audit(self.request, "brief.update", brief)
+
+    @action(detail=True, methods=["post"], url_path="resend-confirmation")
+    @transaction.atomic
+    def resend_confirmation(self, request, pk=None):
+        brief = ProjectBrief.objects.select_for_update().get(pk=self.get_object().pk)
+        if brief.email_verified_at:
+            return Response({"detail": "This email is already confirmed."})
+        if brief.confirmation_expires_at and brief.confirmation_expires_at > timezone.now() + timedelta(hours=47):
+            raise ValidationError("Please wait one hour between confirmation emails. You can also contact the customer directly.")
+        from api.confirmations import prepare_brief_confirmation
+        prepare_brief_confirmation(brief)
+        audit(request, "brief.confirmation_resent", brief)
+        return Response({"detail": "A fresh confirmation email is queued for delivery."})
+
     def perform_destroy(self, instance):
         instance.deleted_at = timezone.now()
         instance.save(update_fields=["deleted_at", "updated_at"])
@@ -356,6 +383,8 @@ class AdminBriefViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def invite(self, request, pk=None):
         brief = ProjectBrief.objects.select_for_update().get(pk=self.get_object().pk)
+        if not brief.email_verified_at:
+            raise ValidationError("The customer must confirm their email before you accept the brief and create their project.")
         email = brief.email.lower()
         user, created = User.objects.get_or_create(
             email=email,
@@ -499,7 +528,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def calendar(self, request, pk=None):
-        response = HttpResponse(calendar_text(self.get_object()), content_type="text/calendar")
+        appointment = self.get_object()
+        if appointment.status != "confirmed":
+            raise ValidationError("The customer must confirm this appointment before adding it to a calendar.")
+        response = HttpResponse(calendar_text(appointment), content_type="text/calendar")
         response["Content-Disposition"] = 'attachment; filename="consultation.ics"'
         return response
 

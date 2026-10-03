@@ -26,6 +26,7 @@ from api.views import (
 
 from api.uploads import AssetPrepareView, AssetFinalizeView, AssetReleaseView
 from communications.microsoft_authorization import authorization_callback
+from api.confirmations import SubmissionConfirmationView
 
 router = DefaultRouter()
 router.register("projects", ClientProjectViewSet, basename="projects")
@@ -50,6 +51,7 @@ urlpatterns = [
     path("public/briefs/", PublicBriefCreateView.as_view()),
     path("public/availability/", AvailabilityView.as_view()),
     path("public/appointments/", PublicAppointmentCreateView.as_view()),
+    path("public/confirm/", SubmissionConfirmationView.as_view()),
     path("public/appointments/<uuid:pk>/manage/", GuestAppointmentView.as_view()),
     path("assets/<uuid:pk>/release/", AssetReleaseView.as_view()),
     path("assets/prepare/", AssetPrepareView.as_view()),
