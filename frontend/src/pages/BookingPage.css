@@ -15,7 +15,7 @@
 }
 .consultation-photo {
   margin-top: 30px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 .consultation-photo img {
@@ -48,7 +48,7 @@
 .booking-panel {
   padding: 30px;
   border: 1px solid var(--paper-edge);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background: var(--paper);
   box-shadow: 0 25px 60px -25px rgba(26, 21, 18, 0.2);
 }
@@ -65,9 +65,9 @@
   width: 44px;
   height: 44px;
   background: var(--red);
-  color: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -10px rgba(190, 3, 3, 0.7);
+  color: var(--on-dark);
+  border-radius: var(--radius);
+  box-shadow: var(--lift-1);
 }
 .booking-heading h3 {
   font-size: 20px;
@@ -110,7 +110,7 @@
     transform 160ms ease;
   flex: 1;
   border: 1px solid var(--paper-edge);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
@@ -127,7 +127,7 @@
 }
 .time-slot.is-selected {
   background: var(--red);
-  color: white;
+  color: var(--on-dark);
   border-color: var(--red);
   animation: consultation-calendar-selected 300ms ease;
 }
@@ -154,7 +154,7 @@
   margin-top: 18px;
   padding: 13px 14px;
   border: 1px solid rgba(190, 3, 3, 0.1);
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--red-wash);
   color: var(--ink-soft);
   font-size: 12px;

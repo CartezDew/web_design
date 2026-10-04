@@ -8,7 +8,7 @@
   padding: 14px 16px;
   color: var(--ink);
   border: 1px solid var(--paper-edge);
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   background: var(--paper);
   text-align: left;
   cursor: pointer;
@@ -19,7 +19,7 @@
 }
 .consultation-date-trigger:hover:not(:disabled) {
   border-color: rgba(190, 3, 3, 0.5);
-  box-shadow: 0 10px 25px -18px rgba(190, 3, 3, 0.65);
+  box-shadow: var(--lift-1);
   transform: translateY(-1px);
 }
 .consultation-date-trigger:active:not(:disabled) {
@@ -71,7 +71,7 @@
   margin-top: 10px;
   padding: 20px;
   border: 1px solid var(--paper-edge);
-  border-radius: 1rem;
+  border-radius: var(--radius-lg);
   background: var(--paper);
   box-shadow: 0 24px 60px -22px rgba(26, 21, 18, 0.32);
   transform-origin: top center;
@@ -107,7 +107,7 @@
 .consultation-calendar
   .calendar-header
   button:is(:hover, [data-focus-visible]):not(:disabled) {
-  color: white;
+  color: var(--on-dark);
   border-color: var(--red);
   background: var(--red);
   transform: scale(1.06);
@@ -134,7 +134,7 @@
   padding: 2px;
   color: var(--ink);
   border: 1px solid transparent;
-  border-radius: 0.65rem;
+  border-radius: var(--radius);
   font-size: 0.76rem;
   font-weight: 650;
   transition:
@@ -169,7 +169,7 @@
   color: var(--red);
   border-color: rgba(190, 3, 3, 0.25);
   background: rgba(190, 3, 3, 0.06);
-  box-shadow: 0 7px 16px -10px rgba(190, 3, 3, 0.8);
+  box-shadow: var(--lift-1);
   transform: translateY(-2px) scale(1.04);
 }
 .consultation-calendar
@@ -180,15 +180,15 @@
   border-color: rgba(190, 3, 3, 0.35);
 }
 .consultation-calendar .calendar-cell[data-selected] {
-  color: white;
+  color: var(--on-dark);
   border-color: var(--red);
   background: var(--red);
-  box-shadow: 0 9px 20px -10px rgba(190, 3, 3, 0.8);
+  box-shadow: var(--lift-1);
   animation: consultation-calendar-selected 380ms
     cubic-bezier(0.2, 0.8, 0.2, 1.2);
 }
 .consultation-calendar .calendar-cell[data-selected] i {
-  color: white;
+  color: var(--on-dark);
 }
 .consultation-calendar .calendar-cell:is([data-disabled], [data-unavailable]) {
   color: var(--ink-faint);

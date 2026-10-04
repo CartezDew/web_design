@@ -52,7 +52,12 @@ export default function useHeroEntrance() {
         { opacity: [0, 1], y: [12, 0] },
         { at: 0.82, delay: stagger(0.09), duration: 0.5, ease },
       ],
-      [".trust-row", { opacity: [0, 1] }, { at: 1.05, duration: 0.5 }],
+      [
+        ".hero-reassurance",
+        { opacity: [0, 1], y: [8, 0] },
+        { at: 1.0, duration: 0.45, ease },
+      ],
+      [".trust-row", { opacity: [0, 1] }, { at: 1.1, duration: 0.5 }],
     ]);
     controls.then(() => markEntered(scope.current, "copyEntered"));
     return () => {

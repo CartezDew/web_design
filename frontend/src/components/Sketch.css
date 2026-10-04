@@ -1,0 +1,26 @@
+.sketch {
+  display: block;
+  color: inherit;
+  opacity: 0.4;
+  pointer-events: none;
+  overflow: visible;
+}
+.sketch path {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1100ms var(--ease-entrance) 350ms;
+}
+
+/* Draw-on: a sketch inside a Reveal (or the hero) starts undrawn and draws itself in.
+   Reduced motion and no-JS never hide it. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .motion [data-reveal]:not([data-revealed]) .sketch path,
+  .motion .hero-section:not([data-copy-entered]) .sketch path {
+    stroke-dashoffset: 1;
+  }
+}

@@ -4,17 +4,48 @@
   gap: 24px;
 }
 .price-plan {
-  border-top: 1px solid var(--ink);
-  padding: 28px 24px 30px;
+  position: relative;
+  padding: 30px 28px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  background: var(--paper);
+  border: 1px solid var(--pencil);
+  border-radius: var(--radius);
+  transition:
+    transform 220ms var(--ease),
+    box-shadow 220ms var(--ease),
+    border-color 220ms var(--ease);
 }
+.price-plan:hover {
+  border-color: var(--light-ink);
+  transform: translateY(-3px);
+}
+/* The featured plan is the sticky note on the board: sand fill, ink edge, offset shadow. */
 .price-plan--featured {
-  background: var(--paper-deep);
+  background: var(--note-sand);
+  border: 2px solid var(--light-ink);
+  box-shadow: var(--lift-offset);
+}
+.price-plan--featured:hover {
+  box-shadow: 6px 6px 0 var(--light-ink);
+}
+.price-flag {
+  position: absolute;
+  top: -13px;
+  right: 22px;
+  padding: 4px 12px;
+  color: var(--on-dark);
+  background: var(--red);
+  border-radius: var(--radius-pill);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: rotate(2deg);
 }
 .price-plan h3 {
-  font-size: 28px;
+  font-size: 26px;
 }
 .price-description {
   font-size: 13px;
@@ -23,17 +54,18 @@
 }
 .price-amount {
   font-family: var(--display);
-  font-size: 42px;
-  font-weight: 600;
-  letter-spacing: -0.06em;
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
   color: var(--ink);
   margin-top: 22px;
-  line-height: 1.2;
+  line-height: 1.05;
 }
 .price-amount span {
-  font-size: 32px;
+  color: var(--red);
 }
 .price-note {
+  font-family: var(--mono);
   font-size: 11px;
   color: var(--ink-faint);
   margin-top: 8px;
@@ -55,11 +87,13 @@
 }
 .price-plan li svg {
   margin-top: 3px;
-  color: var(--ink-faint);
+  color: var(--red);
 }
 .price-plan .button {
-  min-height: 46px;
-  font-size: 12px;
+  width: 100%;
+  justify-content: space-between;
+  min-height: 50px;
+  font-size: 15px;
 }
 .pricing-footnote {
   border-top: 1px solid var(--paper-edge);
@@ -86,6 +120,11 @@
   }
   .price-plan h3 {
     font-size: 25px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .price-plan:hover {
+    transform: none;
   }
 }
 @media (max-width: 650px) {

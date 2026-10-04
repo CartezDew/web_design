@@ -31,17 +31,17 @@
   gap: 3px;
   min-width: 200px;
   padding: 7px;
-  border: 1px solid rgba(26, 21, 18, 0.08);
-  border-radius: 14px;
+  border: 1px solid var(--pencil);
+  border-radius: var(--radius);
   background: var(--paper);
-  box-shadow: 0 20px 50px -16px rgba(26, 21, 18, 0.28);
+  box-shadow: var(--lift-3);
 }
 .about-menu-links a {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 11px 13px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;

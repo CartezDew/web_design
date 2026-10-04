@@ -1,30 +1,35 @@
 /* Dark fill and inverted text come from .surface--espresso. */
-.process .section-label span {
-  color: var(--alert-on-dark);
+.process .section-label::before {
+  background: var(--red-on-dark);
 }
 .process h2 {
   max-width: 1000px;
-  font-size: clamp(32px, 4vw, 52px);
+  font-size: var(--text-h2);
 }
 .process-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  margin-top: 50px;
+  margin-top: 64px;
 }
 .process-steps article {
+  position: relative;
   padding: 0 30px;
-  border-left: 1px solid var(--espresso-soft);
+  border-left: 1px solid rgba(252, 250, 245, 0.14);
 }
-.process-steps article:first-child {
-  padding-left: 0;
-  border: 0;
-}
-.process-steps article:last-child {
-  padding-right: 0;
+/* Step numerals: the display face in brand red, large enough to clear 3:1 on black. */
+.process-number {
+  display: block;
+  margin-bottom: 22px;
+  color: var(--red);
+  font-family: var(--display);
+  font-size: clamp(56px, 6vw, 84px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: var(--tracking-display);
 }
 .process-steps h3 {
-  margin: 0 0 17px;
-  font-size: 30px;
+  margin: 0 0 14px;
+  font-size: 24px;
 }
 .process-steps p {
   color: var(--on-dark-soft);
@@ -50,7 +55,7 @@
   .process-steps article:first-child {
     padding: 0 0 24px;
     border: 0;
-    border-bottom: 1px solid var(--espresso-soft);
+    border-bottom: 1px solid rgba(252, 250, 245, 0.14);
   }
   .process-steps h3 {
     display: block;

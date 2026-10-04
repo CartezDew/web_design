@@ -7,6 +7,8 @@ import { servedCountry, servedRegions } from "../content/locations";
 import websiteShowcase from "../../assets/websites/website_images.webp";
 import Reveal from "../Reveal";
 import "./Services.css";
+// Sticky-note tones rotate down the list so no two neighbours share one.
+const notes = ["sand", "sage", "steel", "clay"];
 const short = [
   "Strategic, modern websites that look great and do real work.",
   "Custom applications built around the way your business works.",
@@ -25,7 +27,7 @@ export default function Services() {
           <h2>
             Useful design.
             <br />
-            Solid engineering.
+            Solid <em>engineering.</em>
           </h2>
           <p>
             From your first website to the systems behind your business. I
@@ -44,7 +46,7 @@ export default function Services() {
           {services.map((service, i) => (
             <Reveal key={service.slug} direction="right" distance={18}>
               <details
-                className="service-detail"
+                className={`service-detail service-detail--${notes[i % notes.length]}`}
                 id={`service-${service.slug}`}
                 onToggle={(event) => {
                   if (event.currentTarget.open)
@@ -52,6 +54,9 @@ export default function Services() {
                 }}
               >
                 <summary className="service-row">
+                  <span className="service-index" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   <div>
                     <h3>
                       {i === 5

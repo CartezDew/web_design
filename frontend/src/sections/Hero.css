@@ -17,80 +17,105 @@
   padding-block: 80px;
   color: var(--ink);
 }
+/* Tagline badge as a sticker: sand note, ink edge, hard offset, a slight tilt, and an
+   ink chip carrying the red spark. Reads as part of the sketchbook, not a UI pill. */
 .hero-copy .hero-eyebrow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  margin: 0 0 26px;
-  color: var(--ink-faint);
-  font-size: var(--text-label);
+  gap: 10px;
+  margin: 0 0 30px;
+  padding: 4px 14px 4px 4px;
+  color: var(--light-ink);
+  background: var(--note-sand);
+  border: 1.5px solid var(--light-ink);
+  border-radius: var(--radius-sm);
+  box-shadow: 3px 3px 0 var(--light-ink);
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.18em;
-  line-height: 1.7;
-  text-transform: uppercase;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  rotate: -1.2deg;
+  transform-origin: left center;
 }
-.hero-copy .hero-eyebrow svg {
-  color: var(--ochre);
+.hero-eyebrow-chip {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--red-on-dark);
+  background: var(--light-ink);
+  border-radius: 4px;
 }
 .hero h1 {
-  font-size: var(--text-display);
-  font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.02em;
+  position: relative;
+  font-size: clamp(48px, 6.3vw, 86px);
+  line-height: 1;
   text-wrap: initial;
-}
-.hero h1 em {
-  color: var(--red);
-  font-style: italic;
-  font-weight: 600;
 }
 .hero-headline-word {
   display: inline-block;
 }
 .hero h1 .hero-growth-word {
-  display: inline-block;
-  font-size: 1.12em;
-  line-height: 1.15;
-  /* Room for the italic serif descender so it is not clipped. */
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
+  margin-top: 0.06em;
+  padding: 0 0.16em;
   transform-origin: left 85%;
   white-space: nowrap;
 }
+.hero-spark {
+  position: absolute;
+  top: -0.42em;
+  right: -0.62em;
+  width: 0.6em;
+  height: auto;
+  color: var(--red);
+  opacity: 0.85;
+}
 .hero-intro {
   max-width: 56ch;
-  margin: 32px 0;
+  margin: 32px 0 36px;
   color: var(--ink-soft);
   font-size: var(--text-lead);
-  line-height: 1.7;
+  line-height: 1.6;
 }
 .hero-actions {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 14px 16px;
   flex-wrap: wrap;
 }
-.hero-actions .button {
-  min-height: 50px;
-  padding: 14px 22px;
-  gap: 10px;
-  font-size: 0.82rem;
-  border-radius: 0.75rem;
-}
-.hero-primary {
-  background: var(--red);
-  border-color: var(--red);
-  box-shadow: 0 10px 30px -10px rgba(190, 3, 3, 0.45);
-}
-.hero-primary:hover {
-  background: var(--red-hover);
+.hero-secondary {
+  min-height: 60px;
+  padding-inline: 26px;
 }
 .hero-actions .text-link {
   border: 0;
-  padding: 0;
-  gap: 5px;
-  font-size: 0.82rem;
-  font-weight: 700;
+  padding: 0 0 0 8px;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.hero-reassurance {
+  position: relative;
+  margin-top: 18px;
+}
+.hero-reassurance svg:not(.sketch) {
+  color: var(--red);
+}
+/* A hand-drawn arrow curling up toward the primary button. */
+.hero-arrow {
+  position: absolute;
+  left: -92px;
+  top: -62px;
+  width: 84px;
+  height: auto;
+  color: var(--ink);
+  transform: scaleY(-1) rotate(-8deg);
+}
+@media (max-width: 1360px) {
+  .hero-arrow {
+    display: none;
+  }
 }
 .hero-actions .text-link--linkedin {
   gap: 7px;
@@ -102,22 +127,12 @@
 .trust-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 23px;
-  margin-top: 52px;
-  color: var(--ink-soft);
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  gap: 10px;
+  margin-top: 40px;
 }
-.trust-row span {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-.trust-row span::before {
-  width: 5px;
-  height: 5px;
+.trust-row .tag::before {
+  width: 6px;
+  height: 6px;
   flex-shrink: 0;
   background: var(--red);
   border-radius: 50%;
@@ -150,11 +165,16 @@
     gap: 38px;
   }
   .hero h1 {
-    font-size: clamp(2.75rem, 12.8vw, 4.7rem);
+    font-size: clamp(2.6rem, 11.6vw, 4.4rem);
   }
   .hero-copy .hero-eyebrow {
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
+    gap: 8px;
+    padding-right: 10px;
+    font-size: 12.5px;
+  }
+  .hero-eyebrow-chip {
+    width: 24px;
+    height: 24px;
   }
   .hero-intro {
     font-size: 1rem;
@@ -163,7 +183,8 @@
   .hero-actions {
     gap: 22px;
   }
-  .hero-actions .hero-primary {
+  .hero-actions .hero-primary,
+  .hero-actions .hero-secondary {
     flex-basis: 100%;
     justify-content: space-between;
   }
@@ -190,10 +211,10 @@
   z-index: 2;
   width: min(370px, calc(100% - 36px));
   padding: 20px 25px 34px;
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  border-radius: 1rem;
-  background: linear-gradient(150deg, var(--paper), var(--paper-deep));
-  box-shadow: var(--lift-3);
+  border: 1.5px solid var(--light-ink);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  box-shadow: 8px 8px 0 var(--light-ink);
   transform: rotate(2deg);
 }
 .hero-visual .browser-bar {
@@ -251,8 +272,8 @@
 .hero-visual .mock-nav em {
   flex-shrink: 0;
   padding: 4px 8px;
-  color: white;
-  border-radius: 6px;
+  color: var(--on-dark);
+  border-radius: 4px;
   background: var(--red);
   font-size: 0.52rem;
   font-style: normal;
@@ -261,16 +282,18 @@
 .hero-visual .mock-label {
   margin-top: 26px;
   color: var(--red);
+  font-family: var(--mono);
   font-size: 0.62rem;
-  font-weight: 700;
   letter-spacing: 0.15em;
 }
+/* Display face at mock scale: the card is a miniature of the real site. */
 .hero-visual .mock-title {
   margin: 8px 0 18px;
+  font-family: var(--display);
   font-size: clamp(1.7rem, 2.6vw, 2.4rem);
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.05em;
+  line-height: 1;
+  letter-spacing: 0.01em;
 }
 .hero-visual .mock-line {
   transform-origin: left center;
@@ -294,8 +317,14 @@
   gap: 2px;
   padding: 9px 8px;
   border: 1px solid var(--paper-edge);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--paper);
+}
+.hero-visual .mock-stats div:nth-child(1) {
+  background: var(--note-sand);
+}
+.hero-visual .mock-stats div:nth-child(3) {
+  background: var(--note-sage);
 }
 .hero-visual .mock-stats strong {
   font-size: 0.95rem;
@@ -314,14 +343,14 @@
   padding: 12px 17px;
   color: var(--on-dark);
   background: var(--red);
-  border-radius: 0.6rem;
+  border-radius: var(--radius-sm);
   font-size: 0.66rem;
   font-weight: 700;
 }
 .hero-visual .orbit {
   position: absolute;
   z-index: 0;
-  border: 1px solid rgba(190, 3, 3, 0.13);
+  border: 1.5px dashed rgba(21, 19, 17, 0.16);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -342,27 +371,27 @@
   gap: 8px;
   max-width: calc(100% - 40px);
   padding: 11px 14px;
-  border: 1px solid var(--paper-edge);
-  border-radius: 0.875rem;
-  color: var(--ink);
-  background: var(--paper);
-  font-family: var(--display);
+  border: 1.5px solid var(--light-ink);
+  border-radius: var(--radius);
+  color: var(--light-ink);
+  background: var(--note-sand);
+  font-family: var(--body);
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
-  box-shadow: var(--lift-2);
+  box-shadow: 3px 3px 0 var(--light-ink);
 }
 .floating-note--top {
   top: 30px;
   right: 20px;
   color: var(--on-dark);
   background: var(--red);
-  border-color: var(--red);
   transform: rotate(2deg);
 }
 .floating-note--side {
   top: 52%;
   left: 20px;
+  background: var(--note-sage);
   transform: translateY(-50%) rotate(-2deg);
 }
 .floating-note--side svg {
@@ -371,6 +400,7 @@
 .floating-note--bottom {
   right: 20px;
   bottom: 28px;
+  background: var(--note-steel);
   transform: rotate(-2deg);
 }
 .floating-note--bottom svg {
@@ -391,7 +421,6 @@
     padding: 9px 11px;
     gap: 6px;
     font-size: clamp(0.64rem, 2.7vw, 0.76rem);
-    border-radius: 12px;
   }
   .floating-note svg {
     width: 13px;
@@ -436,11 +465,41 @@
       .hero-growth-word,
       .hero-intro,
       .hero-actions > *,
+      .hero-reassurance,
       .trust-row
     ),
   .motion
     .hero-visual:not([data-visual-entered])
     :is(.hero-card, .mock-line, .floating-note) {
     opacity: 0;
+  }
+}
+
+/* Character: the marker stamps in behind "big!" once the headline lands, and the
+   sticky notes drift on their own. `translate` composes with the inline transforms. */
+.hero h1 .hero-growth-word::before {
+  transition-delay: 0ms;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .motion .hero-section:not([data-copy-entered]) .hero-growth-word::before {
+    transform: skewX(-6deg) rotate(-1deg) scaleX(0);
+  }
+  .hero-visual[data-visual-entered] .floating-note {
+    animation: note-drift 6s ease-in-out infinite;
+  }
+  .hero-visual[data-visual-entered] .floating-note--side {
+    animation-delay: -2s;
+  }
+  .hero-visual[data-visual-entered] .floating-note--bottom {
+    animation-delay: -4s;
+  }
+}
+@keyframes note-drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -5px;
   }
 }

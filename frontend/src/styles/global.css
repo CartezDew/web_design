@@ -17,7 +17,7 @@ body {
   background: var(--paper);
   font-family: var(--body);
   font-size: var(--text-body);
-  line-height: 1.7;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 #main {
@@ -59,15 +59,22 @@ h4,
 p {
   margin: 0;
 }
+/* Display type is Bricolage at 800 with positive tracking: chunky and sticker-like.
+   It is reserved for 40px and up, so h3 and h4 stay in Inter. */
 h1,
-h2,
+h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+}
 h3,
 h4 {
-  font-family: var(--display);
-  font-optical-sizing: auto;
-  line-height: 1.08;
+  font-family: var(--body);
+  font-weight: 700;
+  line-height: 1.2;
   letter-spacing: -0.02em;
-  font-weight: 600;
   text-wrap: balance;
 }
 h1 {
@@ -80,12 +87,34 @@ h3 {
   font-size: var(--text-h3);
   line-height: 1.22;
 }
-/* One emphasized word per heading, set in the serif italic. */
+/* Red Marker: one word per heading sits on a red highlighter wash. The wash is a
+   pseudo-element so it can wipe in when the heading reveals (see the motion block). */
 h1 em,
 h2 em,
+.marker-line em {
+  position: relative;
+  z-index: 0;
+  display: inline-block;
+  padding: 0 0.12em;
+  margin: 0 -0.04em;
+  color: var(--marker-ink);
+  font-style: normal;
+}
+h1 em::before,
+h2 em::before,
+.marker-line em::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0.08em 0 0.02em;
+  border-radius: 3px;
+  background: var(--marker);
+  transform: skewX(-6deg) rotate(-1deg);
+  transform-origin: left center;
+  content: "";
+}
 h3 em {
   color: var(--red);
-  font-style: italic;
+  font-style: normal;
 }
 p {
   color: var(--ink-soft);
@@ -162,17 +191,25 @@ summary:focus-visible {
 }
 
 /* Editorial label: tracked uppercase sans. */
+/* Mono label: the "tool tag" voice above every section heading. */
 .section-label {
   display: flex;
   align-items: center;
-  gap: 14px;
-  color: var(--ink-faint);
-  font-family: var(--body);
+  gap: 12px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
   font-size: var(--text-label);
-  letter-spacing: 0.18em;
+  font-weight: 400;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 26px;
-  font-weight: 600;
+  margin-bottom: 24px;
+}
+.section-label::before {
+  width: 22px;
+  height: 2px;
+  flex-shrink: 0;
+  background: var(--red);
+  content: "";
 }
 .section-label span {
   color: var(--red);
@@ -189,7 +226,7 @@ summary:focus-visible {
   content: "";
   height: 2px;
   width: 44px;
-  background: var(--ochre);
+  background: var(--red);
 }
 .editorial-rule::after {
   content: "";
@@ -217,16 +254,15 @@ summary:focus-visible {
   position: relative;
   margin: 40px 0;
   padding-left: 30px;
-  border-left: 2px solid var(--paper-edge);
+  border-left: 3px solid var(--red);
 }
 .pull-quote p {
-  font-family: var(--display);
-  font-optical-sizing: auto;
+  font-family: var(--body);
   font-size: var(--text-h3);
-  font-style: italic;
+  font-weight: 600;
   line-height: 1.34;
   color: var(--ink);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 .pull-quote::before {
   content: "\201C";
@@ -254,17 +290,24 @@ summary:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 12px;
   min-height: 52px;
-  padding: 13px 26px;
-  border: 1px solid var(--espresso);
-  border-radius: var(--radius);
-  background: var(--espresso);
+  padding: 14px 28px;
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius-sm);
+  background: var(--light-ink);
   color: var(--on-dark);
   font-family: var(--body);
-  font-size: var(--text-small);
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
   text-decoration: none;
+  box-shadow: var(--lift-1);
+}
+/* The big conversion button: the spec's 19px x 40px. */
+.button--lg {
+  min-height: 60px;
+  padding: 18px 36px;
 }
 .button:hover {
   background: var(--espresso-soft);
@@ -280,13 +323,95 @@ summary:focus-visible {
   background: var(--red-deep);
   border-color: var(--red-deep);
 }
-.button--ghost {
+.button--ghost,
+.button--outline {
   color: var(--ink);
   background: transparent;
-  border-color: var(--paper-edge);
+  border-color: var(--ink);
+  box-shadow: none;
 }
-.button--ghost:hover {
+.button--ghost:hover,
+.button--outline:hover {
   background: var(--paper-deep);
+}
+.surface--espresso .button--outline:hover {
+  background: var(--espresso-soft);
+}
+/* Soft secondary path on a sticky-note fill, where a red CTA would feel too committed. */
+.button--note {
+  color: var(--light-ink);
+  background: var(--note-sand);
+  border-color: var(--light-ink);
+  box-shadow: none;
+}
+.button--note:hover {
+  background: var(--note-clay);
+}
+
+/* Tagline badge: the eyebrow above a hero headline. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  color: var(--ink);
+  background: var(--red-wash);
+  border: 1px solid rgba(190, 3, 3, 0.18);
+  border-radius: var(--radius-pill);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.badge svg {
+  color: var(--red);
+}
+
+/* Mono pill tag. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  color: var(--ink-soft);
+  border: 1px solid var(--pencil);
+  border-radius: var(--radius-pill);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Sticky note: a flat card on one muted earth tone with an ink edge. One per row. */
+.note-card {
+  padding: 26px;
+  color: var(--light-ink);
+  background: var(--paper);
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius);
+}
+.note-card--sand {
+  background: var(--note-sand);
+}
+.note-card--sage {
+  background: var(--note-sage);
+}
+.note-card--steel {
+  background: var(--note-steel);
+}
+.note-card--clay {
+  background: var(--note-clay);
+}
+
+/* Reassurance caption under a primary CTA. */
+.reassurance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  line-height: 1.5;
 }
 .text-link {
   display: inline-flex;
@@ -451,6 +576,15 @@ summary:focus-visible {
   transform: translateY(-2px);
   box-shadow: var(--lift-2);
 }
+.note-card {
+  transition:
+    transform 220ms var(--ease),
+    box-shadow 220ms var(--ease);
+}
+.note-card--lift:hover {
+  transform: translateY(-3px) rotate(-0.6deg);
+  box-shadow: var(--lift-offset);
+}
 .button:active:not(:disabled) {
   transform: translateY(0) scale(0.985);
 }
@@ -466,10 +600,25 @@ summary:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   .button:hover,
+  .note-card--lift:hover,
   .button:active:not(:disabled),
   .button:hover svg,
   .text-link:hover svg,
   .linkedin-link:hover svg:last-child {
     transform: none;
+  }
+}
+
+/* Red Marker wipe: the wash draws left to right once its Reveal plays. Hidden only
+   when motion is confirmed on, so reduced motion and no-JS see it fully drawn. */
+h1 em::before,
+h2 em::before,
+.marker-line em::before {
+  transition: transform 700ms var(--ease-entrance) 260ms;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .motion [data-reveal]:not([data-revealed]) :is(h1, h2, .marker-line) em::before,
+  .motion :is(h1, h2, .marker-line)[data-reveal]:not([data-revealed]) em::before {
+    transform: skewX(-6deg) rotate(-1deg) scaleX(0);
   }
 }

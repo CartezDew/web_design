@@ -1,7 +1,7 @@
 import { track } from "../analytics/client";
-import { ArrowUpRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { portfolio } from "../content/site";
 import { stories } from "../content/stories";
 import Reveal from "../Reveal";
@@ -44,7 +44,11 @@ export function ProjectCard({ project }) {
           aria-expanded={storyOpen}
           aria-controls={storyId}
           data-analytics-id={`portfolio_${project.slug}`}
-          onClick={() => { if (!storyOpen) track("portfolio_view", { project_id: project.slug }); setStoryOpen(!storyOpen); }}
+          onClick={() => {
+            if (!storyOpen)
+              track("portfolio_view", { project_id: project.slug });
+            setStoryOpen(!storyOpen);
+          }}
         >
           Behind the project <ChevronDown size={17} aria-hidden="true" />
         </button>
@@ -94,7 +98,7 @@ export default function Work() {
         <h2>
           Good ideas.
           <br />
-          Real-world work.
+          <em>Real-world</em> work.
         </h2>
         <p>
           Different businesses. Different challenges. The same care for the
@@ -111,6 +115,14 @@ export default function Work() {
           <ProjectCard key={project.slug} project={project} />
         ))}
       </div>
+      <Reveal className="work-cta note-card note-card--sand" distance={16}>
+        <p className="marker-line">
+          Your business could be <em>next.</em>
+        </p>
+        <Link className="button button--red" to="/#start-a-project">
+          Plan your website <ArrowRight size={18} />
+        </Link>
+      </Reveal>
     </section>
   );
 }

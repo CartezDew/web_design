@@ -48,7 +48,7 @@ export default function BackToTop() {
             })
           }
         >
-          <ArrowUp size={17} aria-hidden="true" />
+          <ArrowUp size={20} strokeWidth={2.25} aria-hidden="true" />
         </motion.button>
       )}
     </AnimatePresence>

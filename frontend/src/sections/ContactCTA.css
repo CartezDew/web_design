@@ -1,10 +1,25 @@
-.contact-cta .section-label span {
-  color: var(--alert-on-dark);
+.contact-cta .shell {
+  position: relative;
+}
+.contact-cta .section-label::before {
+  background: var(--red-on-dark);
 }
 .contact-cta h2 {
   max-width: 1150px;
-  font-size: clamp(40px, 5.4vw, 74px);
-  line-height: 1.12;
+  font-size: clamp(42px, 6vw, 84px);
+  line-height: 1.04;
+}
+.contact-cta-scribble {
+  position: absolute;
+  top: -40px;
+  right: var(--gutter);
+  width: clamp(160px, 22vw, 300px);
+  height: auto;
+  color: var(--on-dark);
+  opacity: 0.18;
+}
+.contact-cta .actions {
+  gap: 14px;
 }
 .contact-cta-copy {
   max-width: 650px;
@@ -19,7 +34,7 @@
   display: flex;
   justify-content: space-between;
   gap: 25px;
-  border-top: 1px solid var(--espresso-soft);
+  border-top: 1px solid rgba(252, 250, 245, 0.14);
   margin-top: 65px;
   padding-top: 24px;
 }
@@ -29,17 +44,19 @@
   gap: 7px;
 }
 .contact-cta-details span {
-  font-size: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--on-dark-soft);
 }
 .contact-cta-details a {
-  font-size: 19px;
+  font-size: 22px;
+  font-weight: 600;
   text-decoration: none;
 }
 .contact-cta-details a:hover {
-  color: var(--alert-on-dark);
+  color: var(--red-on-dark);
 }
 @media (max-width: 650px) {
   .contact-cta h2 {

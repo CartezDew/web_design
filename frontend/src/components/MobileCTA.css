@@ -1,0 +1,45 @@
+.mobile-cta {
+  display: none;
+}
+@media (max-width: 760px) {
+  .mobile-cta {
+    position: fixed;
+    left: max(20px, env(safe-area-inset-left));
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 39;
+    display: block;
+    opacity: 0;
+    translate: 0 16px;
+    pointer-events: none;
+    transition:
+      opacity 220ms var(--ease),
+      translate 260ms var(--ease-entrance);
+  }
+  .mobile-cta[data-visible] {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+  }
+  .mobile-cta .button {
+    width: 100%;
+    justify-content: space-between;
+    box-shadow: 3px 3px 0 var(--light-ink);
+  }
+}
+/* Back-to-top shows at this width: leave its 52px square plus a 10px gap. */
+@media (max-width: 549.98px) {
+  .mobile-cta {
+    right: calc(max(20px, env(safe-area-inset-right)) + 62px);
+    bottom: max(20px, env(safe-area-inset-bottom));
+  }
+  .mobile-cta .button {
+    min-height: 52px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-cta {
+    transition: none;
+    translate: none;
+  }
+}

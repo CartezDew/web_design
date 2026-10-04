@@ -1,6 +1,6 @@
 import { track } from "../analytics/client";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { faqs } from "../content/site";
 import { JsonLd, siteUrl } from "../content/seo";
 import Reveal from "../Reveal";
@@ -14,14 +14,14 @@ export default function FAQ() {
           <h2>
             Questions, answered
             <br />
-            in plain language.
+            in <em>plain</em> language.
           </h2>
           <p>
             Clear expectations make better projects. Timelines and prices are
             estimates and may change when the requested scope, content,
             integrations, or revision needs change.
           </p>
-          <Link className="text-link" to="/#book">
+          <Link className="button button--red" to="/#book">
             Still have a question? Book a free call <ChevronRight size={17} />
           </Link>
         </Reveal>
@@ -36,8 +36,11 @@ export default function FAQ() {
               }}
             >
               <summary>
+                <span className="faq-q" aria-hidden="true">
+                  Q{index + 1}
+                </span>
                 <strong>{faq.question}</strong>
-                <ChevronDown size={19} />
+                <Plus size={19} />
               </summary>
               <p>{faq.answer}</p>
             </details>

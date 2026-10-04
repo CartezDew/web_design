@@ -11,22 +11,62 @@
   max-width: 370px;
   font-size: 15px;
 }
+/* Each service is a sticky note: cream at rest, its own earth tone on hover and open. */
+.service-list {
+  display: grid;
+  gap: 12px;
+}
+.service-detail {
+  --note: var(--note-sand);
+  background: var(--paper);
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius);
+  transition:
+    background 220ms var(--ease),
+    box-shadow 220ms var(--ease),
+    transform 220ms var(--ease);
+}
+.service-detail--sage {
+  --note: var(--note-sage);
+}
+.service-detail--steel {
+  --note: var(--note-steel);
+}
+.service-detail--clay {
+  --note: var(--note-clay);
+}
+.service-detail:hover,
+.service-detail[open] {
+  background: var(--note);
+}
+.service-detail[open] {
+  box-shadow: var(--lift-offset);
+}
 .service-row {
   display: grid;
-  grid-template-columns: 1fr 24px;
+  grid-template-columns: 40px 1fr 24px;
   align-items: start;
   gap: 18px;
-  padding: 25px 0;
-  border-top: 1px solid var(--paper-edge);
+  padding: 22px 24px;
   text-decoration: none;
-  transition: color 0.2s;
 }
-.service-list > div:last-child .service-detail {
-  border-bottom: 1px solid var(--paper-edge);
+.service-index {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--on-dark);
+  background: var(--light-ink);
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.service-detail[open] .service-index,
+.service-row:hover .service-index {
+  background: var(--red);
 }
 .service-row h3 {
-  font-size: clamp(22px, 2vw, 28px);
-  letter-spacing: -0.02em;
+  font-size: clamp(20px, 1.8vw, 24px);
 }
 .service-row p {
   margin-top: 8px;
@@ -37,9 +77,7 @@
   margin-top: 4px;
   transition: transform 0.2s;
 }
-.service-row:hover {
-  color: var(--red);
-}
+
 .service-row:hover > svg {
   transform: translate(3px, -3px);
 }
@@ -52,12 +90,16 @@
     max-width: 540px;
   }
   .service-row {
-    grid-template-columns: 1fr 22px;
+    grid-template-columns: 34px 1fr 22px;
     gap: 12px;
-    padding: 22px 0;
+    padding: 18px 16px;
+  }
+  .service-index {
+    width: 34px;
+    height: 34px;
   }
   .service-row h3 {
-    font-size: 22px;
+    font-size: 20px;
   }
 }
 
@@ -75,8 +117,8 @@
   transform: rotate(180deg);
 }
 .service-description {
-  padding: 0 42px 30px 0;
-  font-size: 14px;
+  padding: 0 66px 28px 82px;
+  font-size: 15px;
 }
 .service-description p + p {
   margin-top: 16px;
@@ -102,7 +144,7 @@
 }
 @media (max-width: 760px) {
   .service-description {
-    padding: 0 0 25px;
+    padding: 0 16px 22px;
   }
 }
 
@@ -120,7 +162,7 @@
     background 180ms ease;
 }
 .service-row:hover {
-  background: rgba(190, 3, 3, 0.025);
+  color: var(--light-ink);
 }
 .service-detail[open] .service-description {
   animation: service-detail-enter 240ms var(--ease);

@@ -47,12 +47,12 @@
   line-height: 1.65;
 }
 .intake-help a {
-  color: white;
+  color: var(--on-dark);
 }
 .intake-form-panel {
   min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 46px;
   box-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.6);
 }
@@ -110,9 +110,9 @@
 .intake-steps .is-current > span {
   border-color: var(--red);
   background: var(--red);
-  color: white;
+  color: var(--on-dark);
   transform: scale(1.08);
-  box-shadow: 0 8px 20px -8px rgba(190, 3, 3, 0.6);
+  box-shadow: var(--lift-1);
 }
 .intake-steps .is-done > span {
   border-color: var(--red);
@@ -170,7 +170,7 @@
 }
 .intake-discovery-details {
   border: 1px solid var(--paper-edge);
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: var(--paper-deep);
 }
 .intake-discovery-details > summary {
@@ -264,7 +264,7 @@
   min-width: 0;
   min-height: 46px;
   padding: 10px 11px;
-  border-radius: 0.7rem;
+  border-radius: var(--radius);
   background: var(--paper);
   font-size: 0.72rem;
   font-weight: 650;
@@ -282,21 +282,21 @@
   transform: translateY(-1px);
 }
 .intake-form-panel .choice[data-selected] {
-  color: white;
+  color: var(--on-dark);
   border-color: var(--red);
   background: var(--red);
-  box-shadow: 0 8px 18px -10px rgba(190, 3, 3, 0.8);
+  box-shadow: var(--lift-1);
 }
 .intake-form-panel .choice-dot {
   flex-shrink: 0;
   background: var(--paper);
 }
 .intake-form-panel .choice[data-selected] .choice-dot {
-  border-color: white;
+  border-color: var(--on-dark);
   background: var(--red);
 }
 .intake-form-panel .file-drop {
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: var(--red-wash);
 }
 .intake-form-panel .file-drop svg {
@@ -344,7 +344,7 @@
 }
 .brief-review {
   background: var(--paper-deep);
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   padding: 18px;
   font-size: 12px;
 }

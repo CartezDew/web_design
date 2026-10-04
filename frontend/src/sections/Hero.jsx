@@ -7,8 +7,10 @@ import {
   Search,
   ShieldCheck,
   CreditCard,
+  CalendarCheck,
 } from "lucide-react";
 import { Fragment } from "react";
+import Sketch from "../components/Sketch";
 import useHeroEntrance from "./useHeroEntrance";
 import "./Hero.css";
 export default function Hero({ onPlan }) {
@@ -18,8 +20,10 @@ export default function Hero({ onPlan }) {
       <div className="hero shell">
         <div className="hero-copy">
           <p className="hero-eyebrow">
-            <Sparkles size={15} /> Full-stack web developer for small
-            businesses.
+            <span className="hero-eyebrow-chip" aria-hidden="true">
+              <Sparkles size={14} />
+            </span>
+            Full-stack web developer for small businesses.
           </p>
           <h1 aria-label="Websites that make small businesses feel big!">
             {"Websites that make small businesses feel"
@@ -29,7 +33,10 @@ export default function Hero({ onPlan }) {
                   <span className="hero-headline-word">{word}</span>{" "}
                 </Fragment>
               ))}
-            <em className="hero-growth-word">big!</em>
+            <em className="hero-growth-word">
+              big!
+              <Sketch variant="spark" className="hero-spark" />
+            </em>
           </h1>
           <p className="hero-intro">
             I’m Cartez. I design and build custom websites, booking systems, and
@@ -39,7 +46,7 @@ export default function Hero({ onPlan }) {
           </p>
           <div className="hero-actions">
             <Link
-              className="button hero-primary"
+              className="button button--red button--lg hero-primary"
               data-analytics-id="cta_hero_plan"
               to="/#start-a-project"
               aria-haspopup="dialog"
@@ -58,7 +65,7 @@ export default function Hero({ onPlan }) {
             >
               Plan your website <ArrowRight size={18} />
             </Link>
-            <Link className="text-link" to="/#work">
+            <Link className="button button--outline hero-secondary" to="/#work">
               See my work <ChevronRight size={17} />
             </Link>
             <a
@@ -71,10 +78,15 @@ export default function Hero({ onPlan }) {
               <Linkedin size={17} /> LinkedIn
             </a>
           </div>
+          <p className="reassurance hero-reassurance">
+            <Sketch variant="arrow" className="hero-arrow" />
+            <CalendarCheck size={15} aria-hidden="true" />
+            Free 30-minute consultation. Clear scope before work begins.
+          </p>
           <div className="trust-row">
-            <span>Custom design</span>
-            <span>Full-stack build</span>
-            <span>Clear pricing</span>
+            <span className="tag">Custom design</span>
+            <span className="tag">Full-stack build</span>
+            <span className="tag">Clear pricing</span>
           </div>
         </div>
         <div

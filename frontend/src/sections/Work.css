@@ -16,8 +16,12 @@
   overflow: hidden;
   aspect-ratio: 1.37;
   background: var(--work-frame);
-  border-radius: 10px;
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius);
   padding: 32px;
+  transition:
+    transform 260ms var(--ease),
+    box-shadow 260ms var(--ease);
   text-decoration: none;
 }
 .work-image img {
@@ -28,8 +32,12 @@
   box-shadow: 0 20px 30px -16px rgba(0, 0, 0, 0.33);
   transition: transform 0.55s var(--ease);
 }
-.work-image:hover img {
-  transform: translateY(-5px) scale(1.025);
+.work-item:hover .work-image {
+  transform: translateY(-3px);
+  box-shadow: var(--lift-offset);
+}
+.work-item:hover .work-image img {
+  transform: scale(1.025);
 }
 .work-item--bds-talent-group .work-image {
   background: var(--work-bds);
@@ -56,10 +64,16 @@
   padding-top: 22px;
 }
 .work-caption > p {
+  display: inline-block;
+  padding: 3px 10px;
+  margin-bottom: 12px;
+  color: var(--ink-soft);
+  border: 1px solid var(--pencil);
+  border-radius: var(--radius-pill);
+  font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: 8px;
 }
 .work-caption h3 {
   font-size: 28px;
@@ -131,8 +145,8 @@
   gap: 9px;
   min-height: 48px;
   padding: 12px 16px;
-  border: 1px solid var(--paper-edge);
-  border-radius: 10px;
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
@@ -157,12 +171,10 @@
   color: var(--work-tile);
   background: var(--ink);
   border-color: var(--ink);
-  box-shadow: 0 5px 12px -7px rgba(16, 17, 20, 0.4);
 }
 .project-live-link:hover {
-  background: var(--work-link-hover);
-  border-color: var(--work-link-hover);
-  box-shadow: 0 7px 16px -7px rgba(16, 17, 20, 0.4);
+  background: var(--red);
+  border-color: var(--red);
 }
 .work-story-copy {
   padding-bottom: 20px;
@@ -260,8 +272,33 @@
     translate: 0 0;
   }
 }
+.work-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 72px;
+  padding: 32px 36px;
+}
+.work-cta p {
+  color: var(--light-ink);
+  font-family: var(--display);
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display);
+}
+@media (max-width: 650px) {
+  .work-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 48px;
+    padding: 26px 22px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .work-image:hover img {
+  .work-item:hover .work-image,
+  .work-item:hover .work-image img {
     transform: none;
   }
   .work-story:not([hidden]) .work-story-copy {

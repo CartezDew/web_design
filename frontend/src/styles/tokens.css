@@ -1,22 +1,24 @@
-/* Editorial design system. See .cursor/skills/editorial-design-system/tokens.md */
-@import "@fontsource-variable/fraunces/opsz.css";
+/* Marc'd design system. See .agents/skills/marcd-design-system/tokens.md */
+@import "@fontsource-variable/fraunces/opsz.css"; /* logo only */
+@import "@fontsource-variable/bricolage-grotesque";
 @import "@fontsource-variable/inter";
+@import "@fontsource/roboto-mono/400.css";
 :root {
   /* Fixed light palette. .surface--espresso remaps the tokens below but never
      these, so .surface--light can restore them inside a dark band. */
-  --light-paper-deep: #f2ece2;
-  --light-paper-edge: #e5dbcd;
-  --light-ink: #1a1512;
-  --light-ink-soft: #4a423b;
-  --light-ink-faint: #6e6359;
-  --light-ochre: #945d1e;
+  --light-paper-deep: #f4efe6;
+  --light-paper-edge: #e4ddd2;
+  --light-ink: #151311;
+  --light-ink-soft: #46403a;
+  --light-ink-faint: #6b635a;
+  --light-ochre: var(--red);
 
   /* Paper — warm backgrounds. Pure white is reserved for --card (forms on dark bands). */
-  --paper: #faf7f2;
+  --paper: #fcfaf5;
   --paper-deep: var(--light-paper-deep);
   --paper-edge: var(--light-paper-edge);
-  --espresso: #191411;
-  --espresso-soft: #241d18;
+  --espresso: #121110;
+  --espresso-soft: #1f1d1b;
   --card: #fff;
   --intake-night: #05070b;
 
@@ -32,23 +34,36 @@
   --ink: var(--light-ink);
   --ink-soft: var(--light-ink-soft);
   --ink-faint: var(--light-ink-faint);
-  --on-dark: #f7f2ea;
-  --on-dark-soft: #b9aea2;
+  --on-dark: #fcfaf5;
+  --on-dark-soft: #b8b1a8;
 
   /* Accent. Ochre is rationed to editorial marks: rules, small icons, pull quotes.
      One value cannot clear 4.5:1 on both paper and espresso, so there are two. */
   --red: #be0303;
   --red-deep: #8f0202;
-  --red-wash: #f7eae7;
+  --red-wash: #f7e4e0;
+  --red-hover: var(--red-deep);
+  /* Red Marker: the highlighter wash behind one word in a display heading. */
+  --marker: var(--red);
+  --marker-ink: #fcfaf5;
+  /* Red on the black band, for small marks that must clear 4.5:1 on --espresso. */
+  --red-on-dark: #ff6b5e;
   --ochre: var(--light-ochre);
-  --ochre-on-dark: #b4752c;
+  --ochre-on-dark: var(--red-on-dark);
+
+  /* Sticky notes. Muted earth tones, one per card, never two side by side. */
+  --note-sand: #efe3c8;
+  --note-sage: #dbe4d0;
+  --note-steel: #d7dfe3; /* audit-allow */
+  --note-clay: #ecd2c3;
+  --pencil: #bdb6ac;
 
   /* Portfolio frames — cooler mats so website screenshots read clearly against paper. */
   --work-frame: #ececee;
   --work-bds: #dedfda;
   --work-clip: #ded5c9;
   --work-leapfrog: #e0e5e8;
-  --work-tile: #fff;
+  --work-tile: var(--paper);
   --work-tile-hover-line: #a4a4aa;
   --work-link-hover: #30333c;
 
@@ -61,28 +76,37 @@
   --alert-on-dark: #ff8f8f;
   --linkedin: #0a66c2;
 
-  /* Type */
-  --display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  /* Type. Bricolage carries display (40px and up), Inter does all UI, Roboto Mono
+     labels and tags, Fraunces is kept only for the C/D wordmark. */
+  --display: "Bricolage Grotesque Variable", "Arial Black", system-ui, sans-serif;
   --body: "Inter Variable", system-ui, -apple-system, Arial, sans-serif;
-  --text-display: clamp(52px, 8vw, 112px);
-  --text-h1: clamp(42px, 6.2vw, 82px);
-  --text-h2: clamp(32px, 4.2vw, 56px);
-  --text-h3: clamp(22px, 2.3vw, 30px);
-  --text-lead: clamp(18px, 1.4vw, 21px);
+  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --logo: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --tracking-display: 0.02em;
+  --text-display: clamp(48px, 8vw, 90px);
+  --text-h1: clamp(42px, 6.4vw, 66px);
+  --text-h2: clamp(36px, 4.6vw, 55px);
+  --text-h3: clamp(22px, 2.1vw, 28px);
+  --text-lead: clamp(18px, 1.4vw, 20px);
   --text-body: 17px;
   --text-small: 14px;
   --text-label: 12px;
 
-  /* Elevation — warm brown shadows derived from the ink. */
-  --lift-1:
-    0 1px 2px rgba(26, 21, 18, 0.06), 0 2px 8px rgba(26, 21, 18, 0.04);
-  --lift-2: 0 10px 30px -12px rgba(26, 21, 18, 0.18);
-  --lift-3: 0 28px 60px -20px rgba(26, 21, 18, 0.28);
+  /* Elevation. Flat by default: color fills and 1px borders do the separating. */
+  --lift-1: 0 1px 2px rgba(21, 19, 17, 0.06);
+  --lift-2:
+    0 1px 3px rgba(21, 19, 17, 0.1), 0 1px 2px -1px rgba(21, 19, 17, 0.1);
+  --lift-3: 0 28px 60px -20px rgba(21, 19, 17, 0.3);
+  /* Hard offset shadow for sticky notes and the featured plan: a printed, stacked feel. */
+  --lift-offset: 4px 4px 0 var(--light-ink);
+  --nav-glow:
+    0 1px 2px rgba(21, 19, 17, 0.05), 0 18px 48px -18px rgba(190, 3, 3, 0.18);
 
   /* Radius. The arch is the signature portrait shape. */
-  --radius-sm: 5px;
-  --radius: 9px;
-  --radius-lg: 22px;
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
   --radius-arch: 190px 190px 10px 10px;
 
   /* Rhythm. Varying section padding matters as much as varying background. */
@@ -98,5 +122,5 @@
   --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Paper grain. Keeps flat fills from reading as flat. */
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.15'/%3E%3C/svg%3E");
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.1'/%3E%3C/svg%3E");
 }

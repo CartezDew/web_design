@@ -1,7 +1,7 @@
 .file-drop {
   position: relative;
   border: 1px dashed var(--ink-faint);
-  border-radius: 9px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   flex-direction: column;

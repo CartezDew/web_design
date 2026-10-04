@@ -10,7 +10,9 @@ export default function Pricing({ onPlan }) {
     <section className="pricing section shell surface--paper" id="pricing">
       <p className="section-label">Clear starting points</p>
       <Reveal className="section-heading" distance={20}>
-        <h2>Start where you are.</h2>
+        <h2>
+          Start where <em>you</em> are.
+        </h2>
         <p>
           Choose a starting point and let’s build from there. Every project gets
           a clear scope before the work begins.
@@ -25,6 +27,7 @@ export default function Pricing({ onPlan }) {
             }
             key={item.name}
           >
+            {item.featured && <span className="price-flag">Most popular</span>}
             <h3>{item.name}</h3>
             <p className="price-description">{item.description}</p>
             <p className="price-amount">
@@ -41,12 +44,18 @@ export default function Pricing({ onPlan }) {
               ))}
             </ul>
             <Link
-              className="button button--red"
+              className={
+                item.featured ? "button button--red" : "button button--outline"
+              }
               to={`/?package=${item.name.toLowerCase()}#start-a-project`}
               aria-haspopup="dialog"
               data-analytics-id={`cta_package_${item.name.toLowerCase()}`}
               onClick={(event) => {
-                track("form_choice", { form_type: "brief", field_id: "package", package_tier: analyticsPackages[item.name] });
+                track("form_choice", {
+                  form_type: "brief",
+                  field_id: "package",
+                  package_tier: analyticsPackages[item.name],
+                });
                 if (
                   onPlan &&
                   !event.metaKey &&

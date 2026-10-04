@@ -15,7 +15,7 @@
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--paper-edge);
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: var(--paper);
   color: var(--ink);
   padding: 11px 14px;
@@ -76,7 +76,7 @@
   overflow: auto;
   background: var(--paper);
   border: 1px solid var(--paper-edge);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 12px 40px rgba(26, 21, 18, 0.13);
   z-index: 100;
   padding: 5px;
@@ -116,7 +116,7 @@
   align-items: center;
   gap: 8px;
   border: 1px solid var(--paper-edge);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   font-size: 12px;
   cursor: pointer;
@@ -165,7 +165,7 @@
   place-items: center;
   background: var(--paper);
   border: 1px solid var(--paper-edge);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   width: 34px;
   height: 34px;
   padding: 0;
@@ -191,7 +191,7 @@
   display: grid;
   place-items: center;
   font-size: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   outline: none;
 }
@@ -200,7 +200,7 @@
 }
 .calendar-cell[data-selected] {
   background: var(--red);
-  color: white;
+  color: var(--on-dark);
 }
 .calendar-cell[data-disabled],
 .calendar-cell[data-unavailable] {
@@ -245,7 +245,7 @@
   padding: 20px;
   background: var(--paper);
   border: 1px solid var(--paper-edge);
-  border-radius: 9px;
+  border-radius: var(--radius);
   box-shadow: 0 12px 40px rgba(26, 21, 18, 0.13);
   width: 320px;
   max-width: calc(100vw - 24px);

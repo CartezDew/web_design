@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { LeadContactProvider } from "../components/LeadContactContext";
 import SiteLayout from "../components/SiteLayout";
 import BackToTop from "../components/BackToTop";
+import MobileCTA from "../components/MobileCTA";
 import { pageMeta } from "../content/seo";
 import Ticker from "../sections/Ticker";
 import Hero from "../sections/Hero";
@@ -58,6 +59,7 @@ export default function Page() {
         />
         <Privacy />
         <BackToTop />
+        <MobileCTA onPlan={openIntake} />
         <JsonLd
           data={{
             "@context": "https://schema.org",
