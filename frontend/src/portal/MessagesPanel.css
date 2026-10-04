@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-right: 1px solid var(--line);
+  border-right: 1px solid var(--paper-edge);
   padding-right: 20px;
 }
 .messages-layout > nav > button:not(.button) {
@@ -20,7 +20,7 @@
   line-height: 1.6;
 }
 .messages-layout > nav > button.is-active {
-  background: #fff2f2;
+  background: var(--red-wash);
   color: var(--red);
 }
 .message-history {
@@ -33,14 +33,14 @@
 }
 .message-history article {
   align-self: flex-start;
-  background: var(--surface);
+  background: var(--paper-deep);
   padding: 16px 20px;
   border-radius: 8px;
   max-width: 90%;
 }
 .message-history article.is-own {
   align-self: flex-end;
-  background: #fff4f4;
+  background: var(--red-wash);
 }
 .message-history strong {
   font-size: 11px;
@@ -54,7 +54,7 @@
 }
 .message-history time {
   font-size: 9px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .message-thread .button {
   align-self: flex-end;
@@ -70,7 +70,7 @@
   }
   .messages-layout > nav {
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--paper-edge);
     flex-direction: row;
     overflow: auto;
     padding: 0 0 15px;

@@ -1,14 +1,14 @@
+/* Surface class owns the fill; this only layers the warm glow over the grain. */
 .faq-section {
   width: 100%;
-  border-block: 1px solid #e2e8f0;
-  background:
+  border-block: 1px solid var(--paper-edge);
+  background-image:
     radial-gradient(
       circle at 8% 18%,
       rgba(190, 3, 3, 0.055),
       transparent 25rem
     ),
-    #f8fafc;
-  color: #0f172a;
+    var(--grain);
 }
 .faq {
   display: grid;
@@ -19,23 +19,17 @@
 .faq-intro {
   align-self: start;
 }
-.faq-intro .section-label {
-  color: #0f172a;
-  font-size: 0.71rem;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
 .faq-intro h2 {
   margin: 0;
-  font-size: clamp(2.8rem, 5vw, 5rem);
-  font-weight: 800;
-  line-height: 1.04;
-  letter-spacing: -0.045em;
+  font-size: var(--text-h2);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
   text-wrap: initial;
 }
 .faq-intro > p:not(.section-label) {
   margin: 28px 0;
-  color: #475569;
+  color: var(--ink-soft);
   font-size: 0.9rem;
   line-height: 1.75;
 }
@@ -48,10 +42,10 @@
   white-space: normal;
 }
 .faq-list {
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--paper-edge);
 }
 .faq-item {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--paper-edge);
 }
 .faq-item summary {
   display: grid;
@@ -88,7 +82,7 @@
 }
 .faq-item > p {
   margin: -4px 44px 24px 4px;
-  color: #475569;
+  color: var(--ink-soft);
   font-size: 0.86rem;
   line-height: 1.75;
   animation: faq-reveal 200ms ease;

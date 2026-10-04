@@ -1,12 +1,5 @@
-.contact-cta {
-  color: #fff;
-  background: var(--ink);
-}
-.contact-cta .section-label {
-  color: #ddd;
-}
 .contact-cta .section-label span {
-  color: #ff7070;
+  color: var(--alert-on-dark);
 }
 .contact-cta h2 {
   max-width: 1150px;
@@ -17,16 +10,16 @@
   max-width: 650px;
   font-size: 18px;
   margin: 28px 0 32px;
-  color: #ccc;
+  color: var(--on-dark-soft);
 }
 .contact-cta .text-link {
-  color: #fff;
+  color: var(--on-dark);
 }
 .contact-cta-details {
   display: flex;
   justify-content: space-between;
   gap: 25px;
-  border-top: 1px solid #45454a;
+  border-top: 1px solid var(--espresso-soft);
   margin-top: 65px;
   padding-top: 24px;
 }
@@ -39,14 +32,14 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #ccc;
+  color: var(--on-dark-soft);
 }
 .contact-cta-details a {
   font-size: 19px;
   text-decoration: none;
 }
 .contact-cta-details a:hover {
-  color: #ff9b9b;
+  color: var(--alert-on-dark);
 }
 @media (max-width: 650px) {
   .contact-cta h2 {

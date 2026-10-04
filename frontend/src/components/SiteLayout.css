@@ -14,9 +14,10 @@
 }
 .wordmark {
   font-family: var(--display);
+  font-optical-sizing: auto;
   font-size: 38px;
-  font-weight: 800;
-  letter-spacing: -0.085em;
+  font-weight: 600;
+  letter-spacing: -0.035em;
   line-height: 1;
   text-decoration: none;
 }
@@ -58,7 +59,7 @@
   align-items: center;
   gap: 32px;
   padding-bottom: 38px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--paper-edge);
 }
 .footer-top p {
   font-size: 13px;
@@ -85,7 +86,7 @@
   gap: 24px;
   margin-top: 23px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .footer-bottom p {
   font-size: inherit;
@@ -120,9 +121,9 @@
     right: 0;
     top: 71px;
     padding: 24px var(--gutter) 32px;
-    background: #fff;
-    border-bottom: 1px solid var(--line);
-    box-shadow: 0 18px 24px #00000006;
+    background: var(--paper);
+    border-bottom: 1px solid var(--paper-edge);
+    box-shadow: 0 18px 24px rgba(26, 21, 18, 0.02);
     align-items: stretch;
     gap: 0;
   }

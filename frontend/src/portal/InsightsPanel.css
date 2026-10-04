@@ -1,14 +1,14 @@
 .business-insights { display: grid; gap: 24px; }
 .insights-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
 .insights-toolbar h2 { margin: 0 0 8px; font-size: 24px; }
-.insights-toolbar p, .business-insights .portal-panel p { color: #617080; font-size: 14px; line-height: 1.65; }
+.insights-toolbar p, .business-insights .portal-panel p { color: var(--ink-faint); font-size: 14px; line-height: 1.65; }
 .insights-toolbar label { display: grid; gap: 8px; font-size: 13px; white-space: nowrap; }
-.insights-toolbar select { background: white; color: #17212d; border: 1px solid #dce1e5; border-radius: 8px; padding: 10px 14px; font: inherit; }
+.insights-toolbar select { background: var(--paper); color: var(--espresso); border: 1px solid var(--paper-edge); border-radius: 8px; padding: 10px 14px; font: inherit; }
 .insights-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .insights-metrics .portal-panel { margin: 0; padding: 20px; display: grid; gap: 8px; }
-.insights-metrics span { font-size: 13px; color: #617080; }
+.insights-metrics span { font-size: 13px; color: var(--ink-faint); }
 .insights-metrics strong { font-size: 32px; font-weight: 600; }
-.insights-note { font-size: 13px; line-height: 1.7; color: #617080; margin: 0; }
+.insights-note { font-size: 13px; line-height: 1.7; color: var(--ink-faint); margin: 0; }
 .insights-google { display: flex; gap: 20px; align-items: center; justify-content: space-between; }
 .insights-google .button { flex-shrink: 0; }
 .insights-breakdowns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
@@ -16,9 +16,9 @@
 .insights-breakdowns h3, .insights-google h3 { font-size: 18px; margin: 0; }
 .insights-table-wrap { overflow: auto; }
 .insights-breakdowns table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.insights-breakdowns th, .insights-breakdowns td { text-align: right; padding: 12px 8px; border-bottom: 1px solid #edf0f2; }
+.insights-breakdowns th, .insights-breakdowns td { text-align: right; padding: 12px 8px; border-bottom: 1px solid var(--paper-deep); }
 .insights-breakdowns th:first-child { text-align: left; }
 .insights-breakdowns tbody th { font-weight: 500; }
-.insights-breakdowns thead th { color: #617080; font-size: 12px; }
+.insights-breakdowns thead th { color: var(--ink-faint); font-size: 12px; }
 @media (max-width: 1000px) { .insights-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .insights-breakdowns { grid-template-columns: minmax(0, 1fr); } .insights-google { display: block; } }
 @media (max-width: 600px) { .insights-toolbar { display: block; } .insights-toolbar label { margin-top: 18px; } .insights-metrics { gap: 10px; } .insights-metrics .portal-panel { padding: 14px; } }

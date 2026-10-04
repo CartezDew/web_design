@@ -3,7 +3,10 @@ import { PrivacyAnalyticsSettings } from "../analytics/SiteAnalytics";
 import "./Privacy.css";
 export default function Privacy() {
   return (
-    <section className="privacy-section shell" aria-label="Privacy">
+    <section
+      className="privacy-section shell section--tight surface--paper"
+      aria-label="Privacy"
+    >
       <details id="privacy" className="privacy-disclosure">
         <summary>
           <h2>Your information, handled with care.</h2>

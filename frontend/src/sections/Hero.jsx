@@ -14,7 +14,7 @@ import "./Hero.css";
 export default function Hero({ onPlan }) {
   const [scope, visual] = useHeroEntrance();
   return (
-    <section className="hero-section" id="top" ref={scope}>
+    <section className="hero-section surface--paper" id="top" ref={scope}>
       <div className="hero shell">
         <div className="hero-copy">
           <p className="hero-eyebrow">

@@ -14,10 +14,10 @@ body {
   overflow-x: clip;
   overscroll-behavior-x: none;
   color: var(--ink);
-  background: #fff;
+  background: var(--paper);
   font-family: var(--body);
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: var(--text-body);
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
 #main {
@@ -64,22 +64,31 @@ h2,
 h3,
 h4 {
   font-family: var(--display);
-  line-height: 1.12;
-  letter-spacing: -0.055em;
-  font-weight: 700;
+  font-optical-sizing: auto;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 600;
   text-wrap: balance;
 }
 h1 {
-  font-size: clamp(42px, 5.7vw, 76px);
+  font-size: var(--text-h1);
 }
 h2 {
-  font-size: clamp(32px, 3.8vw, 52px);
+  font-size: var(--text-h2);
 }
 h3 {
-  font-size: clamp(23px, 2.4vw, 30px);
+  font-size: var(--text-h3);
+  line-height: 1.22;
+}
+/* One emphasized word per heading, set in the serif italic. */
+h1 em,
+h2 em,
+h3 em {
+  color: var(--red);
+  font-style: italic;
 }
 p {
-  color: var(--muted);
+  color: var(--ink-soft);
 }
 button:focus-visible,
 a:focus-visible,
@@ -90,7 +99,7 @@ summary:focus-visible {
   outline-offset: 5px;
 }
 ::selection {
-  background: #f6cece;
+  background: var(--red-wash);
   color: var(--ink);
 }
 .shell {
@@ -99,16 +108,68 @@ summary:focus-visible {
   padding-inline: var(--gutter);
   margin-inline: auto;
 }
+
+/* Surfaces. No two adjacent sections may use the same one. */
+.surface--paper,
+.surface--deep,
+.surface--espresso {
+  background-image: var(--grain);
+}
+.surface--paper {
+  background-color: var(--paper);
+  color: var(--ink);
+}
+.surface--deep {
+  background-color: var(--paper-deep);
+  color: var(--ink);
+}
+/* Espresso remaps the ink tokens so existing child rules invert automatically
+   instead of every descendant needing a dark-mode override. */
+.surface--espresso {
+  --ink: var(--on-dark);
+  --ink-soft: var(--on-dark-soft);
+  --ink-faint: var(--on-dark-soft);
+  --ochre: var(--ochre-on-dark);
+  --paper: var(--espresso-soft);
+  --paper-deep: var(--espresso-soft);
+  --paper-edge: rgba(247, 242, 234, 0.16);
+  background-color: var(--espresso);
+  color: var(--on-dark);
+}
+
+/* A light card inside a dark band. Restores the light-surface tokens that
+   .surface--espresso remaps, so forms stay dark-on-light and readable. */
+.surface--light {
+  --ink: var(--light-ink);
+  --ink-soft: var(--light-ink-soft);
+  --ink-faint: var(--light-ink-faint);
+  --ochre: var(--light-ochre);
+  --paper: var(--card);
+  --paper-deep: var(--light-paper-deep);
+  --paper-edge: var(--light-paper-edge);
+  color: var(--ink);
+  background-color: var(--card);
+}
+
 .section {
   padding-block: var(--section);
 }
+.section--tight {
+  padding-block: var(--section-tight);
+}
+.section--loose {
+  padding-block: var(--section-loose);
+}
+
+/* Editorial label: tracked uppercase sans. */
 .section-label {
   display: flex;
   align-items: center;
-  gap: 16px;
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  gap: 14px;
+  color: var(--ink-faint);
+  font-family: var(--body);
+  font-size: var(--text-label);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   margin-bottom: 26px;
   font-weight: 600;
@@ -116,14 +177,27 @@ summary:focus-visible {
 .section-label span {
   color: var(--red);
 }
-.section-label:after {
+
+/* Hairline with a short ochre leading segment. */
+.editorial-rule {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 28px 0;
+}
+.editorial-rule::before {
+  content: "";
+  height: 2px;
+  width: 44px;
+  background: var(--ochre);
+}
+.editorial-rule::after {
   content: "";
   height: 1px;
-  width: 50px;
-  background: var(--line);
-  order: -1;
-  display: none;
+  flex: 1;
+  background: var(--paper-edge);
 }
+
 .section-heading {
   display: flex;
   align-items: flex-end;
@@ -137,53 +211,91 @@ summary:focus-visible {
 .section-heading p {
   max-width: 390px;
 }
+
+/* Pull quote: the main tool for adding warmth to a text-heavy section. */
+.pull-quote {
+  position: relative;
+  margin: 40px 0;
+  padding-left: 30px;
+  border-left: 2px solid var(--paper-edge);
+}
+.pull-quote p {
+  font-family: var(--display);
+  font-optical-sizing: auto;
+  font-size: var(--text-h3);
+  font-style: italic;
+  line-height: 1.34;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+.pull-quote::before {
+  content: "\201C";
+  position: absolute;
+  left: 14px;
+  top: -14px;
+  font-family: var(--display);
+  font-size: 56px;
+  line-height: 1;
+  color: var(--ochre);
+}
+.pull-quote cite {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--body);
+  font-size: var(--text-small);
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 20px;
   min-height: 52px;
-  padding: 13px 24px;
-  border: 1px solid var(--ink);
-  border-radius: 8px;
-  background: var(--ink);
-  color: #fff;
-  font-size: 14px;
+  padding: 13px 26px;
+  border: 1px solid var(--espresso);
+  border-radius: var(--radius);
+  background: var(--espresso);
+  color: var(--on-dark);
+  font-family: var(--body);
+  font-size: var(--text-small);
   font-weight: 600;
   text-decoration: none;
-  transition:
-    background 0.2s,
-    transform 0.2s;
 }
 .button:hover {
-  background: #303136;
-  transform: translateY(-2px);
+  background: var(--espresso-soft);
 }
 .button--red,
 .button--accent {
   background: var(--red);
   border-color: var(--red);
+  color: var(--on-dark);
 }
 .button--red:hover,
 .button--accent:hover {
-  background: var(--red-hover);
+  background: var(--red-deep);
+  border-color: var(--red-deep);
 }
 .button--ghost {
   color: var(--ink);
   background: transparent;
-  border-color: var(--line);
+  border-color: var(--paper-edge);
 }
 .button--ghost:hover {
-  background: var(--surface);
+  background: var(--paper-deep);
 }
 .text-link {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   text-decoration: none;
   border-bottom: 1px solid currentColor;
   padding-bottom: 4px;
-  font-size: 14px;
+  font-size: var(--text-small);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -202,8 +314,8 @@ summary:focus-visible {
   left: 20px;
   transform: translateY(-150%);
   z-index: 100;
-  background: var(--ink);
-  color: #fff;
+  background: var(--espresso);
+  color: var(--on-dark);
   padding: 12px;
 }
 .skip-link:focus {
@@ -217,28 +329,28 @@ summary:focus-visible {
   margin-bottom: 26px;
 }
 .page-intro > p:not(.section-label) {
-  max-width: 680px;
-  font-size: 18px;
+  max-width: var(--measure);
+  font-size: var(--text-lead);
 }
 .page-intro .actions {
   margin-top: 30px;
 }
 .notice {
   padding: 16px 20px;
-  border: 1px solid #b8cdc0;
-  background: #f4f8f5;
-  border-radius: 8px;
-  color: #22432b;
+  border: 1px solid var(--ok-line);
+  background: var(--ok-wash);
+  border-radius: var(--radius);
+  color: var(--ok-ink);
   line-height: 1.5;
 }
 .notice--error {
-  border-color: #e2abab;
-  background: #fff6f6;
-  color: #8e1616;
+  border-color: var(--alert-line);
+  background: var(--red-wash);
+  color: var(--alert-ink);
 }
 .empty-state {
   padding: 32px 0;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .form-spam-trap {
   position: absolute;
@@ -260,7 +372,7 @@ summary:focus-visible {
   border: 0;
 }
 .reading {
-  max-width: 760px;
+  max-width: var(--measure);
 }
 .reading h2 {
   margin: 50px 0 20px;
@@ -270,7 +382,7 @@ summary:focus-visible {
 }
 .reading ul {
   padding-left: 22px;
-  color: var(--muted);
+  color: var(--ink-soft);
 }
 .reading li {
   margin: 10px 0;
@@ -301,8 +413,8 @@ summary:focus-visible {
   .page-intro {
     padding-top: 48px;
   }
-  .page-intro > p:not(.section-label) {
-    font-size: 16px;
+  .pull-quote {
+    padding-left: 22px;
   }
   .actions {
     gap: 22px;
@@ -328,7 +440,7 @@ summary:focus-visible {
   }
 }
 
-/* Shared microinteractions from the main design; section motion stays in its own CSS. */
+/* Shared microinteractions; section motion stays in its own CSS. */
 .button {
   transition:
     background 180ms ease,
@@ -336,7 +448,8 @@ summary:focus-visible {
     box-shadow 180ms ease;
 }
 .button:hover {
-  box-shadow: 0 12px 24px -10px rgba(15, 23, 42, 0.35);
+  transform: translateY(-2px);
+  box-shadow: var(--lift-2);
 }
 .button:active:not(:disabled) {
   transform: translateY(0) scale(0.985);

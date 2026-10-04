@@ -293,7 +293,7 @@ export default function IntakePage({
     onModalClose();
   };
   const formPanel = (
-    <section className="intake-form-panel">
+    <section className="intake-form-panel surface--light">
       {complete ? (
         <div className="form-success" role="status">
           <Check size={32} />
@@ -761,7 +761,7 @@ export default function IntakePage({
   return (
     <>
       <section
-        className="intake-section section"
+        className="intake-section section surface--espresso"
         id="start-a-project"
         aria-labelledby="intake-title"
       >

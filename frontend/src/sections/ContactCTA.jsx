@@ -4,7 +4,10 @@ import Reveal from "../Reveal";
 import "./ContactCTA.css";
 export default function ContactCTA() {
   return (
-    <section className="contact-cta section" id="contact">
+    <section
+      className="contact-cta section section--loose surface--espresso"
+      id="contact"
+    >
       <div className="shell">
         <p className="section-label">Let’s make something good</p>
         <Reveal>

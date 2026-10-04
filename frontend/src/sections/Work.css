@@ -15,7 +15,7 @@
   justify-content: center;
   overflow: hidden;
   aspect-ratio: 1.37;
-  background: #ececee;
+  background: var(--work-frame);
   border-radius: 10px;
   padding: 32px;
   text-decoration: none;
@@ -25,20 +25,20 @@
   max-height: 100%;
   object-fit: contain;
   border-radius: 4px;
-  box-shadow: 0 20px 30px -16px #0005;
+  box-shadow: 0 20px 30px -16px rgba(0, 0, 0, 0.33);
   transition: transform 0.55s var(--ease);
 }
 .work-image:hover img {
   transform: translateY(-5px) scale(1.025);
 }
 .work-item--bds-talent-group .work-image {
-  background: #dedfda;
+  background: var(--work-bds);
 }
 .work-item--clip-culture .work-image {
-  background: #ded5c9;
+  background: var(--work-clip);
 }
 .work-item--leapfrog-analytics .work-image {
-  background: #e0e5e8;
+  background: var(--work-leapfrog);
 }
 .work-arrow {
   position: absolute;
@@ -49,8 +49,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: white;
-  box-shadow: 0 2px 10px #0001;
+  background: var(--work-tile);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 .work-caption {
   padding-top: 22px;
@@ -71,7 +71,7 @@
 .work-caption > span {
   display: block;
   min-height: 3.3em;
-  color: var(--muted);
+  color: var(--ink-faint);
   font-size: 14px;
 }
 .work-caption h3 a:hover {
@@ -113,8 +113,8 @@
 .work-story {
   margin-top: 20px;
   padding: 0 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--paper-deep);
+  border: 1px solid var(--paper-edge);
   border-radius: 12px;
 }
 .work-actions {
@@ -131,7 +131,7 @@
   gap: 9px;
   min-height: 48px;
   padding: 12px 16px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--paper-edge);
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
@@ -144,25 +144,25 @@
 }
 .project-story-button {
   color: var(--ink);
-  background: #fff;
+  background: var(--work-tile);
 }
 .project-story-button:hover {
-  background: var(--surface);
-  border-color: #a4a4aa;
+  background: var(--work-frame);
+  border-color: var(--work-tile-hover-line);
 }
 .project-story-button[aria-expanded="true"] svg {
   transform: rotate(180deg);
 }
 .project-live-link {
-  color: #fff;
+  color: var(--work-tile);
   background: var(--ink);
   border-color: var(--ink);
-  box-shadow: 0 5px 12px -7px #10111466;
+  box-shadow: 0 5px 12px -7px rgba(16, 17, 20, 0.4);
 }
 .project-live-link:hover {
-  background: #30333c;
-  border-color: #30333c;
-  box-shadow: 0 7px 16px -7px #10111466;
+  background: var(--work-link-hover);
+  border-color: var(--work-link-hover);
+  box-shadow: 0 7px 16px -7px rgba(16, 17, 20, 0.4);
 }
 .work-story-copy {
   padding-bottom: 20px;
@@ -178,7 +178,7 @@
 }
 .work-story-copy ul {
   padding-left: 20px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .work-story-copy li {
   margin-block: 6px;

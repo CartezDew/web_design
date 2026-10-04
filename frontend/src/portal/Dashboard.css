@@ -2,11 +2,11 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 220px 1fr;
-  background: var(--surface);
+  background: var(--paper-deep);
 }
 .portal-sidebar {
-  background: #fff;
-  border-right: 1px solid var(--line);
+  background: var(--paper);
+  border-right: 1px solid var(--paper-edge);
   padding: 36px 22px;
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@
 }
 .portal-person span {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .portal-sidebar nav {
   display: flex;
@@ -44,14 +44,14 @@
 }
 .portal-sidebar nav a.active {
   color: var(--red);
-  background: #fff2f2;
+  background: var(--red-wash);
 }
 .portal-sidebar nav a:hover {
-  background: var(--surface);
+  background: var(--paper-deep);
 }
 .portal-signout {
   border: 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--paper-edge);
   padding: 18px 0 0;
   margin-top: auto;
   background: none;
@@ -85,8 +85,8 @@
   font-size: 11px;
 }
 .portal-panel {
-  background: #fff;
-  border: 1px solid var(--line);
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
   border-radius: 9px;
   padding: 28px;
   margin-bottom: 24px;
@@ -134,8 +134,8 @@
 }
 .portal-quick-links a {
   padding: 24px;
-  background: white;
-  border: 1px solid var(--line);
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -147,7 +147,7 @@
 }
 .portal-quick-links span {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .portal-quick-links svg {
   color: var(--red);
@@ -165,7 +165,7 @@
   gap: 12px;
   text-transform: capitalize;
   font-size: 10px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .project-progress > div:before {
   content: "";
@@ -174,7 +174,7 @@
   top: 6px;
   left: 0;
   width: 100%;
-  background: var(--line);
+  background: var(--paper-edge);
 }
 .project-progress > div:last-child:before {
   display: none;
@@ -182,9 +182,9 @@
 .project-progress > div > span {
   width: 13px;
   height: 13px;
-  border: 2px solid var(--line);
+  border: 2px solid var(--paper-edge);
   border-radius: 50%;
-  background: white;
+  background: var(--paper);
   position: relative;
 }
 .project-progress .is-complete:before {
@@ -195,14 +195,14 @@
   background: var(--red);
 }
 .project-progress > div[aria-current="step"] > span {
-  outline: 3px solid #f5baba;
+  outline: 3px solid var(--alert-on-dark);
   outline-offset: 3px;
 }
 .status-label {
   display: inline-block;
   font-size: 10px;
   color: var(--red);
-  background: #fff2f2;
+  background: var(--red-wash);
   padding: 5px 10px;
   border-radius: 20px;
   text-transform: capitalize;
@@ -246,7 +246,7 @@
     height: auto;
     padding: 20px;
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--paper-edge);
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 20px;

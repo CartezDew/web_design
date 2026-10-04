@@ -262,7 +262,7 @@ export default function BookingPage() {
   };
   return (
     <section
-      className="booking-layout shell section"
+      className="booking-layout shell section surface--paper"
       id="book"
       aria-labelledby="booking-title"
     >

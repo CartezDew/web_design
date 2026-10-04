@@ -18,7 +18,7 @@ const short = [
 ];
 export default function Services() {
   return (
-    <section className="services section" id="services">
+    <section className="services section surface--deep" id="services">
       <div className="shell services-layout">
         <Reveal className="services-intro" direction="left" distance={18}>
           <p className="section-label">What I do</p>

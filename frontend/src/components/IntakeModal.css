@@ -16,10 +16,10 @@
   width: min(100%, 800px);
   max-height: calc(100dvh - 48px);
   overflow: hidden;
-  border: 1px solid #ffffff60;
+  border: 1px solid rgba(247, 242, 234, 0.38);
   border-radius: 22px;
-  background: white;
-  box-shadow: 0 30px 100px #0005;
+  background: var(--paper);
+  box-shadow: 0 30px 100px rgba(26, 21, 18, 0.33);
   outline: none;
 }
 .intake-modal-dialog {
@@ -36,7 +36,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 30px 36px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--paper-edge);
 }
 .intake-modal-header p {
   color: var(--red);
@@ -53,7 +53,7 @@
   display: block;
   margin-top: 12px;
   font-size: 12px;
-  color: #475569;
+  color: var(--ink-soft);
   line-height: 1.6;
 }
 .intake-modal-close {
@@ -62,17 +62,17 @@
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--paper-edge);
   border-radius: 50%;
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--paper-deep);
+  color: var(--ink);
   transition:
     background 180ms ease,
     color 180ms ease,
     transform 180ms ease;
 }
 .intake-modal-close:hover {
-  background: #fff2f2;
+  background: var(--red-wash);
   color: var(--red);
   transform: rotate(8deg);
 }
@@ -84,7 +84,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
-  scrollbar-color: rgba(190, 3, 3, 0.58) rgba(15, 23, 42, 0.06);
+  scrollbar-color: rgba(190, 3, 3, 0.58) rgba(26, 21, 18, 0.06);
   scrollbar-width: thin;
   padding: 30px 36px;
   margin: 8px 6px 8px 0;
@@ -97,7 +97,7 @@
 }
 .intake-modal .intake-form-panel::-webkit-scrollbar-track {
   margin-block: 10px;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(26, 21, 18, 0.06);
   border-radius: 999px;
 }
 .intake-modal .intake-form-panel::-webkit-scrollbar-thumb {

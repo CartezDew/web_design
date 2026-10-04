@@ -4,7 +4,7 @@ import { tickerItems } from "../content/ticker";
 import "./Ticker.css";
 export default function Ticker() {
   return (
-    <section className="ticker" aria-label="Capabilities">
+    <section className="ticker surface--espresso" aria-label="Capabilities">
       <div className="ticker-window">
         <div className="ticker-track">
           {[0, 1].map((group) => (

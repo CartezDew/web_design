@@ -7,7 +7,7 @@ import Reveal from "../Reveal";
 import "./Pricing.css";
 export default function Pricing({ onPlan }) {
   return (
-    <section className="pricing section shell" id="pricing">
+    <section className="pricing section shell surface--paper" id="pricing">
       <p className="section-label">Clear starting points</p>
       <Reveal className="section-heading" distance={20}>
         <h2>Start where you are.</h2>

@@ -3,7 +3,7 @@ import Reveal from "../Reveal";
 import "./Process.css";
 export default function Process() {
   return (
-    <section className="process section" id="process">
+    <section className="process section surface--espresso" id="process">
       <div className="shell">
         <p className="section-label">A simple, collaborative process</p>
         <Reveal>

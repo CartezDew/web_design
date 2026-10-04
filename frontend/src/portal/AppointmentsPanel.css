@@ -1,6 +1,6 @@
 .appointment-list article {
   padding: 22px 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--paper-edge);
 }
 .appointment-summary {
   display: flex;

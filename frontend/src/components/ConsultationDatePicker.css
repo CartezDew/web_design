@@ -6,10 +6,10 @@
   gap: 18px;
   width: 100%;
   padding: 14px 16px;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
+  color: var(--ink);
+  border: 1px solid var(--paper-edge);
   border-radius: 0.75rem;
-  background: white;
+  background: var(--paper);
   text-align: left;
   cursor: pointer;
   transition:
@@ -18,15 +18,15 @@
     transform 180ms ease;
 }
 .consultation-date-trigger:hover:not(:disabled) {
-  border-color: #be030380;
-  box-shadow: 0 10px 25px -18px #be0303a6;
+  border-color: rgba(190, 3, 3, 0.5);
+  box-shadow: 0 10px 25px -18px rgba(190, 3, 3, 0.65);
   transform: translateY(-1px);
 }
 .consultation-date-trigger:active:not(:disabled) {
   transform: scale(0.99);
 }
 .consultation-date-trigger:focus-visible {
-  outline: 3px solid #be030320;
+  outline: 3px solid rgba(190, 3, 3, 0.13);
   outline-offset: 3px;
   border-color: var(--red);
 }
@@ -39,7 +39,7 @@
   gap: 5px;
 }
 .consultation-date-trigger small {
-  color: #475569;
+  color: var(--ink-soft);
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -58,8 +58,8 @@
   transform: rotate(-8deg) scale(1.08);
 }
 .consultation-date-trigger.has-value {
-  border-color: #be03034d;
-  background: #fffafa;
+  border-color: rgba(190, 3, 3, 0.3);
+  background: var(--red-wash);
 }
 .consultation-date-trigger.has-value strong {
   color: var(--red);
@@ -70,10 +70,10 @@
 .consultation-calendar-panel {
   margin-top: 10px;
   padding: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--paper-edge);
   border-radius: 1rem;
-  background: white;
-  box-shadow: 0 24px 60px -22px #0f172a52;
+  background: var(--paper);
+  box-shadow: 0 24px 60px -22px rgba(26, 21, 18, 0.32);
   transform-origin: top center;
   animation: consultation-calendar-open 200ms ease;
 }
@@ -95,9 +95,9 @@
   font-size: 1.05rem;
 }
 .consultation-calendar .calendar-header button {
-  color: #0f172a;
+  color: var(--ink);
   border-radius: 50%;
-  background: #f8fafc;
+  background: var(--paper-deep);
   transition:
     color 160ms ease,
     border-color 160ms ease,
@@ -132,7 +132,7 @@
   min-width: 0;
   min-height: 48px;
   padding: 2px;
-  color: #0f172a;
+  color: var(--ink);
   border: 1px solid transparent;
   border-radius: 0.65rem;
   font-size: 0.76rem;
@@ -167,9 +167,9 @@
 .consultation-calendar
   .calendar-cell[data-hovered]:not([data-disabled], [data-unavailable]) {
   color: var(--red);
-  border-color: #be030340;
-  background: #be03030f;
-  box-shadow: 0 7px 16px -10px #be0303cc;
+  border-color: rgba(190, 3, 3, 0.25);
+  background: rgba(190, 3, 3, 0.06);
+  box-shadow: 0 7px 16px -10px rgba(190, 3, 3, 0.8);
   transform: translateY(-2px) scale(1.04);
 }
 .consultation-calendar
@@ -177,13 +177,13 @@
   transform: scale(0.88);
 }
 .consultation-calendar .calendar-cell[data-today]:not([data-selected]) {
-  border-color: #be030359;
+  border-color: rgba(190, 3, 3, 0.35);
 }
 .consultation-calendar .calendar-cell[data-selected] {
   color: white;
   border-color: var(--red);
   background: var(--red);
-  box-shadow: 0 9px 20px -10px #be0303cc;
+  box-shadow: 0 9px 20px -10px rgba(190, 3, 3, 0.8);
   animation: consultation-calendar-selected 380ms
     cubic-bezier(0.2, 0.8, 0.2, 1.2);
 }
@@ -191,7 +191,7 @@
   color: white;
 }
 .consultation-calendar .calendar-cell:is([data-disabled], [data-unavailable]) {
-  color: #94a3b8;
+  color: var(--ink-faint);
   background: transparent;
   cursor: not-allowed;
   text-decoration: none;
@@ -200,8 +200,8 @@
 .consultation-calendar-panel .calendar-help {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid #e2e8f0;
-  color: #475569;
+  border-top: 1px solid var(--paper-edge);
+  color: var(--ink-soft);
   font-size: 0.66rem;
   line-height: 1.6;
 }

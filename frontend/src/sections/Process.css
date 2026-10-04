@@ -1,12 +1,6 @@
-.process {
-  background: var(--ink);
-  color: #fff;
-}
-.process .section-label {
-  color: #ccc;
-}
+/* Dark fill and inverted text come from .surface--espresso. */
 .process .section-label span {
-  color: #ff7070;
+  color: var(--alert-on-dark);
 }
 .process h2 {
   max-width: 1000px;
@@ -19,7 +13,7 @@
 }
 .process-steps article {
   padding: 0 30px;
-  border-left: 1px solid #45454a;
+  border-left: 1px solid var(--espresso-soft);
 }
 .process-steps article:first-child {
   padding-left: 0;
@@ -33,7 +27,7 @@
   font-size: 30px;
 }
 .process-steps p {
-  color: #c5c5ca;
+  color: var(--on-dark-soft);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -56,7 +50,7 @@
   .process-steps article:first-child {
     padding: 0 0 24px;
     border: 0;
-    border-bottom: 1px solid #45454a;
+    border-bottom: 1px solid var(--espresso-soft);
   }
   .process-steps h3 {
     display: block;

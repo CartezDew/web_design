@@ -6,15 +6,15 @@
 .confirmation-card {
   width: min(100%, 680px);
   padding: clamp(24px, 5vw, 54px);
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border, var(--paper-edge));
   border-radius: 24px;
-  background: #fff;
+  background: var(--paper);
   box-shadow: 0 16px 60px rgb(15 23 42 / 5%);
 }
 .confirmation-card h1 {
   font-size: clamp(2rem, 5vw, 3rem);
   line-height: 1.12;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.02em;
   margin: 14px 0 24px;
 }
 .confirmation-card p {
@@ -26,16 +26,16 @@
   height: 60px;
   display: grid;
   place-items: center;
-  background: #fff2f2;
-  color: #be0303;
+  background: var(--red-wash);
+  color: var(--red);
   border-radius: 18px;
   margin-bottom: 28px;
 }
 .confirmation-time {
   padding: 18px 20px;
-  background: #f6f7f9;
+  background: var(--paper-deep);
   border-radius: 12px;
-  color: #172033;
+  color: var(--espresso);
   font-weight: 600;
 }
 .confirmation-card > .button {

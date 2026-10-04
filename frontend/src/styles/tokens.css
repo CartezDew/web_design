@@ -1,18 +1,102 @@
-@import "@fontsource-variable/plus-jakarta-sans";
+/* Editorial design system. See .cursor/skills/editorial-design-system/tokens.md */
+@import "@fontsource-variable/fraunces/opsz.css";
 @import "@fontsource-variable/inter";
 :root {
+  /* Fixed light palette. .surface--espresso remaps the tokens below but never
+     these, so .surface--light can restore them inside a dark band. */
+  --light-paper-deep: #f2ece2;
+  --light-paper-edge: #e5dbcd;
+  --light-ink: #1a1512;
+  --light-ink-soft: #4a423b;
+  --light-ink-faint: #6e6359;
+  --light-ochre: #945d1e;
+
+  /* Paper — warm backgrounds. Pure white is reserved for --card (forms on dark bands). */
+  --paper: #faf7f2;
+  --paper-deep: var(--light-paper-deep);
+  --paper-edge: var(--light-paper-edge);
+  --espresso: #191411;
+  --espresso-soft: #241d18;
+  --card: #fff;
+  --intake-night: #05070b;
+
+  /* About section — the original slate palette and portrait card, kept by request. */
+  --about-ink: #0f172a; /* audit-allow */
+  --about-ink-soft: #475569; /* audit-allow */
+  --about-tag-line: #e2e8f0; /* audit-allow */
+  --about-tag-bg: #f8fafc; /* audit-allow */
+  --about-photo-border: #fff;
+  --about-photo-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25); /* audit-allow */
+
+  /* Ink — warm text, never blue-grey. */
+  --ink: var(--light-ink);
+  --ink-soft: var(--light-ink-soft);
+  --ink-faint: var(--light-ink-faint);
+  --on-dark: #f7f2ea;
+  --on-dark-soft: #b9aea2;
+
+  /* Accent. Ochre is rationed to editorial marks: rules, small icons, pull quotes.
+     One value cannot clear 4.5:1 on both paper and espresso, so there are two. */
   --red: #be0303;
-  --red-hover: #9e0202;
-  --ink: #101114;
-  --muted: #646469;
-  --surface: #f5f5f5;
-  --line: #dedee0;
-  --white: #fff;
-  --display: "Plus Jakarta Sans Variable", Arial, sans-serif;
-  --body: "Inter Variable", Arial, sans-serif;
+  --red-deep: #8f0202;
+  --red-wash: #f7eae7;
+  --ochre: var(--light-ochre);
+  --ochre-on-dark: #b4752c;
+
+  /* Portfolio frames — cooler mats so website screenshots read clearly against paper. */
+  --work-frame: #ececee;
+  --work-bds: #dedfda;
+  --work-clip: #ded5c9;
+  --work-leapfrog: #e0e5e8;
+  --work-tile: #fff;
+  --work-tile-hover-line: #a4a4aa;
+  --work-link-hover: #30333c;
+
+  /* Status and brand colors that carry meaning and cannot be swapped for palette tokens. */
+  --ok-ink: #2b4430;
+  --ok-line: #b9c9ba;
+  --ok-wash: #f2f6f1;
+  --alert-ink: #8a1a14;
+  --alert-line: #e0b0ab;
+  --alert-on-dark: #ff8f8f;
+  --linkedin: #0a66c2;
+
+  /* Type */
+  --display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --body: "Inter Variable", system-ui, -apple-system, Arial, sans-serif;
+  --text-display: clamp(52px, 8vw, 112px);
+  --text-h1: clamp(42px, 6.2vw, 82px);
+  --text-h2: clamp(32px, 4.2vw, 56px);
+  --text-h3: clamp(22px, 2.3vw, 30px);
+  --text-lead: clamp(18px, 1.4vw, 21px);
+  --text-body: 17px;
+  --text-small: 14px;
+  --text-label: 12px;
+
+  /* Elevation — warm brown shadows derived from the ink. */
+  --lift-1:
+    0 1px 2px rgba(26, 21, 18, 0.06), 0 2px 8px rgba(26, 21, 18, 0.04);
+  --lift-2: 0 10px 30px -12px rgba(26, 21, 18, 0.18);
+  --lift-3: 0 28px 60px -20px rgba(26, 21, 18, 0.28);
+
+  /* Radius. The arch is the signature portrait shape. */
+  --radius-sm: 5px;
+  --radius: 9px;
+  --radius-lg: 22px;
+  --radius-arch: 190px 190px 10px 10px;
+
+  /* Rhythm. Varying section padding matters as much as varying background. */
   --width: 1280px;
+  --measure: 68ch;
   --gutter: clamp(20px, 4.8vw, 72px);
-  --section: clamp(64px, 8vw, 112px);
-  --radius: 10px;
+  --section: clamp(72px, 9vw, 132px);
+  --section-tight: clamp(48px, 6vw, 84px);
+  --section-loose: clamp(96px, 12vw, 180px);
+
+  --rule: 1px solid var(--paper-edge);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Paper grain. Keeps flat fills from reading as flat. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.15'/%3E%3C/svg%3E");
 }

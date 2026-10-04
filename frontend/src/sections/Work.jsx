@@ -88,7 +88,7 @@ export function ProjectCard({ project }) {
 
 export default function Work() {
   return (
-    <section className="work section shell" id="work">
+    <section className="work section shell surface--paper" id="work">
       <p className="section-label">Selected work</p>
       <Reveal className="section-heading" distance={20}>
         <h2>

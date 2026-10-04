@@ -7,7 +7,7 @@ import Reveal from "../Reveal";
 import "./FAQ.css";
 export default function FAQ() {
   return (
-    <section className="faq-section" id="faq">
+    <section className="faq-section surface--deep" id="faq">
       <div className="faq shell">
         <Reveal className="faq-intro">
           <p className="section-label">Good to know</p>

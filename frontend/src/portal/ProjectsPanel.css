@@ -2,7 +2,7 @@
   margin-top: 20px;
 }
 .brief-item {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--paper-edge);
 }
 .brief-item summary {
   list-style: none;
@@ -27,11 +27,11 @@
 }
 .brief-item summary span:not(.status-label) {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--ink-faint);
   overflow-wrap: anywhere;
 }
 .brief-detail {
-  border-top: 1px dashed var(--line);
+  border-top: 1px dashed var(--paper-edge);
   padding: 20px 0 28px;
   display: flex;
   flex-direction: column;
@@ -64,7 +64,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--paper-edge);
 }
 .stored-files li > div {
   display: flex;
@@ -80,7 +80,7 @@
 }
 .stored-files small {
   font-size: 10px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .stored-files a,
 .stored-files button {
@@ -100,12 +100,12 @@
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
   gap: 32px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--paper-edge);
   padding-top: 25px;
   margin-top: 25px;
 }
 .project-columns > section + section {
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--paper-edge);
   padding-left: 30px;
 }
 .project-columns h3 {
@@ -117,7 +117,7 @@
   list-style: none;
 }
 .project-history li {
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--paper-edge);
   position: relative;
   padding: 0 0 24px 18px;
 }
@@ -142,7 +142,7 @@
 }
 .project-history time {
   font-size: 10px;
-  color: var(--muted);
+  color: var(--ink-faint);
 }
 .project-admin-controls {
   display: flex;
@@ -173,7 +173,7 @@
   }
   .project-columns > section + section {
     border: 0;
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--paper-edge);
     padding: 25px 0 0;
   }
   .project-admin-controls {

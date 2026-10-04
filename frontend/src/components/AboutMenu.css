@@ -31,10 +31,10 @@
   gap: 3px;
   min-width: 200px;
   padding: 7px;
-  border: 1px solid #0f172a14;
+  border: 1px solid rgba(26, 21, 18, 0.08);
   border-radius: 14px;
-  background: white;
-  box-shadow: 0 20px 50px -16px #0f172a47;
+  background: var(--paper);
+  box-shadow: 0 20px 50px -16px rgba(26, 21, 18, 0.28);
 }
 .about-menu-links a {
   display: flex;
@@ -51,7 +51,7 @@
     background 160ms ease;
 }
 .about-menu-links a:is(:hover, :focus-visible) {
-  background: #fff4f4;
+  background: var(--red-wash);
   color: var(--red);
 }
 @media (max-width: 760px) {
@@ -65,7 +65,7 @@
     position: static;
     min-width: 0;
     margin-bottom: 10px;
-    background: #f8fafc;
+    background: var(--paper-deep);
     box-shadow: none;
   }
   .about-menu-links a {

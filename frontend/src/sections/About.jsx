@@ -4,29 +4,45 @@ import Reveal from "../Reveal";
 import "./About.css";
 export default function About() {
   return (
-    <section className="about-section" id="about">
+    <section className="about-section surface--paper" id="about">
       <div className="about shell">
-        <Reveal
-          className="portrait-wrap"
-          direction="left"
-          distance={20}
-          scale={0.98}
-        >
-          <div className="portrait-accent">
-            BUILT
-            <br />
-            WITH
-            <br />
-            PURPOSE
-          </div>
-          <img
-            src={headshot}
-            alt="Cartez Dewberry, software engineer and founder"
-            width="819"
-            height="1024"
-            loading="lazy"
-          />
-        </Reveal>
+        <div className="about-media">
+          <Reveal
+            className="portrait-wrap"
+            direction="left"
+            distance={20}
+            scale={0.98}
+          >
+            <div className="portrait-accent">
+              BUILT
+              <br />
+              WITH
+              <br />
+              PURPOSE
+            </div>
+            <img
+              src={headshot}
+              alt="Cartez Dewberry, software engineer and founder"
+              width="819"
+              height="1024"
+              loading="lazy"
+            />
+          </Reveal>
+          <Reveal className="skill-tags">
+            <span>React</span>
+            <span>React Native</span>
+            <span>Django + Python</span>
+            <span>Node + Express</span>
+            <span>PostgreSQL</span>
+            <span>Stripe + APIs</span>
+            <span>MCP servers</span>
+            <span>SEO + AEO</span>
+            <span>AI agents</span>
+            <span>Security</span>
+            <span>UX strategy</span>
+            <span>Deployment</span>
+          </Reveal>
+        </div>
         <Reveal className="about-copy">
           <p className="section-label">About me</p>
           <h2>I bring a builder’s mindset to every project.</h2>
@@ -40,20 +56,13 @@ export default function About() {
             resourcefulness, and care to entrepreneurs and small businesses that
             need a strong web presence without unnecessary overhead.
           </p>
-          <div className="skill-tags">
-            <span>React</span>
-            <span>React Native</span>
-            <span>Django + Python</span>
-            <span>Node + Express</span>
-            <span>PostgreSQL</span>
-            <span>Stripe + APIs</span>
-            <span>MCP servers</span>
-            <span>SEO + AEO</span>
-            <span>AI agents</span>
-            <span>Security</span>
-            <span>UX strategy</span>
-            <span>Deployment</span>
-          </div>
+          <blockquote className="pull-quote">
+            <p>
+              You work directly with me, from the first idea to launch. No
+              handoffs, no account managers.
+            </p>
+            <cite>Cartez Dewberry</cite>
+          </blockquote>
           <a
             className="linkedin-link"
             href="https://www.linkedin.com/in/cartez-dewberry/"
