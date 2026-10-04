@@ -617,8 +617,13 @@ h2 em::before,
   transition: transform 700ms var(--ease-entrance) 260ms;
 }
 @media screen and (prefers-reduced-motion: no-preference) {
-  .motion [data-reveal]:not([data-revealed]) :is(h1, h2, .marker-line) em::before,
-  .motion :is(h1, h2, .marker-line)[data-reveal]:not([data-revealed]) em::before {
+  .motion
+    [data-reveal]:not([data-revealed])
+    :is(h1, h2, .marker-line)
+    em::before,
+  .motion
+    :is(h1, h2, .marker-line)[data-reveal]:not([data-revealed])
+    em::before {
     transform: skewX(-6deg) rotate(-1deg) scaleX(0);
   }
 }

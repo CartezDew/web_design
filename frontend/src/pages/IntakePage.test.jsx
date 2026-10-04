@@ -146,11 +146,11 @@ it("preserves discovery answers when editing the review and sends them in suppor
     target: { value: "Alex and my business partner." },
   });
   fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+  expect(screen.getByText("Photos of you")).toBeInTheDocument();
+  expect(screen.getByText("0 of 3 photos added")).toBeInTheDocument();
   expect(
-    screen.getByText(
-      /screenshots of websites you like, logos and current images/,
-    ),
-  ).toBeInTheDocument();
+    screen.getByLabelText("Add photos of you or your team"),
+  ).not.toHaveAttribute("accept", expect.stringContaining("pdf"));
   expect(screen.getByText("More qualified bookings.")).toBeInTheDocument();
   expect(screen.getByText("Stripe and our calendar.")).toBeInTheDocument();
   fireEvent.click(

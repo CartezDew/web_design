@@ -8,6 +8,7 @@ class Asset(SoftDeleteModel, TimeStampedModel):
     class Group(models.TextChoices):
         INSPIRATION = "inspiration", "Inspiration"
         BRAND = "brand", "Brand"
+        PEOPLE = "people", "Photos of the client"
         PROJECT = "project", "Project"
         MESSAGE = "message", "Message"
 

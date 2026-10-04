@@ -9,9 +9,10 @@
   gap: 20px;
 }
 .appointment-summary strong {
-  font-size: 14px;
+  font-size: 15px;
 }
 .appointment-summary p {
+  font-family: var(--mono);
   font-size: 11px;
   margin-top: 7px;
   overflow-wrap: anywhere;
@@ -27,7 +28,7 @@
   min-width: 160px;
 }
 .appointment-actions .text-link {
-  font-size: 11px;
+  font-size: 14px;
   background: none;
   border: 0;
   padding: 0;
@@ -44,6 +45,6 @@
     align-items: flex-start;
   }
   .appointment-summary strong {
-    font-size: 12px;
+    font-size: 14px;
   }
 }

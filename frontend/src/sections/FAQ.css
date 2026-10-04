@@ -127,3 +127,48 @@
     margin: 0 20px 20px 52px;
   }
 }
+
+/* Wide screens: the intro stays in view beside the long question list, and the
+   sketch fills the space under it. Phones and small tablets skip both. */
+.faq-illustration {
+  display: none;
+}
+/* Sticky only when the whole intro (with the sketch) fits below the nav. */
+@media (min-width: 900.01px) and (min-height: 880px) {
+  .faq-intro {
+    position: sticky;
+    top: 110px;
+  }
+}
+@media (min-width: 900.01px) {
+  .faq-illustration {
+    display: block;
+    width: min(100%, 320px);
+    height: auto;
+    margin-top: 48px;
+    opacity: 1;
+  }
+}
+.faq-illustration path {
+  stroke: var(--light-ink);
+  stroke-width: 2;
+}
+.faq-bubble--ask {
+  fill: var(--note-sand);
+}
+.faq-bubble--answer {
+  fill: var(--note-sage);
+}
+.faq-illustration .faq-mark {
+  stroke: var(--red);
+  stroke-width: 7;
+}
+.faq-dot {
+  fill: var(--red);
+}
+.faq-dot--ink {
+  fill: var(--light-ink);
+}
+.faq-illustration .faq-line {
+  stroke-width: 2.5;
+}

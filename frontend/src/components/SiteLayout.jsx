@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import AboutMenu from "./AboutMenu";
+import headshot from "../../assets/headshot.webp";
 import "./SiteLayout.css";
 export function Logo() {
   return (
@@ -102,14 +103,27 @@ export function SiteHeader() {
 }
 export function SiteFooter() {
   return (
-    <footer className="site-footer shell">
+    <footer className="site-footer shell" id="site-footer">
       <div className="footer-signoff">
         <p className="footer-signoff-line marker-line">
           Thoughtful design. <em>Built</em> with purpose.
         </p>
-        <Link className="button button--red" to="/#contact">
+        <Link className="button button--red footer-signoff-cta" to="/#contact">
           Let’s talk <ArrowUpRight size={16} />
         </Link>
+        {/* Wide screens: the nav already carries "Let's talk", so the sign-off
+            pairs with a small portrait instead. Hidden at 760px and below. */}
+        <figure className="footer-portrait" aria-hidden="true">
+          <img
+            src={headshot}
+            alt=""
+            width="819"
+            height="1024"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>Cartez · Founder</figcaption>
+        </figure>
       </div>
       <div className="footer-top">
         <div>

@@ -174,6 +174,8 @@ export default function IntakePage({
     });
     requestAnimationFrame(() => validationSummary.current?.focus());
   };
+  const peopleFiles = files.filter((i) => i.group === "people");
+  const referenceFiles = files.filter((i) => i.group !== "people");
   const remove = async (item) => {
     setError("");
     try {
@@ -235,7 +237,7 @@ export default function IntakePage({
         try {
           await uploadAsset({
             file: item.file,
-            group: "inspiration",
+            group: item.group || "inspiration",
             brief: saved.id,
             uploadToken: saved.upload_token,
             requestKey: item.key,
@@ -371,9 +373,9 @@ export default function IntakePage({
           <p className="intake-step-help">
             {
               [
-                "Only your name, email, and idea are required. A few sentences are enough to get started.",
-                "Share what you know. Optional details help me recommend the right approach; we can work out the rest on our call.",
-                "Check your answers and add optional files. Sending a brief starts a conversation and does not commit you to a project.",
+                "Just your name, email, and idea. A few sentences is plenty.",
+                "Optional details help me recommend the right approach. Skip anything you’re unsure of.",
+                "Add photos and files, check your answers, and send. Sending starts a conversation, not a commitment.",
               ][step]
             }
           </p>
@@ -618,34 +620,110 @@ export default function IntakePage({
               )}
               {step === 2 && (
                 <>
-                  <div className="intake-file-guidance">
+                  {/* People hire people: photos of the client get their own
+                      section (uploaded as the "people" group), separate from
+                      brand and reference files. Both share one file limit. */}
+                  <section className="intake-upload intake-upload--people">
+                    <div className="intake-upload-head">
+                      <h4>Photos of you</h4>
+                      <span className="tag">Recommended · 3–5</span>
+                    </div>
                     <p>
-                      Add screenshots of websites you like, logos and current
-                      images you want used, design ideas, or a PDF with project
-                      notes.
+                      People hire people. A few real photos help me tell your
+                      story and put a face on your business.
                     </p>
-                    <p>
-                      In the notes below, tell me which files are inspiration
-                      and which you want used in your website. Files are
-                      optional; you can share them later.
+                    <ul className="intake-checklist">
+                      <li>
+                        <Check size={15} aria-hidden="true" /> A clear headshot
+                      </li>
+                      <li>
+                        <Check size={15} aria-hidden="true" /> You at work or
+                        with a customer
+                      </li>
+                      <li>
+                        <Check size={15} aria-hidden="true" /> Your team, shop,
+                        or workspace
+                      </li>
+                    </ul>
+                    <p
+                      className="intake-photo-progress"
+                      data-complete={peopleFiles.length >= 3 || undefined}
+                      aria-live="polite"
+                    >
+                      <span aria-hidden="true">
+                        {[0, 1, 2].map((i) => (
+                          <i
+                            key={i}
+                            data-filled={i < peopleFiles.length || undefined}
+                          />
+                        ))}
+                      </span>
+                      {peopleFiles.length >= 3
+                        ? `${peopleFiles.length} photos added. Thank you!`
+                        : `${peopleFiles.length} of 3 photos added`}
                     </p>
-                    <small>
-                      Please leave out passwords, payment details, and
-                      confidential customer records.
+                    <FilePicker
+                      items={peopleFiles}
+                      onChange={(next) =>
+                        setFiles([
+                          ...referenceFiles,
+                          ...next.map((i) => ({ ...i, group: "people" })),
+                        ])
+                      }
+                      existing={referenceFiles.map((i) => i.file)}
+                      onRemove={remove}
+                      disabled={working}
+                      imagesOnly
+                      title="Add photos of you"
+                      inputLabel="Add photos of you or your team"
+                    />
+                  </section>
+                  <section className="intake-upload">
+                    <div className="intake-upload-head">
+                      <h4>Brand and reference files</h4>
+                      <span className="tag">Optional</span>
+                    </div>
+                    <ul className="intake-checklist">
+                      <li>
+                        <Check size={15} aria-hidden="true" /> Screenshots of
+                        websites you like
+                      </li>
+                      <li>
+                        <Check size={15} aria-hidden="true" /> Your logo and
+                        brand colors
+                      </li>
+                      <li>
+                        <Check size={15} aria-hidden="true" /> Photos you want
+                        on the site
+                      </li>
+                      <li>
+                        <Check size={15} aria-hidden="true" /> A PDF with
+                        project notes
+                      </li>
+                    </ul>
+                    <FilePicker
+                      items={referenceFiles}
+                      onChange={(next) =>
+                        setFiles([
+                          ...peopleFiles,
+                          ...next.map((i) => ({ ...i, group: "inspiration" })),
+                        ])
+                      }
+                      existing={peopleFiles.map((i) => i.file)}
+                      onRemove={remove}
+                      disabled={working}
+                    />
+                    <small className="intake-upload-note">
+                      Leave out passwords, payment details, and confidential
+                      customer records. You can also share files later.
                     </small>
-                  </div>
-                  <FilePicker
-                    items={files}
-                    onChange={setFiles}
-                    onRemove={remove}
-                    disabled={working}
-                  />
+                  </section>
                   {!brief && (
                     <Field
                       label="Anything else I should know?"
                       multiline
                       maxLength={10000}
-                      hint="Tell me what you like about your references, how you want the uploaded files used, or a deadline I should plan around."
+                      hint="What you like about your references, how to use your files, or a deadline to plan around."
                       value={form.notes}
                       onChange={(e) => update("notes", e.target.value)}
                     />
@@ -690,7 +768,14 @@ export default function IntakePage({
                     )}
                     <p className="brief-file-summary">
                       {files.length
-                        ? `${files.length} file${files.length === 1 ? "" : "s"} attached`
+                        ? [
+                            peopleFiles.length &&
+                              `${peopleFiles.length} photo${peopleFiles.length === 1 ? "" : "s"} of you`,
+                            referenceFiles.length &&
+                              `${referenceFiles.length} reference file${referenceFiles.length === 1 ? "" : "s"}`,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")
                         : "No files added. You can share materials later."}
                     </p>
                   </div>

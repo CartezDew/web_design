@@ -61,7 +61,7 @@ class AssetPrepareView(APIView):
             brief = get_object_or_404(ProjectBrief.objects.select_for_update(), pk=UUIDField().run_validation(request.data["brief"]), deleted_at__isnull=True)
             require_token(request.data.get("upload_token"), "upload", brief.pk)
             group = request.data.get("group", "inspiration")
-            if group not in ["brand", "inspiration"]:
+            if group not in ["brand", "inspiration", "people"]:
                 raise ValidationError("Choose a brief attachment category.")
             project = Project.objects.filter(brief=brief, deleted_at__isnull=True).first()
         else:

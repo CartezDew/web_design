@@ -4,8 +4,9 @@ import { ArrowRight } from "lucide-react";
 import "./MobileCTA.css";
 
 // Phone-only sticky CTA. Appears once the hero leaves view and steps aside while the
-// booking or intake form is on screen, so it never covers the thing it points to.
-const watched = ["top", "book", "start-a-project", "contact"];
+// booking or intake form or the footer is on screen, so it never covers the thing it
+// points to. Its frosted backdrop fades in and out with it.
+const watched = ["top", "book", "start-a-project", "contact", "site-footer"];
 
 export default function MobileCTA({ onPlan }) {
   const [visible, setVisible] = useState(false);
@@ -26,23 +27,32 @@ export default function MobileCTA({ onPlan }) {
     return () => io.disconnect();
   }, []);
   return (
-    <div className="mobile-cta" data-visible={visible || undefined}>
-      <Link
-        className="button button--red"
-        to="/#start-a-project"
-        aria-haspopup="dialog"
-        tabIndex={visible ? 0 : -1}
-        aria-hidden={!visible || undefined}
-        data-analytics-id="cta_mobile_plan"
-        onClick={(event) => {
-          if (onPlan) {
-            event.preventDefault();
-            onPlan(event.currentTarget);
-          }
-        }}
-      >
-        Plan your website <ArrowRight size={18} />
-      </Link>
-    </div>
+    <>
+      {/* Frosted strip behind the bottom bar (this CTA and BackToTop), so page
+          content scrolling underneath never competes with the buttons. */}
+      <div
+        className="mobile-dock-scrim"
+        data-visible={visible || undefined}
+        aria-hidden="true"
+      />
+      <div className="mobile-cta" data-visible={visible || undefined}>
+        <Link
+          className="button button--red"
+          to="/#start-a-project"
+          aria-haspopup="dialog"
+          tabIndex={visible ? 0 : -1}
+          aria-hidden={!visible || undefined}
+          data-analytics-id="cta_mobile_plan"
+          onClick={(event) => {
+            if (onPlan) {
+              event.preventDefault();
+              onPlan(event.currentTarget);
+            }
+          }}
+        >
+          Plan your website <ArrowRight size={18} />
+        </Link>
+      </div>
+    </>
   );
 }

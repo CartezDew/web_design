@@ -107,6 +107,47 @@
   margin-bottom: 40px;
   border-bottom: 1px solid var(--ink);
 }
+/* Above 760px the nav's "Let's talk" is always visible, so the footer copy would
+   repeat it. On phones the nav button sits inside the menu, so this one stays. */
+@media (min-width: 760.02px) {
+  .footer-signoff-cta {
+    display: none;
+  }
+}
+/* The founder's portrait as a sticker: same treatment as the About card (ink
+   edge, red offset plate), small and tilted. Wide screens only. */
+.footer-portrait {
+  display: none;
+}
+@media (min-width: 760.02px) {
+  .footer-portrait {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    margin: 0 8px 0 0;
+    rotate: 3deg;
+  }
+  .footer-portrait img {
+    width: 116px;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: center top;
+    border: 1.5px solid var(--light-ink);
+    border-radius: var(--radius);
+    box-shadow: 6px 6px 0 var(--red);
+    filter: saturate(0.83) contrast(1.03);
+  }
+  .footer-portrait figcaption {
+    color: var(--ink-soft);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
 .footer-signoff-line {
   max-width: 820px;
   color: var(--ink);

@@ -7,7 +7,7 @@ import classProjectShot from "../../assets/websites/class_project.webp";
 export const portfolio = [
   {
     title: "Marc’d",
-    category: "Founder-led product · Full-stack platform",
+    category: "Full-stack platform",
     description:
       "Safe parking and real-time resources for the people who keep America moving.",
     url: "https://www.marc-d.com",

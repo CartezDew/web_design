@@ -6,12 +6,24 @@ import {
   uploadContentType,
 } from "../content/uploads";
 import "./FilePicker.css";
+// Small files read as KB so a logo doesn't show as "0.00 MB".
+function fileSize(bytes) {
+  return bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
 export const FILE_LIMITS = {
   count: 12,
   each: 5 * 1024 * 1024,
   total: 25 * 1024 * 1024,
 };
-export function validateFiles(incoming, current = [], existing = []) {
+export function validateFiles(
+  incoming,
+  current = [],
+  existing = [],
+  imagesOnly = false,
+) {
   const accepted = [];
   const errors = [];
   let total = [...current.map((i) => i.file), ...existing].reduce(
@@ -26,9 +38,16 @@ export function validateFiles(incoming, current = [], existing = []) {
       accepted.some((i) => i.name === file.name && i.size === file.size)
     )
       continue;
-    if (!uploadContentType(file)) {
+    const type = uploadContentType(file);
+    if (!type) {
       errors.push(
         `${file.name}: choose ${FILE_FORMAT_LABEL}. Images and PDF files only.`,
+      );
+      continue;
+    }
+    if (imagesOnly && !type.startsWith("image/")) {
+      errors.push(
+        `${file.name}: add photos here; PDFs go in the section below.`,
       );
       continue;
     }
@@ -77,6 +96,9 @@ export default function FilePicker({
   onRemove,
   existing = [],
   disabled = false,
+  imagesOnly = false,
+  title = "Drop your files here, or browse",
+  inputLabel = "Add images, screenshots, or PDFs",
 }) {
   const [errors, setErrors] = useState([]);
   const [dragging, setDragging] = useState(false);
@@ -86,6 +108,7 @@ export default function FilePicker({
       Array.from(files),
       items,
       existing,
+      imagesOnly,
     );
     setErrors(errors);
     onChange([
@@ -120,9 +143,15 @@ export default function FilePicker({
         <input
           className="sr-only"
           type="file"
-          aria-label="Add images, screenshots, or PDFs"
+          aria-label={inputLabel}
           multiple
-          accept={FILE_ACCEPT}
+          accept={
+            imagesOnly
+              ? FILE_ACCEPT.split(",")
+                  .filter((type) => !/pdf/.test(type))
+                  .join(",")
+              : FILE_ACCEPT
+          }
           disabled={disabled}
           onChange={(e) => {
             add(e.target.files);
@@ -130,11 +159,17 @@ export default function FilePicker({
           }}
         />
         <Upload size={23} />
-        <strong>Drop your files here, or browse</strong>
-        <span>Images and PDF files only</span>
-        <span>{FILE_FORMAT_LABEL}</span>
+        <strong>{title}</strong>
+        {imagesOnly ? (
+          <span>JPG, PNG, WebP, GIF, AVIF, BMP, or TIFF</span>
+        ) : (
+          <>
+            <span>Images and PDF files only</span>
+            <span>{FILE_FORMAT_LABEL}</span>
+          </>
+        )}
         <small>Up to 12 files · 5 MB each · 25 MB total</small>
-        <small>PDFs must open without a password.</small>
+        {!imagesOnly && <small>PDFs must open without a password.</small>}
       </label>
       <p className="file-usage">
         {items.length + existing.length} of 12 files ·{" "}
@@ -156,7 +191,7 @@ export default function FilePicker({
             <div className="file-info">
               <strong>{item.file.name}</strong>
               <small>
-                {(item.file.size / 1024 / 1024).toFixed(2)} MB ·{" "}
+                {fileSize(item.file.size)} ·{" "}
                 {item.status === "done"
                   ? "Uploaded"
                   : item.status === "uploading"

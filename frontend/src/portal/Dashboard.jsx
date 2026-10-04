@@ -152,7 +152,7 @@ export default function Dashboard() {
   };
   return (
     <div className="portal-app">
-      <aside className="portal-sidebar">
+      <aside className="portal-sidebar surface--espresso">
         <Logo />
         <div className="portal-person">
           <strong>{user.first_name || "Welcome"}</strong>
@@ -182,11 +182,19 @@ export default function Dashboard() {
               {user.is_admin ? "Your studio" : "Your project space"}
             </p>
             <h1>
-              {section === "overview"
-                ? user.is_admin
-                  ? "A clear view of your business."
-                  : "Your project, all in one place."
-                : section[0].toUpperCase() + section.slice(1)}
+              {section === "overview" ? (
+                user.is_admin ? (
+                  <>
+                    A clear view of your <em>business.</em>
+                  </>
+                ) : (
+                  <>
+                    Your project, all in <em>one place.</em>
+                  </>
+                )
+              ) : (
+                section[0].toUpperCase() + section.slice(1)
+              )}
             </h1>
             <p>
               {section === "overview"
@@ -194,7 +202,7 @@ export default function Dashboard() {
                 : "The details that keep everything moving."}
             </p>
           </div>
-          <Link className="text-link" to="/">
+          <Link className="button button--outline portal-site-link" to="/">
             View website <ArrowUpRight size={16} />
           </Link>
         </header>
@@ -234,7 +242,7 @@ function Overview() {
         <p className="empty-state">Loading your projects…</p>
       ) : projects.data.length ? (
         <>
-          <div className="portal-panel">
+          <div className="portal-panel portal-panel--feature">
             <p className="section-label">
               {user.is_admin ? "Recent project" : "Your current project"}
             </p>

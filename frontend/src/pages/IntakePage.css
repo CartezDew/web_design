@@ -479,14 +479,93 @@
   opacity: 1;
 }
 
-.intake-file-guidance {
+/* Step 3 uploads: two short sections instead of paragraphs. "Photos of you" is a
+   sand sticky note so it reads as the human, most-wanted part of the brief. */
+.intake-upload {
   display: grid;
-  gap: 10px;
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--ink-soft);
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--pencil);
+  border-radius: var(--radius);
 }
-.intake-file-guidance small {
+.intake-upload--people {
+  background: var(--note-sand);
+  border: 1.5px solid var(--light-ink);
+  box-shadow: 3px 3px 0 var(--light-ink);
+}
+.intake-upload-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.intake-upload-head h4 {
+  margin: 0;
+  font-size: 18px;
+}
+.intake-upload > p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.intake-checklist {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.intake-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.intake-checklist svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  padding: 2px;
+  color: var(--on-dark);
+  background: var(--red);
+  border-radius: 50%;
+}
+.intake-photo-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
   font-size: 12px;
-  line-height: 1.65;
+  letter-spacing: 0.04em;
+}
+.intake-photo-progress span {
+  display: flex;
+  gap: 5px;
+}
+.intake-photo-progress i {
+  width: 22px;
+  height: 6px;
+  background: var(--paper);
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius-pill);
+  transition: background 220ms var(--ease);
+}
+.intake-photo-progress i[data-filled] {
+  background: var(--red);
+  border-color: var(--red);
+}
+.intake-photo-progress[data-complete] {
+  color: var(--ok-ink);
+}
+.intake-upload-note {
+  color: var(--ink-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .intake-photo-progress i {
+    transition: none;
+  }
 }

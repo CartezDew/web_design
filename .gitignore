@@ -6,6 +6,7 @@ dist/
 .vite/
 backend/staticfiles/
 backend/db.sqlite3
+backend/local_uploads/
 backend/.venv/
 **/__pycache__/
 *.py[cod]
@@ -23,3 +24,4 @@ backend/.venv/
 
 # React Router generated types
 frontend/.react-router/
+.claude/settings.local.json

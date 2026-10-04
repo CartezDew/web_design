@@ -12,16 +12,21 @@
 }
 .messages-layout > nav > button:not(.button) {
   background: none;
-  border: 0;
-  border-radius: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   text-align: left;
-  font-size: 12px;
+  font-size: 14px;
   padding: 12px;
-  line-height: 1.6;
+  line-height: 1.5;
+  transition: background 180ms var(--ease);
+}
+.messages-layout > nav > button:not(.button):hover {
+  background: var(--paper-deep);
 }
 .messages-layout > nav > button.is-active {
+  color: var(--light-ink);
   background: var(--red-wash);
-  color: var(--red);
+  border-color: var(--light-ink);
 }
 .message-history {
   max-height: 460px;
@@ -34,35 +39,48 @@
 .message-history article {
   align-self: flex-start;
   background: var(--paper-deep);
-  padding: 16px 20px;
-  border-radius: 8px;
+  padding: 14px 18px;
+  border: 1px solid var(--pencil);
+  border-radius: var(--radius) var(--radius) var(--radius) 4px;
   max-width: 90%;
 }
+/* Your own messages: ink bubbles on the right, like the site's filled buttons. */
 .message-history article.is-own {
   align-self: flex-end;
-  background: var(--red-wash);
+  color: var(--on-dark);
+  background: var(--light-ink);
+  border-color: var(--light-ink);
+  border-radius: var(--radius) var(--radius) 4px var(--radius);
+}
+.message-history article.is-own p {
+  color: var(--on-dark);
+}
+.message-history article.is-own time {
+  color: var(--on-dark-soft);
 }
 .message-history strong {
-  font-size: 11px;
+  font-size: 12px;
 }
 .message-history p {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   margin: 7px 0;
 }
 .message-history time {
-  font-size: 9px;
+  font-family: var(--mono);
+  font-size: 10px;
   color: var(--ink-faint);
 }
 .message-thread .button {
   align-self: flex-end;
-  font-size: 12px;
+  font-size: 14px;
 }
 .portal-panel .panel-heading .button {
-  min-height: 40px;
-  font-size: 11px;
+  min-height: 42px;
+  padding: 10px 16px;
+  font-size: 14px;
 }
 @media (max-width: 900px) {
   .messages-layout {

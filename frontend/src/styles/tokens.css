@@ -78,7 +78,8 @@
 
   /* Type. Bricolage carries display (40px and up), Inter does all UI, Roboto Mono
      labels and tags, Fraunces is kept only for the C/D wordmark. */
-  --display: "Bricolage Grotesque Variable", "Arial Black", system-ui, sans-serif;
+  --display:
+    "Bricolage Grotesque Variable", "Arial Black", system-ui, sans-serif;
   --body: "Inter Variable", system-ui, -apple-system, Arial, sans-serif;
   --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --logo: "Fraunces Variable", Georgia, "Times New Roman", serif;

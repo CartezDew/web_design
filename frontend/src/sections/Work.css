@@ -2,42 +2,114 @@
   padding-top: 64px;
 }
 
+/* Legend + carousel controls between the heading and the cards. */
+.work-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: -12px 0 28px;
+}
+.work-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-soft);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+.work-controls {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.work-count {
+  margin-right: 6px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.work-controls button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--light-ink);
+  background: var(--paper);
+  border: 1.5px solid var(--light-ink);
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0 var(--light-ink);
+  transition:
+    translate 160ms var(--ease),
+    box-shadow 160ms var(--ease),
+    background 160ms var(--ease);
+}
+.work-controls button:hover:not(:disabled) {
+  background: var(--note-sand);
+}
+.work-controls button:active:not(:disabled) {
+  translate: 1px 1px;
+  box-shadow: 1px 1px 0 var(--light-ink);
+}
+
+/* Desktop: two featured projects, then three. Each card spans part of a 6-column grid. */
 .work-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 50px 28px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 28px 24px;
   align-items: start;
+}
+.work-item {
+  grid-column: span 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 18px;
+  color: var(--light-ink);
+  background: var(--paper);
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius);
+  transition:
+    transform 260ms var(--ease),
+    box-shadow 260ms var(--ease);
+}
+.work-item:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+.work-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--lift-offset);
+}
+
+/* The tablet screenshots already say "website", so the frame stays minimal: just the
+   image, as large as the card allows. */
+.work-frame {
+  display: block;
+  overflow: hidden;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  cursor: pointer;
 }
 .work-image {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  /* The screenshots are 4:3 with their own mat and shadow baked in, so they fill
+     the frame edge to edge. */
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  aspect-ratio: 1.37;
   background: var(--work-frame);
-  border: 1px solid var(--light-ink);
-  border-radius: var(--radius);
-  padding: 32px;
-  transition:
-    transform 260ms var(--ease),
-    box-shadow 260ms var(--ease);
-  text-decoration: none;
 }
 .work-image img {
   width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 4px;
-  box-shadow: 0 20px 30px -16px rgba(0, 0, 0, 0.33);
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.55s var(--ease);
-}
-.work-item:hover .work-image {
-  transform: translateY(-3px);
-  box-shadow: var(--lift-offset);
-}
-.work-item:hover .work-image img {
-  transform: scale(1.025);
 }
 .work-item--bds-talent-group .work-image {
   background: var(--work-bds);
@@ -48,216 +120,206 @@
 .work-item--leapfrog-analytics .work-image {
   background: var(--work-leapfrog);
 }
-.work-arrow {
+/* Pointer devices: the screenshot invites a click. */
+.work-visit-hint {
   position: absolute;
+  left: 50%;
   bottom: 16px;
-  right: 16px;
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--work-tile);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  color: var(--on-dark);
+  background: var(--light-ink);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  translate: -50% 8px;
+  transition:
+    opacity 200ms var(--ease),
+    translate 260ms var(--ease-entrance);
 }
+.work-frame:hover .work-visit-hint {
+  opacity: 1;
+  translate: -50% 0;
+}
+.work-frame:hover .work-image img {
+  transform: scale(1.03);
+}
+/* Touch devices have no hover, so the hint sits small in the corner instead. */
+@media (hover: none) {
+  .work-visit-hint {
+    left: auto;
+    right: 10px;
+    bottom: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
+    opacity: 1;
+    translate: none;
+  }
+}
+
 .work-caption {
-  padding-top: 22px;
+  padding: 18px 6px 0;
 }
-.work-caption > p {
-  display: inline-block;
-  padding: 3px 10px;
+.work-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 12px;
+}
+.work-meta p {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 3px 10px;
   color: var(--ink-soft);
   border: 1px solid var(--pencil);
   border-radius: var(--radius-pill);
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.1em;
+  line-height: 1.4;
   text-transform: uppercase;
 }
 .work-caption h3 {
-  font-size: 28px;
-  margin-bottom: 9px;
-}
-.work-caption h3 a {
-  text-decoration: none;
-}
-.work-caption > span {
-  display: block;
-  min-height: 3.3em;
-  color: var(--ink-faint);
-  font-size: 14px;
-}
-.work-caption h3 a:hover {
-  color: var(--red);
-}
-@media (max-width: 650px) {
-  .work-grid {
-    grid-template-columns: 1fr;
-    gap: 36px;
-  }
-  .work-item:nth-child(even) {
-    margin-top: 0;
-  }
-  .work-image {
-    padding: 22px;
-    aspect-ratio: 1.3;
-  }
-  .work-caption h3 {
-    font-size: 25px;
-  }
-  .work-caption {
-    padding-top: 18px;
-  }
-}
-
-.work-grid--more {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 70px;
-}
-.work-grid--more .work-item {
-  margin-top: 0;
-}
-.work-grid--more .work-image {
-  padding: 18px;
-}
-.work-grid--more h3 {
+  margin-bottom: 6px;
   font-size: 24px;
 }
-.work-story {
-  margin-top: 20px;
-  padding: 0 20px;
-  background: var(--paper-deep);
-  border: 1px solid var(--paper-edge);
-  border-radius: 12px;
+.work-item:nth-child(-n + 2) .work-caption h3 {
+  font-size: 28px;
 }
+/* Subtitles hold two lines everywhere (clamped with an ellipsis), so cards in a
+   row or the swipe carousel never end up different heights. */
+.work-caption > span {
+  display: -webkit-box;
+  min-height: 3em;
+  overflow: hidden;
+  color: var(--ink-faint);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* The live-site link comes first and is filled: it belongs to the screenshot above. */
 .work-actions {
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
-  margin-top: 22px;
+  margin: 18px 6px 0;
 }
 .project-story-button,
 .project-live-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
   min-height: 48px;
-  padding: 12px 16px;
+  padding: 12px 14px;
   border: 1px solid var(--light-ink);
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.3;
   text-decoration: none;
   transition:
     background-color 200ms ease,
     border-color 200ms ease,
-    box-shadow 200ms ease;
+    color 200ms ease;
+}
+.project-live-link {
+  color: var(--on-dark);
+  background: var(--light-ink);
+}
+/* Hovering anywhere on the card lights up its live link, tying the two together. */
+.work-item:hover .project-live-link,
+.project-live-link:focus-visible {
+  background: var(--red);
+  border-color: var(--red);
 }
 .project-story-button {
-  color: var(--ink);
-  background: var(--work-tile);
+  color: var(--light-ink);
+  background: transparent;
 }
 .project-story-button:hover {
-  background: var(--work-frame);
-  border-color: var(--work-tile-hover-line);
+  background: var(--paper-deep);
+}
+.project-story-button svg {
+  transition: transform 220ms ease;
 }
 .project-story-button[aria-expanded="true"] svg {
   transform: rotate(180deg);
 }
-.project-live-link {
-  color: var(--work-tile);
-  background: var(--ink);
-  border-color: var(--ink);
-}
-.project-live-link:hover {
-  background: var(--red);
-  border-color: var(--red);
+
+.work-story {
+  margin: 14px 6px 0;
+  padding: 0 18px;
+  background: var(--paper-deep);
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--radius-sm);
 }
 .work-story-copy {
-  padding-bottom: 20px;
-  font-size: 13px;
+  padding-bottom: 18px;
+  font-size: 14px;
+}
+.work-story-copy > p {
+  color: var(--ink-soft);
+  line-height: 1.6;
 }
 .work-story-copy h4 {
-  font-size: 17px;
-  margin: 18px 0 10px;
-  letter-spacing: -0.03em;
+  font-size: 16px;
+  margin: 16px 0 8px;
 }
 .work-story-copy p + p {
   margin-top: 12px;
 }
-.work-story-copy ul {
-  padding-left: 20px;
-  color: var(--ink-faint);
+/* Name + plain-English explanation pairs, each marked with a short red rule. */
+.work-story-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
 }
-.work-story-copy li {
-  margin-block: 6px;
+.work-story-list > div {
+  position: relative;
+  padding-left: 16px;
+}
+.work-story-list > div::before {
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 8px;
+  height: 2px;
+  background: var(--red);
+  content: "";
+}
+.work-story-list dt {
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.work-story-list dd {
+  margin: 2px 0 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+/* Tools read as a quieter, mono-labelled block. */
+.work-story-list--tools dt {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+.work-story-list--tools > div::before {
+  background: var(--ink-faint);
 }
 .work-story-copy a {
   display: inline-block;
-  margin-top: 15px;
-}
-/* Both project rows change columns together so previews stay proportional. */
-@media (max-width: 900px) {
-  .work-grid,
-  .work-grid--more {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 36px 24px;
-  }
-  .work-item:nth-child(even) {
-    margin-top: 0;
-  }
-  .work-grid--more {
-    margin-top: 36px;
-  }
-  .work-image,
-  .work-grid--more .work-image {
-    padding: 22px;
-  }
-  .work-caption h3,
-  .work-grid--more h3 {
-    font-size: 25px;
-  }
-}
-@media (min-width: 650.01px) and (max-width: 900px) {
-  .work-caption > p {
-    min-height: 3.3em;
-  }
-}
-@media (max-width: 650px) {
-  .work-grid,
-  .work-grid--more {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 1200px) {
-  .work-actions {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  }
-  .project-story-button,
-  .project-live-link {
-    gap: 7px;
-    padding-inline: 10px;
-    font-size: 12px;
-  }
-}
-@media (max-width: 360px) {
-  .work-actions {
-    gap: 8px;
-  }
-  .project-story-button,
-  .project-live-link {
-    gap: 6px;
-    padding-inline: 8px;
-    font-size: 11px;
-  }
-}
-
-.project-story-button svg {
-  transition: transform 220ms ease;
+  margin-top: 14px;
 }
 .work-story:not([hidden]) .work-story-copy {
   animation: work-story-enter 240ms var(--ease);
@@ -272,12 +334,143 @@
     translate: 0 0;
   }
 }
+
+.work-dots {
+  display: none;
+}
+
+@media (max-width: 1100px) and (min-width: 900.01px) {
+  .work-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet and phone: one swipeable row with snap points, arrows, a counter and dots.
+   The row bleeds to the screen edges so the next card peeks in as a swipe cue. */
+@media (max-width: 900px) {
+  .work-toolbar {
+    margin-top: -8px;
+  }
+  .work-controls {
+    display: flex;
+  }
+  .work-grid {
+    display: flex;
+    gap: 14px;
+    margin-inline: calc(-1 * var(--gutter));
+    padding: 4px var(--gutter) 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .work-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .work-item,
+  .work-item:nth-child(-n + 2) {
+    flex: 0 0 min(46%, 400px);
+    scroll-snap-align: start;
+  }
+  /* Titles reserve two lines in the carousel so every card is the same height. */
+  .work-caption h3,
+  .work-item:nth-child(-n + 2) .work-caption h3 {
+    display: -webkit-box;
+    min-height: 2.4em;
+    overflow: hidden;
+    line-height: 1.2;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  /* The screenshot is the link here (with its corner label), so the button is
+     hidden — but kept for keyboard and screen-reader users, appearing on focus. */
+  .project-live-link:not(:focus-visible) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .work-actions {
+    position: relative;
+  }
+  /* No lift inside a scroller: it would be clipped and fights the swipe. */
+  .work-item:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .work-caption h3,
+  .work-item:nth-child(-n + 2) .work-caption h3 {
+    font-size: 22px;
+  }
+  .work-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .work-dots button {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    background: var(--pencil);
+    border: 0;
+    border-radius: var(--radius-pill);
+    transition:
+      width 220ms var(--ease),
+      background 220ms var(--ease);
+  }
+  .work-dots button[data-active] {
+    width: 24px;
+    background: var(--red);
+  }
+}
+@media (max-width: 650px) {
+  .work-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .work-legend {
+    font-size: 13px;
+  }
+  .work-controls {
+    justify-content: flex-end;
+  }
+  .work-count {
+    margin-right: auto;
+  }
+  .work-item,
+  .work-item:nth-child(-n + 2) {
+    flex-basis: 84%;
+  }
+  /* More reading width for the story inside a narrow card. */
+  .work-story {
+    margin-inline: 0;
+    padding-inline: 14px;
+  }
+  /* Stacked on phones: the live-site link reads as the card's main action. */
+  .work-actions {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .project-story-button {
+    min-height: 44px;
+  }
+}
+
 .work-cta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-top: 72px;
+  margin-top: 64px;
   padding: 32px 36px;
 }
 .work-cta p {
@@ -292,14 +485,21 @@
   .work-cta {
     flex-direction: column;
     align-items: flex-start;
-    margin-top: 48px;
+    margin-top: 40px;
     padding: 26px 22px;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .work-item:hover .work-image,
-  .work-item:hover .work-image img {
+  .work-item:hover,
+  .work-frame:hover .work-image img,
+  .work-controls button:active:not(:disabled) {
     transform: none;
+    translate: none;
+  }
+  .work-visit-hint,
+  .work-dots button {
+    transition: none;
   }
   .work-story:not([hidden]) .work-story-copy {
     animation: none;

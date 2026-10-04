@@ -21,6 +21,9 @@ def bucket():
 
 
 def signed_upload_url(asset):
+    if settings.UPLOAD_STORAGE_BACKEND == "local":
+        from api.local_storage import signed_upload_url as local_upload
+        return local_upload(asset)
     if settings.UPLOAD_STORAGE_BACKEND == "s3":
         from api.s3_storage import signed_upload_url as s3_upload
         return s3_upload(asset)
@@ -35,6 +38,9 @@ def signed_upload_url(asset):
 
 
 def signed_download_url(asset):
+    if settings.UPLOAD_STORAGE_BACKEND == "local":
+        from api.local_storage import signed_download_url as local_download
+        return local_download(asset)
     if settings.UPLOAD_STORAGE_BACKEND == "s3":
         from api.s3_storage import signed_download_url as s3_download
         return s3_download(asset)
@@ -50,6 +56,9 @@ def signed_download_url(asset):
 
 
 def validate_uploaded_blob(asset):
+    if settings.UPLOAD_STORAGE_BACKEND == "local":
+        from api.local_storage import validate_uploaded_blob as local_validate
+        return local_validate(asset)
     if settings.UPLOAD_STORAGE_BACKEND == "s3":
         from api.s3_storage import validate_uploaded_blob as s3_validate
         return s3_validate(asset)

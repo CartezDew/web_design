@@ -159,6 +159,12 @@ GOOGLE_CLOUD_PROJECT = env("GOOGLE_CLOUD_PROJECT", default="")
 GS_BUCKET_NAME = env("GS_BUCKET_NAME", default="")
 GS_CREDENTIALS_JSON = env("GS_CREDENTIALS_JSON", default="")
 UPLOAD_STORAGE_BACKEND = env("UPLOAD_STORAGE_BACKEND", default="gcs")
+if UPLOAD_STORAGE_BACKEND not in ("gcs", "s3", "local"):
+    raise ImproperlyConfigured("UPLOAD_STORAGE_BACKEND must be gcs, s3, or local.")
+# "local" keeps development uploads on disk (api/local_storage.py). Never in production.
+if UPLOAD_STORAGE_BACKEND == "local" and DJANGO_ENV == "production":
+    raise ImproperlyConfigured("Local upload storage is for development only.")
+LOCAL_UPLOAD_ROOT = env("LOCAL_UPLOAD_ROOT", default=str(BASE_DIR / "local_uploads"))
 S3_ENDPOINT_URL = env("S3_ENDPOINT_URL", default="")
 S3_BUCKET_NAME = env("S3_BUCKET_NAME", default="")
 S3_REGION = env("S3_REGION", default="auto")

@@ -29,6 +29,7 @@ from communications.microsoft_authorization import authorization_callback
 from api.confirmations import SubmissionConfirmationView
 from api.analytics import AnalyticsConfigView, BusinessInsightsView
 from api.analytics_preferences import AnalyticsPreferenceView
+from api import local_storage
 
 router = DefaultRouter()
 router.register("projects", ClientProjectViewSet, basename="projects")
@@ -62,4 +63,11 @@ urlpatterns = [
     path("assets/prepare/", AssetPrepareView.as_view()),
     path("assets/<uuid:pk>/finalize/", AssetFinalizeView.as_view()),
     path("", include(router.urls)),
+]
+
+# Development-only upload endpoints. They 404 unless UPLOAD_STORAGE_BACKEND=local,
+# which settings refuse in production.
+urlpatterns += [
+    path("local-storage/upload/", local_storage.upload_view),
+    path("local-storage/download/", local_storage.download_view),
 ]

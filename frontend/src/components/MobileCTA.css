@@ -1,7 +1,46 @@
-.mobile-cta {
+.mobile-cta,
+.mobile-dock-scrim {
   display: none;
 }
 @media (max-width: 760px) {
+  /* Blur plus a cream tint, feathered at the top edge so it reads as frosted glass,
+     not a hard bar. It follows the CTA: fades out when the CTA steps aside (forms,
+     contact, footer) and back in when it returns. */
+  .mobile-dock-scrim {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 38;
+    display: block;
+    height: calc(52px + 2 * max(20px, env(safe-area-inset-bottom)) + 16px);
+    background: linear-gradient(
+      to top,
+      rgba(252, 250, 245, 0.82),
+      rgba(252, 250, 245, 0.5)
+    );
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    -webkit-mask-image: linear-gradient(
+      to top,
+      var(--light-ink) 72%,
+      transparent
+    );
+    mask-image: linear-gradient(to top, var(--light-ink) 72%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition:
+      opacity 360ms var(--ease),
+      visibility 0s linear 360ms;
+  }
+  .mobile-dock-scrim[data-visible] {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 360ms var(--ease),
+      visibility 0s;
+  }
   .mobile-cta {
     position: fixed;
     left: max(20px, env(safe-area-inset-left));
@@ -37,7 +76,15 @@
     min-height: 52px;
   }
 }
+@media (max-width: 360px) {
+  .mobile-cta .button {
+    padding-inline: 16px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
+  .mobile-dock-scrim,
   .mobile-cta {
     transition: none;
     translate: none;

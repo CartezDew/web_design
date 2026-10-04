@@ -1,13 +1,17 @@
+/* Client + owner portal. Same system as the public site: a black sidebar band
+   (surface--espresso), cream paper workspace, Bricolage page titles with a red
+   marker word, Inter panels, mono labels, sticky-note accents. */
 .portal-app {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 220px 1fr;
-  background: var(--paper-deep);
+  grid-template-columns: 240px 1fr;
+  background-color: var(--paper);
+  background-image: var(--grain);
 }
+
+/* Sidebar: the black band. Tokens invert via .surface--espresso. */
 .portal-sidebar {
-  background: var(--paper);
-  border-right: 1px solid var(--paper-edge);
-  padding: 36px 22px;
+  padding: 32px 18px 24px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -15,53 +19,95 @@
   top: 0;
   height: 100vh;
 }
+.portal-sidebar .wordmark {
+  padding-left: 8px;
+  color: var(--on-dark);
+}
 .portal-person {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin: 35px 0;
-  font-size: 13px;
+  gap: 6px;
+  width: 100%;
+  margin: 28px 0 24px;
+  padding: 14px;
+  border: 1px solid rgba(252, 250, 245, 0.14);
+  border-radius: var(--radius);
+  font-size: 15px;
 }
 .portal-person span {
+  color: var(--red-on-dark);
+  font-family: var(--mono);
   font-size: 11px;
-  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .portal-sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
 }
 .portal-sidebar nav a {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  font-size: 13px;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--on-dark-soft);
+  font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
   text-transform: capitalize;
-  border-radius: 6px;
-}
-.portal-sidebar nav a.active {
-  color: var(--red);
-  background: var(--red-wash);
+  border-radius: var(--radius-sm);
+  transition:
+    background 180ms var(--ease),
+    color 180ms var(--ease);
 }
 .portal-sidebar nav a:hover {
-  background: var(--paper-deep);
+  color: var(--on-dark);
+  background: var(--espresso-soft);
+}
+/* Active: a cream tab with a red marker edge — the page you are on, at a glance. */
+/* --paper is remapped inside the black band, so the cream tab uses --on-dark. */
+.portal-sidebar nav a.active {
+  color: var(--light-ink);
+  background: var(--on-dark);
+}
+.portal-sidebar nav a.active::before {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--red);
+  border-radius: 0 2px 2px 0;
+  content: "";
+}
+.portal-sidebar nav a.active svg {
+  color: var(--red);
 }
 .portal-signout {
-  border: 0;
-  border-top: 1px solid var(--paper-edge);
-  padding: 18px 0 0;
-  margin-top: auto;
-  background: none;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 16px 12px 0;
+  color: var(--on-dark-soft);
+  background: none;
+  border: 0;
+  border-top: 1px solid rgba(252, 250, 245, 0.14);
+  font-size: 14px;
 }
+.portal-signout:hover {
+  color: var(--red-on-dark);
+}
+
+/* Workspace */
 .portal-main {
-  padding: 38px clamp(22px, 3.7vw, 60px);
+  padding: 40px clamp(22px, 3.7vw, 60px) 64px;
   min-width: 0;
 }
 .portal-header {
@@ -69,50 +115,70 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--light-ink);
 }
 .portal-header h1 {
-  font-size: clamp(28px, 2.9vw, 40px);
+  font-size: clamp(40px, 4.4vw, 58px);
 }
 .portal-header .section-label {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 .portal-header p:last-child {
-  font-size: 13px;
-  margin-top: 13px;
+  font-size: 15px;
+  margin-top: 16px;
 }
-.portal-header .text-link {
-  font-size: 11px;
+.portal-site-link {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 14px;
 }
+
+/* Panels: cream cards with a pencil edge. Inter headings — display type stays above 40px. */
 .portal-panel {
   background: var(--paper);
-  border: 1px solid var(--paper-edge);
-  border-radius: 9px;
+  border: 1px solid var(--pencil);
+  border-radius: var(--radius);
   padding: 28px;
   margin-bottom: 24px;
 }
 .portal-panel h2 {
-  font-size: 26px;
-  margin-bottom: 14px;
+  font-family: var(--body);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 12px;
 }
 .portal-panel h3 {
-  font-size: 21px;
+  font-size: 20px;
 }
 .portal-panel > p {
-  font-size: 13px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.7;
   margin-bottom: 20px;
 }
 .portal-panel .section-label {
-  font-size: 9px;
-  margin-bottom: 10px;
+  font-size: 11px;
+  margin-bottom: 12px;
 }
 .portal-panel .text-link {
-  font-size: 12px;
+  font-size: 14px;
+}
+/* The current project is the sticky note on the board. */
+.portal-panel--feature {
+  background: var(--note-sand);
+  border: 1.5px solid var(--light-ink);
+  box-shadow: var(--lift-offset);
 }
 .portal-loading {
   padding: 100px var(--gutter);
   text-align: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.08em;
 }
 .profile-panel {
   max-width: 660px;
@@ -124,8 +190,10 @@
   align-self: flex-start;
 }
 .profile-panel a {
-  font-size: 12px;
+  font-size: 14px;
 }
+
+/* Quick links: two sticky notes, never the same color. */
 .portal-quick-links {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -133,25 +201,39 @@
   margin-bottom: 25px;
 }
 .portal-quick-links a {
-  padding: 24px;
-  background: var(--paper);
-  border: 1px solid var(--paper-edge);
-  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  padding: 24px;
+  color: var(--light-ink);
+  background: var(--note-sage);
+  border: 1px solid var(--light-ink);
+  border-radius: var(--radius);
   text-decoration: none;
+  transition:
+    transform 220ms var(--ease),
+    box-shadow 220ms var(--ease);
+}
+.portal-quick-links a + a {
+  background: var(--note-steel);
+}
+.portal-quick-links a:hover {
+  transform: translateY(-3px) rotate(-0.4deg);
+  box-shadow: var(--lift-offset);
 }
 .portal-quick-links strong {
-  font-size: 13px;
+  font-size: 17px;
+  font-weight: 700;
 }
 .portal-quick-links span {
-  font-size: 12px;
-  color: var(--ink-faint);
+  font-size: 14px;
+  color: var(--ink-soft);
 }
 .portal-quick-links svg {
   color: var(--red);
 }
+
+/* Progress tracker: red ink for done, a red ring for the current step. */
 .project-progress {
   display: flex;
   margin: 32px 0 36px;
@@ -163,29 +245,37 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  text-transform: capitalize;
+  min-width: 0;
+  padding-right: 8px;
+  text-transform: uppercase;
+  font-family: var(--mono);
   font-size: 10px;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
   color: var(--ink-faint);
 }
 .project-progress > div:before {
   content: "";
-  height: 1px;
+  height: 2px;
   position: absolute;
   top: 6px;
   left: 0;
   width: 100%;
-  background: var(--paper-edge);
+  background: var(--pencil);
 }
 .project-progress > div:last-child:before {
   display: none;
 }
 .project-progress > div > span {
-  width: 13px;
-  height: 13px;
-  border: 2px solid var(--paper-edge);
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--light-ink);
   border-radius: 50%;
   background: var(--paper);
   position: relative;
+}
+.project-progress .is-complete {
+  color: var(--ink);
 }
 .project-progress .is-complete:before {
   background: var(--red);
@@ -195,17 +285,23 @@
   background: var(--red);
 }
 .project-progress > div[aria-current="step"] > span {
-  outline: 3px solid var(--alert-on-dark);
-  outline-offset: 3px;
+  box-shadow: 0 0 0 4px var(--red-wash);
+}
+.project-progress > div[aria-current="step"] {
+  color: var(--red);
 }
 .status-label {
   display: inline-block;
-  font-size: 10px;
-  color: var(--red);
+  padding: 4px 10px;
+  color: var(--red-deep);
   background: var(--red-wash);
-  padding: 5px 10px;
-  border-radius: 20px;
-  text-transform: capitalize;
+  border: 1px solid rgba(190, 3, 3, 0.2);
+  border-radius: var(--radius-pill);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 .panel-heading {
   display: flex;
@@ -217,15 +313,16 @@
 .portal-main > .notice {
   margin-bottom: 20px;
 }
+
 @media (max-width: 900px) {
   .portal-app {
-    grid-template-columns: 180px 1fr;
+    grid-template-columns: 200px 1fr;
   }
   .portal-sidebar {
-    padding: 25px 16px;
+    padding: 25px 12px;
   }
   .portal-main {
-    padding: 28px 20px;
+    padding: 28px 20px 48px;
   }
   .portal-header {
     flex-wrap: wrap;
@@ -237,6 +334,7 @@
     font-size: 9px;
   }
 }
+/* Phones: the black band becomes a top bar with a swipeable tab row. */
 @media (max-width: 650px) {
   .portal-app {
     display: block;
@@ -244,46 +342,58 @@
   .portal-sidebar {
     position: relative;
     height: auto;
-    padding: 20px;
-    border-right: 0;
-    border-bottom: 1px solid var(--paper-edge);
+    padding: 18px 16px 14px;
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 20px;
+    align-items: center;
+    gap: 16px;
   }
   .portal-person {
     margin: 0;
+    padding: 0;
+    border: 0;
     text-align: right;
+    font-size: 14px;
   }
   .portal-sidebar nav {
     grid-column: 1/-1;
     display: flex;
     flex-direction: row;
     overflow: auto;
-    gap: 5px;
+    gap: 6px;
+    padding-bottom: 3px;
+    scrollbar-width: none;
   }
   .portal-sidebar nav a {
-    font-size: 11px;
-    padding: 10px;
+    flex-shrink: 0;
+    min-height: 40px;
+    font-size: 13px;
+    padding: 8px 12px;
     gap: 7px;
     white-space: nowrap;
+  }
+  .portal-sidebar nav a.active::before {
+    top: auto;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    width: auto;
+    height: 3px;
+    border-radius: 2px 2px 0 0;
   }
   .portal-sidebar nav a svg {
     width: 15px;
   }
   .portal-signout {
-    position: static;
     grid-column: 1/-1;
-    border: 0;
-    display: flex;
     margin-top: 0;
-    padding-top: 0;
-  }
-  .portal-sidebar nav {
-    padding-bottom: 3px;
+    padding-top: 10px;
   }
   .portal-main {
-    padding: 28px 16px;
+    padding: 28px 16px 40px;
+  }
+  .portal-header {
+    padding-bottom: 22px;
   }
   .portal-quick-links {
     grid-template-columns: 1fr;
@@ -297,12 +407,13 @@
     flex-basis: 28%;
     font-size: 10px;
   }
-  .portal-sidebar:has(a.active[href="/dashboard/profile"]) .portal-signout {
-    display: flex;
-    position: static;
-    grid-column: 1/-1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .portal-quick-links a:hover {
+    transform: none;
   }
-  .portal-header h1 {
-    font-size: 30px;
+  .portal-sidebar nav a,
+  .portal-quick-links a {
+    transition: none;
   }
 }
