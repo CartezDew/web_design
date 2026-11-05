@@ -3,7 +3,7 @@ import {
   ArrowRight,
   ChevronRight,
   Linkedin,
-  Sparkles,
+  Hammer,
   Search,
   ShieldCheck,
   CreditCard,
@@ -21,22 +21,21 @@ export default function Hero({ onPlan }) {
         <div className="hero-copy">
           <p className="hero-eyebrow">
             <span className="hero-eyebrow-chip" aria-hidden="true">
-              <Sparkles size={14} />
+              <Hammer size={14} strokeWidth={2.25} />
             </span>
             Full-stack web developer for small businesses.
           </p>
           <h1 aria-label="Websites that make small businesses feel big!">
             {"Websites that make small businesses feel"
               .split(" ")
-              .map((word) => (
+              .map((word, index) => (
                 <Fragment key={word}>
-                  <span className="hero-headline-word">{word}</span>{" "}
+                  <span className="hero-headline-word" style={{ "--i": index }}>
+                    {word}
+                  </span>{" "}
                 </Fragment>
               ))}
-            <em className="hero-growth-word">
-              big!
-              <Sketch variant="spark" className="hero-spark" />
-            </em>
+            <em className="hero-growth-word">big!</em>
           </h1>
           <p className="hero-intro">
             I’m Cartez. I design and build custom websites, booking systems, and
@@ -47,6 +46,7 @@ export default function Hero({ onPlan }) {
           <div className="hero-actions">
             <Link
               className="button button--red button--lg hero-primary"
+              style={{ "--i": 0 }}
               data-analytics-id="cta_hero_plan"
               to="/#start-a-project"
               aria-haspopup="dialog"
@@ -65,11 +65,16 @@ export default function Hero({ onPlan }) {
             >
               Plan your website <ArrowRight size={18} />
             </Link>
-            <Link className="button button--outline hero-secondary" to="/#work">
+            <Link
+              className="button button--outline hero-secondary"
+              to="/#work"
+              style={{ "--i": 1 }}
+            >
               See my work <ChevronRight size={17} />
             </Link>
             <a
               className="text-link text-link--linkedin"
+              style={{ "--i": 2 }}
               href="https://www.linkedin.com/in/cartez-dewberry/"
               target="_blank"
               rel="noreferrer"

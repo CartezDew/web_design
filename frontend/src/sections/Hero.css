@@ -17,8 +17,8 @@
   padding-block: 80px;
   color: var(--ink);
 }
-/* Tagline badge as a sticker: sand note, ink edge, hard offset, a slight tilt, and an
-   ink chip carrying the red spark. Reads as part of the sketchbook, not a UI pill. */
+/* Tagline badge as a stamped plate: sand fill, heavy ink edge, hard offset, and an
+   ink chip carrying the red hammer. Squared up rather than tilted, so it reads built. */
 .hero-copy .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -27,15 +27,13 @@
   padding: 4px 14px 4px 4px;
   color: var(--light-ink);
   background: var(--note-sand);
-  border: 1.5px solid var(--light-ink);
+  border: 2px solid var(--light-ink);
   border-radius: var(--radius-sm);
   box-shadow: 3px 3px 0 var(--light-ink);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.35;
   letter-spacing: -0.005em;
-  rotate: -1.2deg;
-  transform-origin: left center;
 }
 .hero-eyebrow-chip {
   display: grid;
@@ -45,7 +43,7 @@
   height: 28px;
   color: var(--red-on-dark);
   background: var(--light-ink);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 .hero h1 {
   position: relative;
@@ -61,15 +59,6 @@
   padding: 0 0.16em;
   transform-origin: left 85%;
   white-space: nowrap;
-}
-.hero-spark {
-  position: absolute;
-  top: -0.42em;
-  right: -0.62em;
-  width: 0.6em;
-  height: auto;
-  color: var(--red);
-  opacity: 0.85;
 }
 .hero-intro {
   max-width: 56ch;
@@ -211,11 +200,11 @@
   z-index: 2;
   width: min(370px, calc(100% - 36px));
   padding: 20px 25px 34px;
-  border: 1.5px solid var(--light-ink);
+  border: 2px solid var(--light-ink);
   border-radius: var(--radius-lg);
   background: var(--paper);
   box-shadow: 8px 8px 0 var(--light-ink);
-  transform: rotate(2deg);
+  transform: rotate(1.5deg);
 }
 .hero-visual .browser-bar {
   display: flex;
@@ -371,13 +360,13 @@
   gap: 8px;
   max-width: calc(100% - 40px);
   padding: 11px 14px;
-  border: 1.5px solid var(--light-ink);
-  border-radius: var(--radius);
+  border: 2px solid var(--light-ink);
+  border-radius: var(--radius-sm);
   color: var(--light-ink);
   background: var(--note-sand);
   font-family: var(--body);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.4;
   box-shadow: 3px 3px 0 var(--light-ink);
 }
@@ -386,22 +375,24 @@
   right: 20px;
   color: var(--on-dark);
   background: var(--red);
-  transform: rotate(2deg);
+  transform: rotate(1deg);
 }
+/* The ink plate gives the stage one heavy, grounded element against the red. */
 .floating-note--side {
   top: 52%;
   left: 20px;
-  background: var(--note-sage);
-  transform: translateY(-50%) rotate(-2deg);
+  color: var(--on-dark);
+  background: var(--light-ink);
+  transform: translateY(-50%) rotate(-1deg);
 }
 .floating-note--side svg {
-  color: var(--ok-ink);
+  color: var(--red-on-dark);
 }
 .floating-note--bottom {
   right: 20px;
   bottom: 28px;
-  background: var(--note-steel);
-  transform: rotate(-2deg);
+  background: var(--note-sand);
+  transform: rotate(-1deg);
 }
 .floating-note--bottom svg {
   color: var(--red);
@@ -414,7 +405,7 @@
   .hero-card {
     width: min(340px, calc(100% - 20px));
     padding: 18px 16px 26px;
-    transform: rotate(2deg);
+    transform: rotate(1.5deg);
   }
   .floating-note {
     max-width: calc(100% - 24px);
@@ -455,34 +446,46 @@
   }
 }
 
-/* Hidden before first paint; useHeroEntrance animates these in and then marks the hero entered. */
+/* Hero copy entrance. Pure CSS so it starts on first paint instead of waiting for the
+   JavaScript bundle to hydrate; on a throttled phone that wait was most of the LCP.
+   The intro paragraph (the LCP element) only slides, it is never transparent.
+   The illustration below the copy still uses useHeroEntrance once it scrolls into view. */
 @media screen and (prefers-reduced-motion: no-preference) {
-  .motion
-    .hero-section:not([data-copy-entered])
-    :is(
-      .hero-eyebrow,
-      .hero-headline-word,
-      .hero-growth-word,
-      .hero-intro,
-      .hero-actions > *,
-      .hero-reassurance,
-      .trust-row
-    ),
+  .motion:not([data-motion-late]) .hero-eyebrow {
+    animation: hero-rise 450ms var(--ease) both;
+  }
+  .motion:not([data-motion-late]) .hero-headline-word {
+    --rise: 22px;
+    animation: hero-rise-blur 560ms var(--ease) both;
+    animation-delay: calc(80ms + var(--i, 0) * 60ms);
+  }
+  .motion:not([data-motion-late]) .hero h1 .hero-growth-word {
+    animation: hero-stamp 900ms var(--ease) 420ms both;
+  }
+  .motion:not([data-motion-late]) .hero h1 .hero-growth-word::before {
+    animation: hero-marker 650ms var(--ease-entrance) 820ms both;
+    transition: none;
+  }
+  .motion:not([data-motion-late]) .hero-intro {
+    animation: hero-slide 550ms var(--ease) 360ms both;
+  }
+  .motion:not([data-motion-late]) .hero-actions > * {
+    animation: hero-rise 500ms var(--ease) both;
+    animation-delay: calc(480ms + var(--i, 0) * 80ms);
+  }
+  .motion:not([data-motion-late]) .hero-reassurance {
+    animation: hero-rise 450ms var(--ease) 700ms both;
+  }
+  .motion:not([data-motion-late]) .trust-row {
+    animation: hero-fade 500ms var(--ease) 800ms both;
+  }
+  .motion:not([data-motion-late]) .hero-section .sketch path {
+    animation: hero-draw 1100ms var(--ease-entrance) 1000ms both;
+  }
   .motion
     .hero-visual:not([data-visual-entered])
     :is(.hero-card, .mock-line, .floating-note) {
     opacity: 0;
-  }
-}
-
-/* Character: the marker stamps in behind "big!" once the headline lands, and the
-   sticky notes drift on their own. `translate` composes with the inline transforms. */
-.hero h1 .hero-growth-word::before {
-  transition-delay: 0ms;
-}
-@media screen and (prefers-reduced-motion: no-preference) {
-  .motion .hero-section:not([data-copy-entered]) .hero-growth-word::before {
-    transform: skewX(-6deg) rotate(-1deg) scaleX(0);
   }
   .hero-visual[data-visual-entered] .floating-note {
     animation: note-drift 6s ease-in-out infinite;
@@ -492,6 +495,55 @@
   }
   .hero-visual[data-visual-entered] .floating-note--bottom {
     animation-delay: -4s;
+  }
+}
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    translate: 0 var(--rise, 12px);
+  }
+}
+@keyframes hero-rise-blur {
+  from {
+    opacity: 0;
+    translate: 0 var(--rise, 12px);
+    filter: blur(5px);
+  }
+}
+@keyframes hero-slide {
+  from {
+    translate: 0 14px;
+  }
+}
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes hero-stamp {
+  0% {
+    opacity: 0;
+    scale: 0.3;
+  }
+  26% {
+    opacity: 1;
+    scale: 0.6;
+  }
+  78% {
+    scale: 1.12;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes hero-marker {
+  from {
+    transform: skewX(-6deg) rotate(-1deg) scaleX(0);
+  }
+}
+@keyframes hero-draw {
+  from {
+    stroke-dashoffset: 1;
   }
 }
 @keyframes note-drift {

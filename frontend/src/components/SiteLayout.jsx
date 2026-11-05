@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import AboutMenu from "./AboutMenu";
-import headshot from "../../assets/headshot.webp";
+import headshot from "../../assets/headshot-440.webp";
 import "./SiteLayout.css";
 export function Logo() {
   return (
-    <Link className="wordmark" to="/" aria-label="Cartez Dewberry home">
-      C<span>/</span>D
+    <Link className="wordmark" to="/">
+      <span aria-hidden="true">
+        C<span>/</span>D
+      </span>
+      <span className="sr-only">Cartez Dewberry home</span>
     </Link>
   );
 }

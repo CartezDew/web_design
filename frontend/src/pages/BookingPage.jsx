@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowUpRight, CalendarDays, Check, Download } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { today } from "@internationalized/date";
+import { addDays, todayIn } from "../content/dates";
 import {
   useLeadContact,
   validContactEmail,
@@ -13,7 +13,9 @@ import { Field, Notice } from "../components/Controls";
 import { API_BASE, apiRequest, preparePublicForm } from "../api";
 import FormSpamTrap from "../components/FormSpamTrap";
 import consultingMeeting from "../../assets/websites/consulting_meeting.webp";
+import consultingMeetingSmall from "../../assets/websites/consulting_meeting-600.webp";
 import ConsultationDatePicker from "../components/ConsultationDatePicker";
+import { usePreloadAriaControls } from "../components/ariaControls";
 import Reveal from "../Reveal";
 import {
   CONSULTATION_TIME_ZONE,
@@ -33,7 +35,7 @@ export function SlotPicker({ value, onChange, refresh = 0 }) {
     setLoading(true);
     setError("");
     apiRequest(
-      `/public/availability/?start=${today(CONSULTATION_TIME_ZONE)}&days=60`,
+      `/public/availability/?start=${todayIn(CONSULTATION_TIME_ZONE)}&days=60`,
     )
       .then((data) => {
         if (active) {
@@ -93,8 +95,8 @@ export function SlotPicker({ value, onChange, refresh = 0 }) {
           setDate(v);
           onChange("");
         }}
-        min={today(CONSULTATION_TIME_ZONE).toString()}
-        max={today(CONSULTATION_TIME_ZONE).add({ days: 59 }).toString()}
+        min={todayIn(CONSULTATION_TIME_ZONE)}
+        max={addDays(todayIn(CONSULTATION_TIME_ZONE), 59)}
         isDateUnavailable={(day) => !grouped[day.toString()]?.length}
       />
       {loading && (
@@ -186,6 +188,8 @@ export default function BookingPage() {
   const [slot, setSlot] = useState("");
   const [attempted, setAttempted] = useState(false);
   const [slotPrompted, setSlotPrompted] = useState(false);
+  const section = useRef(null);
+  usePreloadAriaControls(section);
   const validationSummary = useRef(null);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
@@ -262,6 +266,7 @@ export default function BookingPage() {
   };
   return (
     <section
+      ref={section}
       className="booking-layout shell section surface--paper"
       id="book"
       aria-labelledby="booking-title"
@@ -279,6 +284,8 @@ export default function BookingPage() {
         <div className="consultation-photo">
           <img
             src={consultingMeeting}
+            srcSet={`${consultingMeetingSmall} 600w, ${consultingMeeting} 1122w`}
+            sizes="(max-width: 900px) 90vw, 500px"
             alt="A friendly consultation about a business website, with a laptop and notes on the table"
             width="1122"
             height="1402"

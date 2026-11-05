@@ -1,8 +1,16 @@
 /* Marc'd design system. See .agents/skills/marcd-design-system/tokens.md */
-@import "@fontsource-variable/fraunces/opsz.css"; /* logo only */
 @import "@fontsource-variable/bricolage-grotesque";
 @import "@fontsource-variable/inter";
 @import "@fontsource/roboto-mono/400.css";
+/* The C/D wordmark is the only Fraunces text, so it ships a three-glyph subset
+   (C, /, D with the wght and opsz axes) instead of the 66 KB latin file. */
+@font-face {
+  font-family: "Fraunces Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../assets/fonts/fraunces-logo.woff2") format("woff2-variations");
+}
 :root {
   /* Fixed light palette. .surface--espresso remaps the tokens below but never
      these, so .surface--light can restore them inside a dark band. */
@@ -51,11 +59,12 @@
   --ochre: var(--light-ochre);
   --ochre-on-dark: var(--red-on-dark);
 
-  /* Sticky notes. Muted earth tones, one per card, never two side by side. */
-  --note-sand: #efe3c8;
-  --note-sage: #dbe4d0;
-  --note-steel: #d7dfe3; /* audit-allow */
-  --note-clay: #ecd2c3;
+  /* Sticky notes. Rugged, low-chroma field tones (khaki, olive drab, gunmetal, rust),
+     one per card, never two side by side. Ink on each stays above 12:1. */
+  --note-sand: #e9dcbf;
+  --note-sage: #d6dbc6;
+  --note-steel: #d3d8da; /* audit-allow */
+  --note-clay: #e5cdbf;
   --pencil: #bdb6ac;
 
   /* Portfolio frames — cooler mats so website screenshots read clearly against paper. */
@@ -103,10 +112,11 @@
   --nav-glow:
     0 1px 2px rgba(21, 19, 17, 0.05), 0 18px 48px -18px rgba(190, 3, 3, 0.18);
 
-  /* Radius. The arch is the signature portrait shape. */
-  --radius-sm: 6px;
-  --radius: 12px;
-  --radius-lg: 16px;
+  /* Radius. Tight corners read machined rather than soft. The arch is the
+     signature portrait shape. */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
   --radius-pill: 9999px;
   --radius-arch: 190px 190px 10px 10px;
 

@@ -1,7 +1,7 @@
 import { useId, useRef, useState } from "react";
 import { CalendarDays, Check } from "lucide-react";
-import { parseDate } from "@internationalized/date";
-import { CustomCalendar } from "./Controls";
+import { isoDateToUtc } from "../content/dates";
+import { loadAriaControls, useAriaControls } from "./ariaControls";
 import "./ConsultationDatePicker.css";
 
 export default function ConsultationDatePicker({
@@ -13,6 +13,9 @@ export default function ConsultationDatePicker({
   const [open, setOpen] = useState(false);
   const id = useId();
   const trigger = useRef(null);
+  // The calendar only renders once opened, so its React Aria chunk can wait.
+  const aria = useAriaControls();
+  const preload = () => loadAriaControls().catch(() => {});
   const selectedLabel = value
     ? new Intl.DateTimeFormat("en-US", {
         weekday: "short",
@@ -20,7 +23,7 @@ export default function ConsultationDatePicker({
         day: "numeric",
         year: "numeric",
         timeZone: "UTC",
-      }).format(parseDate(value).toDate("UTC"))
+      }).format(isoDateToUtc(value))
     : "Choose a date that works for you";
   const close = () => {
     setOpen(false);
@@ -43,7 +46,12 @@ export default function ConsultationDatePicker({
         aria-expanded={open}
         aria-controls={id}
         disabled={disabled}
-        onClick={() => setOpen((current) => !current)}
+        onPointerEnter={preload}
+        onFocus={preload}
+        onClick={() => {
+          preload();
+          setOpen((current) => !current);
+        }}
       >
         <span key={value || "empty"}>
           <small>{value ? "Your consultation date" : "Choose a date"}</small>
@@ -57,15 +65,21 @@ export default function ConsultationDatePicker({
       </button>
       {open && (
         <div className="consultation-calendar-panel" id={id}>
-          <CustomCalendar
-            {...props}
-            consultation
-            value={value}
-            onChange={(date) => {
-              onChange(date);
-              close();
-            }}
-          />
+          {aria ? (
+            <aria.CustomCalendar
+              {...props}
+              consultation
+              value={value}
+              onChange={(date) => {
+                onChange(date);
+                close();
+              }}
+            />
+          ) : (
+            <p className="form-help" role="status">
+              Loading the calendar…
+            </p>
+          )}
           <p className="calendar-help">
             Dates with a red dot have open times. Choose a date, then pick a
             time below.

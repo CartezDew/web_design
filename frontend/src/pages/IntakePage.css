@@ -569,3 +569,7 @@
     transition: none;
   }
 }
+/* Holds the form's space while it is shown in the (lazy-loaded) intake modal. */
+.intake-modal-placeholder {
+  min-height: 600px;
+}

@@ -30,11 +30,38 @@
   transition:
     min-height 260ms var(--ease),
     box-shadow 260ms var(--ease),
-    background 260ms var(--ease);
+    background 260ms var(--ease),
+    border-color 260ms var(--ease);
 }
 .site-header[data-scrolled] .header-inner {
   min-height: 60px;
   background: rgba(252, 250, 245, 0.97);
+  border-color: var(--ink-faint);
+}
+/* Once the page scrolls, a frosted band sits behind the pill: content passing under
+   the nav blurs and fades out, so the pill stays legible over busy sections. The
+   band fades out toward its bottom edge instead of ending in a hard line. */
+.site-header::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 -32px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--paper) 82%, transparent) 0%,
+    color-mix(in srgb, var(--paper) 55%, transparent) 60%,
+    transparent 100%
+  );
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(to bottom, var(--light-ink) 60%, transparent);
+  mask-image: linear-gradient(to bottom, var(--light-ink) 60%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms var(--ease);
+  content: "";
+}
+.site-header[data-scrolled]::before {
+  opacity: 1;
 }
 /* The C/D wordmark is the brand mark: it keeps its original Fraunces serif. */
 .wordmark {
@@ -46,7 +73,7 @@
   line-height: 1;
   text-decoration: none;
 }
-.wordmark span {
+.wordmark span span {
   color: var(--red);
   margin: 0 2px;
 }

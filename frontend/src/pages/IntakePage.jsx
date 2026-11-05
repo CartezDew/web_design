@@ -5,7 +5,7 @@ import {
   leadProperties,
 } from "../analytics/catalog";
 import { useFormAnalytics } from "../analytics/useFormAnalytics";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
@@ -16,7 +16,7 @@ import {
   Mail,
   ChevronDown,
 } from "lucide-react";
-import { getLocalTimeZone, today } from "@internationalized/date";
+import { todayIn } from "../content/dates";
 import { Turnstile } from "@marsidev/react-turnstile";
 import {
   Field,
@@ -38,13 +38,26 @@ import {
 } from "../api";
 import FormSpamTrap from "../components/FormSpamTrap";
 import Reveal from "../Reveal";
-import IntakeModal from "../components/IntakeModal";
+import {
+  loadAriaControls,
+  usePreloadAriaControls,
+} from "../components/ariaControls";
 import {
   buildBriefPayload,
   intakePlans,
   intakeReviewGroups,
 } from "../content/intake";
 import "./IntakePage.css";
+
+// The modal pulls in React Aria and only opens after a click, so it loads on
+// demand; hovering or focusing any "Plan your website" trigger warms it up.
+const loadIntakeModal = () => import("../components/IntakeModal");
+const IntakeModal = lazy(loadIntakeModal);
+const INTAKE_TRIGGER = 'a[aria-haspopup="dialog"][href$="#start-a-project"]';
+function warmIntake() {
+  loadIntakeModal().catch(() => {});
+  loadAriaControls().catch(() => {});
+}
 export default function IntakePage({
   modalOpen = false,
   selectedPackage = null,
@@ -57,6 +70,29 @@ export default function IntakePage({
     plans.find((p) => p.toLowerCase() === params.get("package")) ||
     "I need a recommendation";
   const [step, setStep] = useState(0);
+  const section = useRef(null);
+  usePreloadAriaControls(section);
+  // Stay mounted after the first open so the exit animation can play.
+  const [modalMounted, setModalMounted] = useState(modalOpen);
+  if (modalOpen && !modalMounted) setModalMounted(true);
+  useEffect(() => {
+    if (modalOpen) loadAriaControls().catch(() => {});
+  }, [modalOpen]);
+  useEffect(() => {
+    const onIntent = (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest(INTAKE_TRIGGER)
+      )
+        warmIntake();
+    };
+    const events = ["pointerover", "focusin", "touchstart"];
+    events.forEach((name) =>
+      document.addEventListener(name, onIntent, { passive: true }),
+    );
+    return () =>
+      events.forEach((name) => document.removeEventListener(name, onIntent));
+  }, []);
   const { contact, updateContact } = useLeadContact();
   const [details, setForm] = useState({
     company: "",
@@ -550,7 +586,7 @@ export default function IntakePage({
                   <CustomDatePicker
                     label="Ideal launch date (optional)"
                     value={form.launch_date}
-                    min={today(getLocalTimeZone()).toString()}
+                    min={todayIn()}
                     onChange={(v) => update("launch_date", v)}
                   />
                   <Field
@@ -846,6 +882,7 @@ export default function IntakePage({
   return (
     <>
       <section
+        ref={section}
         className="intake-section section surface--espresso"
         id="start-a-project"
         aria-labelledby="intake-title"
@@ -902,13 +939,17 @@ export default function IntakePage({
           )}
         </div>
       </section>
-      <IntakeModal
-        open={modalOpen}
-        onClose={onModalClose}
-        returnFocusRef={returnFocusRef}
-      >
-        {formPanel}
-      </IntakeModal>
+      {modalMounted && (
+        <Suspense fallback={null}>
+          <IntakeModal
+            open={modalOpen}
+            onClose={onModalClose}
+            returnFocusRef={returnFocusRef}
+          >
+            {formPanel}
+          </IntakeModal>
+        </Suspense>
+      )}
     </>
   );
 }

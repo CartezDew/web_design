@@ -28,7 +28,9 @@ export default function FAQ() {
         </Reveal>
         <div className="faq-list">
           {faqs.map((faq, index) => (
-            <details
+            <Reveal
+              as="details"
+              effect="deal"
               key={faq.question}
               className="faq-item"
               onToggle={(event) => {
@@ -44,7 +46,7 @@ export default function FAQ() {
                 <Plus size={19} />
               </summary>
               <p>{faq.answer}</p>
-            </details>
+            </Reveal>
           ))}
         </div>
       </div>

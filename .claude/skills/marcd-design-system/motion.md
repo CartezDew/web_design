@@ -41,6 +41,7 @@ Anything hidden before it animates must be hidden **only** under motion, so redu
 | Nav underline | Nav links | red `::after` wipes from `scaleX(0)` to 1 over 220ms |
 | Nav tighten | Pill | `min-height` 72px → 60px when `data-scrolled` |
 | Ticker | Black band | 135s marquee that pauses on hover or focus |
+| Card deal | FAQ questions (`<Reveal effect="deal">`) | Each card drops from 56px above, tilted ±6–7deg on a hard ink shadow, lands flat with a 3px settle; 680ms, 80ms stagger (cap 0.96s). Reveal sets `data-revealed` + `--reveal-delay`, CSS runs it |
 | FAQ / Services toggle | Details | icon rotate plus a 240ms content fade-down |
 
 ## Limits

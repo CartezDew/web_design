@@ -38,8 +38,11 @@ export function ProjectCard({ project }) {
         <span className="work-image">
           <img
             src={project.image}
+            srcSet={project.imageSrcSet}
+            sizes="(max-width: 760px) 85vw, (max-width: 1100px) 50vw, 540px"
             alt=""
             loading="lazy"
+            decoding="async"
             width="1200"
             height="800"
           />

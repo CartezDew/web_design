@@ -108,9 +108,6 @@
 .intake-modal .intake-form-panel::-webkit-scrollbar-thumb:hover {
   background: rgba(190, 3, 3, 0.76);
 }
-.intake-modal-placeholder {
-  min-height: 600px;
-}
 @media (max-width: 600px) {
   .intake-modal-overlay {
     padding: 12px;

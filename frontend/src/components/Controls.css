@@ -274,3 +274,30 @@
     border-spacing: 2px;
   }
 }
+/* Native stand-ins shown until the React Aria widgets load (see ariaControls.js). */
+.native-select {
+  position: relative;
+}
+.native-select select {
+  appearance: none;
+  padding-right: 40px;
+}
+.native-select select[data-placeholder] {
+  color: var(--ink-faint);
+}
+.native-select select:focus-visible,
+.native-date:focus-visible {
+  outline: 3px solid rgba(190, 3, 3, 0.15);
+  border-color: var(--red);
+}
+.native-select svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  translate: 0 -50%;
+  pointer-events: none;
+}
+.choice:has(input:focus-visible) {
+  outline: 3px solid rgba(190, 3, 3, 0.31);
+  outline-offset: 3px;
+}

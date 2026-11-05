@@ -1,5 +1,6 @@
 import { Linkedin, ExternalLink } from "lucide-react";
 import headshot from "../../assets/headshot.webp";
+import headshotSmall from "../../assets/headshot-440.webp";
 import Reveal from "../Reveal";
 import "./About.css";
 export default function About() {
@@ -22,6 +23,8 @@ export default function About() {
             </div>
             <img
               src={headshot}
+              srcSet={`${headshotSmall} 440w, ${headshot} 819w`}
+              sizes="(max-width: 760px) 90vw, 440px"
               alt="Cartez Dewberry, software engineer and founder"
               width="819"
               height="1024"

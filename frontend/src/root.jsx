@@ -7,11 +7,35 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "react-router-dom";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import SiteAnalytics from "./analytics/SiteAnalytics";
 import { confirmMotion, motionBootScript } from "./motion";
 import "./styles/tokens.css";
 import "./styles/global.css";
+import bricolageFont from "@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url";
+import interFont from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+
+// The hero paints in Bricolage and Inter, so fetch them alongside the CSS instead of
+// after it. That stops the late font swap that shifted the hero on desktop.
+const apiOrigin = (() => {
+  try {
+    return new URL(import.meta.env.VITE_API_BASE_URL || "").origin;
+  } catch {
+    return null;
+  }
+})();
+export const links = () => [
+  ...[bricolageFont, interFont].map((href) => ({
+    rel: "preload",
+    as: "font",
+    type: "font/woff2",
+    href,
+    crossOrigin: "anonymous",
+  })),
+  ...(apiOrigin
+    ? [{ rel: "preconnect", href: apiOrigin, crossOrigin: "use-credentials" }]
+    : []),
+];
 export function Layout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -19,7 +43,7 @@ export function Layout({ children }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script dangerouslySetInnerHTML={{ __html: motionBootScript }} />
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#fcfaf5" />
         <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link
@@ -39,7 +63,7 @@ export function Layout({ children }) {
   );
 }
 export default function Root() {
-  useEffect(confirmMotion, []);
+  useLayoutEffect(confirmMotion, []);
   return (
     <>
       <Outlet />

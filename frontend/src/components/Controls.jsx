@@ -1,35 +1,6 @@
-import { useId } from "react";
-import {
-  Button,
-  Select,
-  SelectValue,
-  Label,
-  Popover,
-  ListBox,
-  ListBoxItem,
-  Calendar,
-  CalendarGrid,
-  CalendarGridHeader,
-  CalendarHeaderCell,
-  CalendarGridBody,
-  CalendarCell,
-  Heading,
-  DatePicker,
-  DateInput,
-  DateSegment,
-  Group,
-  Dialog,
-  RadioGroup,
-  Radio,
-} from "react-aria-components";
-import {
-  CalendarDays,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-} from "lucide-react";
-import { parseDate } from "@internationalized/date";
+import { useId, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { useAriaControls } from "./ariaControls";
 import "./Controls.css";
 export function Field({ label, hint, error, multiline = false, ...props }) {
   const Element = multiline ? "textarea" : "input";
@@ -62,171 +33,125 @@ export function Field({ label, hint, error, multiline = false, ...props }) {
     </label>
   );
 }
-export function CustomSelect({
-  label,
-  value,
-  onChange,
-  options,
-  placeholder = "Choose an option",
-  required = false,
-  disabled = false,
-  name,
-}) {
+// While a native stand-in has focus, keep it on screen so the upgrade to the
+// React Aria widget never yanks a control out from under the visitor.
+function useUpgrade() {
+  const aria = useAriaControls();
+  const [busy, setBusy] = useState(false);
+  const hold = {
+    onFocus: () => setBusy(true),
+    onBlur: () => setBusy(false),
+  };
+  return [busy ? null : aria, hold];
+}
+
+function optionItem(option) {
+  return typeof option === "string" ? { value: option, label: option } : option;
+}
+
+export function CustomSelect(props) {
+  const [aria, hold] = useUpgrade();
+  const id = useId();
+  if (aria) return <aria.CustomSelect {...props} />;
+  const {
+    label,
+    value,
+    onChange,
+    options,
+    placeholder = "Choose an option",
+    required = false,
+    disabled = false,
+    name,
+  } = props;
   return (
-    <Select
-      className="custom-select"
-      name={name}
-      selectedKey={value || null}
-      onSelectionChange={(key) => onChange(String(key))}
-      isRequired={required}
-      isDisabled={disabled}
-      placeholder={placeholder}
-    >
-      <Label>{label}</Label>
-      <Button className="select-trigger">
-        <SelectValue />
-        <ChevronDown size={16} />
-      </Button>
-      <Popover className="select-popover">
-        <ListBox className="select-list">
-          {options.map((option) => {
-            const item =
-              typeof option === "string"
-                ? { value: option, label: option }
-                : option;
-            return (
-              <ListBoxItem
-                className="select-item"
-                key={item.value}
-                id={item.value}
-                textValue={item.label}
-              >
-                {({ isSelected }) => (
-                  <>
-                    <span>{item.label}</span>
-                    {isSelected && <Check size={15} />}
-                  </>
-                )}
-              </ListBoxItem>
-            );
-          })}
-        </ListBox>
-      </Popover>
-    </Select>
+    <div className="custom-select">
+      {/* A span, like React Aria's label, so both versions pick up the same styles. */}
+      <span id={`${id}-label`}>{label}</span>
+      <div className="native-select">
+        <select
+          {...hold}
+          aria-labelledby={`${id}-label`}
+          className="select-trigger"
+          name={name}
+          value={value || ""}
+          required={required}
+          disabled={disabled}
+          data-placeholder={value ? undefined : ""}
+          onChange={(event) => onChange(event.target.value)}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options.map(optionItem).map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown size={16} aria-hidden="true" />
+      </div>
+    </div>
   );
 }
-export function ChoiceGroup({ label, value, onChange, options }) {
+
+export function ChoiceGroup(props) {
+  const [aria, hold] = useUpgrade();
+  const id = useId();
+  if (aria) return <aria.ChoiceGroup {...props} />;
+  const { label, value, onChange, options } = props;
   return (
-    <RadioGroup className="choice-group" value={value} onChange={onChange}>
-      <Label>{label}</Label>
+    <div
+      className="choice-group"
+      role="radiogroup"
+      aria-labelledby={`${id}-label`}
+    >
+      <span id={`${id}-label`}>{label}</span>
       <div className="choices">
         {options.map((option) => (
-          <Radio className="choice" key={option} value={option}>
+          <label
+            className="choice"
+            key={option}
+            data-selected={value === option || undefined}
+          >
+            <input
+              {...hold}
+              className="sr-only"
+              type="radio"
+              name={id}
+              value={option}
+              checked={value === option}
+              onChange={() => onChange(option)}
+            />
             <span className="choice-dot" />
             {option}
-          </Radio>
+          </label>
         ))}
       </div>
-    </RadioGroup>
+    </div>
   );
 }
-export function CalendarBody({ consultation = false }) {
+
+export function CustomDatePicker(props) {
+  const [aria, hold] = useUpgrade();
+  const id = useId();
+  if (aria) return <aria.CustomDatePicker {...props} />;
+  const { label, value, onChange, min } = props;
   return (
-    <>
-      <header className="calendar-header">
-        <div className="calendar-month">
-          {consultation && <span>Let’s find a time</span>}
-          <Heading />
-        </div>
-        <div>
-          <Button slot="previous" aria-label="Previous month">
-            <ChevronLeft size={18} />
-          </Button>
-          <Button slot="next" aria-label="Next month">
-            <ChevronRight size={18} />
-          </Button>
-        </div>
-      </header>
-      <CalendarGrid className="calendar-grid">
-        <CalendarGridHeader>
-          {(day) => <CalendarHeaderCell>{day}</CalendarHeaderCell>}
-        </CalendarGridHeader>
-        <CalendarGridBody>
-          {(date) => (
-            <CalendarCell className="calendar-cell" date={date}>
-              {({ formattedDate, isToday, isDisabled, isUnavailable }) => (
-                <>
-                  <span>{formattedDate}</span>
-                  {consultation && isToday && <i aria-hidden="true">Today</i>}
-                  {consultation &&
-                    !isToday &&
-                    !isDisabled &&
-                    !isUnavailable && (
-                      <i
-                        className="calendar-available-dot"
-                        aria-hidden="true"
-                      />
-                    )}
-                </>
-              )}
-            </CalendarCell>
-          )}
-        </CalendarGridBody>
-      </CalendarGrid>
-    </>
+    <div className="custom-date-picker">
+      <span id={`${id}-label`}>{label}</span>
+      <input
+        {...hold}
+        aria-labelledby={`${id}-label`}
+        className="date-trigger native-date"
+        type="date"
+        value={value || ""}
+        min={min}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </div>
   );
 }
-export function CustomCalendar({
-  value,
-  onChange,
-  min,
-  max,
-  isDateUnavailable,
-  consultation = false,
-}) {
-  return (
-    <Calendar
-      aria-label="Choose a consultation date"
-      className={
-        consultation
-          ? "custom-calendar consultation-calendar"
-          : "custom-calendar"
-      }
-      value={value ? parseDate(value) : null}
-      onChange={(date) => onChange(date.toString())}
-      minValue={min ? parseDate(min) : undefined}
-      maxValue={max ? parseDate(max) : undefined}
-      isDateUnavailable={isDateUnavailable}
-    >
-      <CalendarBody consultation={consultation} />
-    </Calendar>
-  );
-}
-export function CustomDatePicker({ label, value, onChange, min }) {
-  return (
-    <DatePicker
-      className="custom-date-picker"
-      value={value ? parseDate(value) : null}
-      onChange={(date) => onChange(date?.toString() || "")}
-      minValue={min ? parseDate(min) : undefined}
-    >
-      <Label>{label}</Label>
-      <Group className="date-trigger">
-        <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
-        <Button aria-label="Open calendar">
-          <CalendarDays size={18} />
-        </Button>
-      </Group>
-      <Popover className="calendar-popover">
-        <Dialog>
-          <Calendar className="custom-calendar">
-            <CalendarBody />
-          </Calendar>
-        </Dialog>
-      </Popover>
-    </DatePicker>
-  );
-}
+
 export function Notice({ error, success }) {
   return error || success ? (
     <div

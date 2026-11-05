@@ -17,6 +17,8 @@ import IntakePage from "../pages/IntakePage";
 import Privacy from "../sections/Privacy";
 import ContactCTA from "../sections/ContactCTA";
 import { JsonLd, siteUrl } from "../content/seo";
+import { packages } from "../content/site";
+import headshot from "../../assets/headshot.webp";
 import {
   homeBase,
   serviceAreas,
@@ -72,6 +74,33 @@ export default function Page() {
                 url: siteUrl,
                 email: "letsbuild@marcdbycartez.com",
                 telephone: "+14043541272",
+                image: `${siteUrl}/og-image.jpg`,
+                logo: `${siteUrl}/apple-touch-icon.png`,
+                priceRange: "$300–$1,500+",
+                sameAs: ["https://www.linkedin.com/in/cartez-dewberry/"],
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  contactType: "sales",
+                  email: "letsbuild@marcdbycartez.com",
+                  telephone: "+14043541272",
+                  areaServed: "US",
+                  availableLanguage: "en",
+                },
+                hasOfferCatalog: {
+                  "@type": "OfferCatalog",
+                  name: "Website packages",
+                  itemListElement: packages.map((plan) => ({
+                    "@type": "Offer",
+                    name: `${plan.name} website package`,
+                    description: `${plan.description} ${plan.features.join(", ")}. ${plan.timeline}.`,
+                    url: `${siteUrl}/#pricing`,
+                    priceSpecification: {
+                      "@type": "PriceSpecification",
+                      minPrice: Number(plan.price.replace(/[^0-9]/g, "")),
+                      priceCurrency: "USD",
+                    },
+                  })),
+                },
                 founder: { "@id": `${siteUrl}/#cartez` },
                 description:
                   "Custom web design, full-stack development, booking systems, integrations, and SEO/AEO for small businesses. Based in metro Atlanta, serving Georgia, Alabama, and Tennessee in person and the rest of the United States remotely.",
@@ -118,6 +147,9 @@ export default function Page() {
                 "@id": `${siteUrl}/#cartez`,
                 name: "Cartez Dewberry",
                 url: `${siteUrl}/#about`,
+                image: siteUrl + headshot,
+                description:
+                  "Software engineer, U.S. Marine veteran, and founder of Marc-D Group LLC who designs and builds websites for small businesses.",
                 sameAs: ["https://www.linkedin.com/in/cartez-dewberry/"],
                 worksFor: { "@id": `${siteUrl}/#business` },
                 jobTitle: "Software engineer and founder",
@@ -128,6 +160,16 @@ export default function Page() {
                 url: siteUrl,
                 name: "Cartez Dewberry — Web Design & Development",
                 publisher: { "@id": `${siteUrl}/#business` },
+                inLanguage: "en",
+              },
+              {
+                "@type": "WebPage",
+                "@id": `${siteUrl}/#webpage`,
+                url: `${siteUrl}/`,
+                name: "Web Design for Small Businesses in Metro Atlanta",
+                isPartOf: { "@id": `${siteUrl}/#website` },
+                about: { "@id": `${siteUrl}/#business` },
+                primaryImageOfPage: `${siteUrl}/og-image.jpg`,
                 inLanguage: "en",
               },
             ],

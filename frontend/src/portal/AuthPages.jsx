@@ -243,8 +243,11 @@ function AuthLayout({ eyebrow, title, children }) {
   return (
     <main className="auth-page">
       <header className="auth-header">
-        <Link className="wordmark" to="/" aria-label="Home">
-          C<span>/</span>D
+        <Link className="wordmark" to="/">
+          <span aria-hidden="true">
+            C<span>/</span>D
+          </span>
+          <span className="sr-only">Home</span>
         </Link>
         <Link className="auth-home-link" to="/" aria-label="Back to home">
           <House size={20} aria-hidden="true" />

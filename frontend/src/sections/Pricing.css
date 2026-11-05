@@ -37,12 +37,14 @@
   padding: 4px 12px;
   color: var(--on-dark);
   background: var(--red);
-  border-radius: var(--radius-pill);
+  border: 2px solid var(--light-ink);
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0 var(--light-ink);
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  transform: rotate(2deg);
 }
 .price-plan h3 {
   font-size: 26px;

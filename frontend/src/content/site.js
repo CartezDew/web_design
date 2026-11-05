@@ -1,8 +1,13 @@
 import marcdShot from "../../assets/websites/marc-d.webp";
+import marcdShotSmall from "../../assets/websites/marc-d-700.webp";
 import leapfrogShot from "../../assets/websites/leap_frog.webp";
+import leapfrogShotSmall from "../../assets/websites/leap_frog-700.webp";
 import clipCultureShot from "../../assets/websites/clip_culture.webp";
+import clipCultureShotSmall from "../../assets/websites/clip_culture-700.webp";
 import bdsShot from "../../assets/websites/BDS_talent_Group.webp";
+import bdsShotSmall from "../../assets/websites/BDS_talent_Group-700.webp";
 import classProjectShot from "../../assets/websites/class_project.webp";
+import classProjectShotSmall from "../../assets/websites/class_project-700.webp";
 
 export const portfolio = [
   {
@@ -12,6 +17,7 @@ export const portfolio = [
       "Safe parking and real-time resources for the people who keep America moving.",
     url: "https://www.marc-d.com",
     image: marcdShot,
+    imageSrcSet: `${marcdShotSmall} 700w, ${marcdShot} 1400w`,
     featured: true,
   },
   {
@@ -21,6 +27,7 @@ export const portfolio = [
       "A professional marketing site for an accounting and talent firm.",
     url: "https://bds-talent-group.netlify.app/",
     image: bdsShot,
+    imageSrcSet: `${bdsShotSmall} 700w, ${bdsShot} 1400w`,
   },
   {
     title: "Clip Culture",
@@ -28,6 +35,7 @@ export const portfolio = [
     description: "A modern booking-ready site for a neighborhood barbershop.",
     url: "https://clip-culture.netlify.app/",
     image: clipCultureShot,
+    imageSrcSet: `${clipCultureShotSmall} 700w, ${clipCultureShot} 1400w`,
   },
   {
     title: "Leapfrog Analytics",
@@ -35,6 +43,7 @@ export const portfolio = [
     description: "An analytics dashboard with data upload and reporting views.",
     url: "https://leapfrogservices.netlify.app/upload",
     image: leapfrogShot,
+    imageSrcSet: `${leapfrogShotSmall} 700w, ${leapfrogShot} 1400w`,
   },
   {
     title: "Mattel × AI Lab",
@@ -42,6 +51,7 @@ export const portfolio = [
     description: "A concept landing page exploring brand storytelling with AI.",
     url: "https://joyful-kelpie-7cd0f6.netlify.app/final-website",
     image: classProjectShot,
+    imageSrcSet: `${classProjectShotSmall} 700w, ${classProjectShot} 1400w`,
   },
 ];
 

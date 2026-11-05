@@ -104,6 +104,40 @@
     transform: translateY(0);
   }
 }
+/* Dealt like playing cards: each question drops in from above, tilted and lifted on
+   a hard ink shadow, then lands flat with a small settle. Reveal.jsx sets
+   data-revealed and the per-card --reveal-delay; reduced motion and no-JS skip it. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .motion .faq-item[data-reveal-effect="deal"][data-revealed] {
+    --deal-tilt: -7deg;
+    --deal-x: -18px;
+    transform-origin: 50% 0;
+    animation: faq-deal 680ms var(--ease-entrance) var(--reveal-delay, 0ms) both;
+  }
+  .motion .faq-item[data-reveal-effect="deal"][data-revealed]:nth-child(even) {
+    --deal-tilt: 6deg;
+    --deal-x: 18px;
+  }
+}
+@keyframes faq-deal {
+  0% {
+    opacity: 0;
+    transform: translate(var(--deal-x), -56px) rotate(var(--deal-tilt))
+      scale(1.04);
+    box-shadow: 6px 10px 0 var(--light-ink);
+  }
+  35% {
+    opacity: 1;
+  }
+  70% {
+    transform: translate(0, 3px) rotate(calc(var(--deal-tilt) * -0.12)) scale(1);
+    box-shadow: 1px 1px 0 var(--light-ink);
+  }
+  100% {
+    transform: none;
+    box-shadow: 0 0 0 var(--light-ink);
+  }
+}
 @media (max-width: 1000px) {
   .faq {
     gap: 55px;
@@ -151,13 +185,18 @@
 }
 .faq-illustration path {
   stroke: var(--light-ink);
-  stroke-width: 2;
+  stroke-width: 2.5;
 }
 .faq-bubble--ask {
   fill: var(--note-sand);
 }
+/* The answer lands as a solid ink plate: the question is soft, the answer is firm. */
 .faq-bubble--answer {
-  fill: var(--note-sage);
+  fill: var(--light-ink);
+}
+.faq-illustration .faq-bubble--answer + .faq-line {
+  stroke: var(--on-dark);
+  stroke-width: 6;
 }
 .faq-illustration .faq-mark {
   stroke: var(--red);
@@ -167,7 +206,7 @@
   fill: var(--red);
 }
 .faq-dot--ink {
-  fill: var(--light-ink);
+  fill: var(--on-dark);
 }
 .faq-illustration .faq-line {
   stroke-width: 2.5;

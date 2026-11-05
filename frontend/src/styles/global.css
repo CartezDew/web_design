@@ -299,7 +299,7 @@ summary:focus-visible {
   color: var(--on-dark);
   font-family: var(--body);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
   box-shadow: var(--lift-1);
@@ -312,16 +312,22 @@ summary:focus-visible {
 .button:hover {
   background: var(--espresso-soft);
 }
+/* The primary CTA is stamped: a hard ink offset gives it weight on paper. */
 .button--red,
 .button--accent {
   background: var(--red);
-  border-color: var(--red);
+  border-color: var(--light-ink);
   color: var(--on-dark);
+  box-shadow: 3px 3px 0 var(--light-ink);
+}
+.surface--espresso .button--red,
+.surface--espresso .button--accent {
+  border-color: var(--red);
+  box-shadow: 3px 3px 0 var(--red-deep);
 }
 .button--red:hover,
 .button--accent:hover {
   background: var(--red-deep);
-  border-color: var(--red-deep);
 }
 .button--ghost,
 .button--outline {
@@ -576,6 +582,15 @@ summary:focus-visible {
   transform: translateY(-2px);
   box-shadow: var(--lift-2);
 }
+.button--red:hover,
+.button--accent:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 5px 5px 0 var(--light-ink);
+}
+.surface--espresso .button--red:hover,
+.surface--espresso .button--accent:hover {
+  box-shadow: 5px 5px 0 var(--red-deep);
+}
 .note-card {
   transition:
     transform 220ms var(--ease),
@@ -587,6 +602,11 @@ summary:focus-visible {
 }
 .button:active:not(:disabled) {
   transform: translateY(0) scale(0.985);
+}
+/* Pressing a stamped button pushes it down into its shadow. */
+:is(.button--red, .button--accent):active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--light-ink);
 }
 .button svg,
 .text-link svg,
