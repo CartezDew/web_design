@@ -41,6 +41,10 @@ Anything hidden before it animates must be hidden **only** under motion, so redu
 | Nav underline | Nav links | red `::after` wipes from `scaleX(0)` to 1 over 220ms |
 | Nav tighten | Pill | `min-height` 72px → 60px when `data-scrolled` |
 | Ticker | Black band | 135s marquee that pauses on hover or focus |
+| Grid and seal | Hero visual | After the mockup lands (`data-visual-entered`): the grid fades in and the veteran-owned seal stamps down (1.5 → 0.94 → 1) |
+| Seal turn | Hero seal ring text | 40s linear rotation, the one other permitted loop besides the ticker and note drift |
+| Cursor tilt | Hero mockup stage (desktop, fine pointer only) | Leans toward the cursor, max 4deg, one pointermove listener batched per frame, resets on leave |
+| Signature | Under the hero intro | `<Sketch variant="signature">` draws on with the hero sketches |
 | Card deal | FAQ questions (`<Reveal effect="deal">`) | Each card drops from 56px above, tilted ±6–7deg on a hard ink shadow, lands flat with a 3px settle; 680ms, 80ms stagger (cap 0.96s). Reveal sets `data-revealed` + `--reveal-delay`, CSS runs it |
 | FAQ / Services toggle | Details | icon rotate plus a 240ms content fade-down |
 
@@ -48,5 +52,5 @@ Anything hidden before it animates must be hidden **only** under motion, so redu
 
 - Hover movement is 2–3px. Anything bigger reads as cheap.
 - Every transform-based effect needs a `prefers-reduced-motion: reduce` escape. The global reduce block also clamps all durations.
-- Don't loop anything except the ticker and the note drift.
+- Don't loop anything except the ticker, the note drift, and the hero seal.
 - Don't animate layout properties on scroll.

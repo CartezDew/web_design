@@ -9,12 +9,14 @@ import {
   CreditCard,
   CalendarCheck,
 } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import Sketch from "../components/Sketch";
 import useHeroEntrance from "./useHeroEntrance";
+import { motionEnabled } from "../motion";
 import "./Hero.css";
 export default function Hero({ onPlan }) {
   const [scope, visual] = useHeroEntrance();
+  useCardTilt(visual);
   return (
     <section className="hero-section surface--paper" id="top" ref={scope}>
       <div className="hero shell">
@@ -38,11 +40,12 @@ export default function Hero({ onPlan }) {
             <em className="hero-growth-word">big!</em>
           </h1>
           <p className="hero-intro">
-            I’m Cartez. I design and build custom websites, booking systems, and
+            I design and build custom websites, booking systems, and
             integrations that help small businesses earn trust and turn visitors
             into inquiries, bookings, and sales. You work directly with me, from
             the first idea to launch.
           </p>
+          <Sketch variant="signature" className="hero-signature" />
           <div className="hero-actions">
             <Link
               className="button button--red button--lg hero-primary"
@@ -100,46 +103,51 @@ export default function Hero({ onPlan }) {
           role="img"
           aria-label="Illustration of a small-business website with online booking, payments, AI search visibility, and security built in"
         >
+          {/* A faint grid the mockup sits on, under the dashed orbit lines. */}
+          <div className="hero-blueprint" aria-hidden="true" />
           <div className="orbit orbit--one" />
           <div className="orbit orbit--two" />
-          <div className="hero-card">
-            <div className="browser-bar">
-              <div className="browser-dots">
-                <i />
-                <i />
-                <i />
+          <div className="hero-stage">
+            <div className="hero-card">
+              <div className="browser-bar">
+                <div className="browser-dots">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <span className="browser-url">yourbusiness.com</span>
               </div>
-              <span className="browser-url">yourbusiness.com</span>
+              <div className="mock-nav">
+                <b />
+                <span>
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <em>Book now</em>
+              </div>
+              <div className="mock-label">YOUR BUSINESS, ONLINE</div>
+              <div className="mock-title">Booked. Paid. Found.</div>
+              <div className="mock-line" />
+              <div className="mock-line mock-line--short" />
+              <div className="mock-stats">
+                <div>
+                  <strong>24/7</strong>
+                  <span>Online booking</span>
+                </div>
+                <div>
+                  <strong>+38%</strong>
+                  <span>New leads</span>
+                </div>
+                <div>
+                  <strong>AI</strong>
+                  <span>Search ready</span>
+                </div>
+              </div>
+              <div className="mock-button">BOOK A SERVICE →</div>
             </div>
-            <div className="mock-nav">
-              <b />
-              <span>
-                <i />
-                <i />
-                <i />
-              </span>
-              <em>Book now</em>
-            </div>
-            <div className="mock-label">YOUR BUSINESS, ONLINE</div>
-            <div className="mock-title">Booked. Paid. Found.</div>
-            <div className="mock-line" />
-            <div className="mock-line mock-line--short" />
-            <div className="mock-stats">
-              <div>
-                <strong>24/7</strong>
-                <span>Online booking</span>
-              </div>
-              <div>
-                <strong>+38%</strong>
-                <span>New leads</span>
-              </div>
-              <div>
-                <strong>AI</strong>
-                <span>Search ready</span>
-              </div>
-            </div>
-            <div className="mock-button">BOOK A SERVICE →</div>
           </div>
+          <HeroSeal />
           <span className="floating-note floating-note--top">
             <Search size={15} /> Found on Google + ChatGPT
           </span>
@@ -153,4 +161,74 @@ export default function Hero({ onPlan }) {
       </div>
     </section>
   );
+}
+
+// Veteran-owned stamp: the words run around the ring on an SVG text path.
+function HeroSeal() {
+  return (
+    <svg className="hero-seal" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <path
+          id="hero-seal-ring"
+          d="M60 60m-43 0a43 43 0 1 1 86 0a43 43 0 1 1-86 0"
+        />
+      </defs>
+      <circle className="hero-seal-plate" cx="60" cy="60" r="57" />
+      <circle className="hero-seal-rule" cx="60" cy="60" r="31" />
+      <g className="hero-seal-ring">
+        <text>
+          <textPath href="#hero-seal-ring" textLength="268">
+            VETERAN-OWNED ★ BUILT IN ATLANTA ★ MARC-D GROUP ★
+          </textPath>
+        </text>
+      </g>
+      <text className="hero-seal-mark" x="60" y="67" textAnchor="middle">
+        C/D
+      </text>
+    </svg>
+  );
+}
+
+// Desktop only: the mockup leans toward the cursor, at most 4deg. One pointer
+// listener on the stage, batched into a frame; off for touch and reduced motion.
+const MAX_TILT = 4;
+function useCardTilt(visual) {
+  useEffect(() => {
+    const stage = visual.current;
+    if (
+      !stage ||
+      !motionEnabled() ||
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    )
+      return;
+    let frame = 0;
+    const move = (event) => {
+      const rect = stage.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        stage.style.setProperty(
+          "--tilt-x",
+          `${(x * MAX_TILT * 2).toFixed(2)}deg`,
+        );
+        stage.style.setProperty(
+          "--tilt-y",
+          `${(-y * MAX_TILT * 2).toFixed(2)}deg`,
+        );
+      });
+    };
+    const leave = () => {
+      cancelAnimationFrame(frame);
+      stage.style.removeProperty("--tilt-x");
+      stage.style.removeProperty("--tilt-y");
+    };
+    stage.addEventListener("pointermove", move, { passive: true });
+    stage.addEventListener("pointerleave", leave);
+    return () => {
+      cancelAnimationFrame(frame);
+      stage.removeEventListener("pointermove", move);
+      stage.removeEventListener("pointerleave", leave);
+    };
+  }, [visual]);
 }

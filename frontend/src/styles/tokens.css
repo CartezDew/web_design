@@ -66,6 +66,9 @@
   --note-steel: #d3d8da; /* audit-allow */
   --note-clay: #e5cdbf;
   --pencil: #bdb6ac;
+  /* Hero grid: minor and major lines in faint ink. */
+  --blueprint-line: rgba(21, 19, 17, 0.055);
+  --blueprint-major: rgba(21, 19, 17, 0.1);
 
   /* Portfolio frames — cooler mats so website screenshots read clearly against paper. */
   --work-frame: #ececee;

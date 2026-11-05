@@ -1,5 +1,9 @@
-/* Surface class owns the fill; this only layers the warm glow over the grain. */
+/* Surface class owns the fill; this only layers the warm glow over the grain.
+   The section starts under the transparent header so its background runs behind
+   the nav with no seam; the padding puts the content back where it was. */
 .hero-section {
+  margin-top: calc(-1 * var(--header-h));
+  padding-top: var(--header-h);
   background-image:
     radial-gradient(
       circle at 82% 48%,
@@ -198,7 +202,7 @@
 .hero-card {
   position: relative;
   z-index: 2;
-  width: min(370px, calc(100% - 36px));
+  width: 100%;
   padding: 20px 25px 34px;
   border: 2px solid var(--light-ink);
   border-radius: var(--radius-lg);
@@ -336,6 +340,34 @@
   font-size: 0.66rem;
   font-weight: 700;
 }
+/* Grid: fine 24px squares with 120px major lines, fading out at the edges. */
+.hero-blueprint {
+  position: absolute;
+  z-index: 0;
+  inset: 12px 0;
+  background-image:
+    linear-gradient(var(--blueprint-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-major) 1px, transparent 1px),
+    linear-gradient(var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
+  background-position: center;
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    var(--light-ink) 30%,
+    transparent 72%
+  );
+  mask-image: radial-gradient(
+    ellipse at center,
+    var(--light-ink) 30%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
 .hero-visual .orbit {
   position: absolute;
   z-index: 0;
@@ -351,6 +383,69 @@
   width: min(480px, calc(100% - 72px));
   aspect-ratio: 1.85;
   transform: rotate(-28deg);
+}
+/* The mockup and everything pinned to it. Leans toward the cursor on desktop. */
+.hero-stage {
+  position: relative;
+  z-index: 2;
+  width: min(370px, calc(100% - 36px));
+  transform: perspective(1000px) rotateX(var(--tilt-y, 0deg))
+    rotateY(var(--tilt-x, 0deg));
+  transition: transform 320ms var(--ease);
+}
+/* Veteran-owned stamp, pressed onto the top-left corner of the stage. */
+.hero-seal {
+  position: absolute;
+  z-index: 4;
+  top: 10px;
+  left: 2px;
+  width: 108px;
+  height: 108px;
+  overflow: visible;
+  rotate: -10deg;
+  pointer-events: none;
+}
+.hero-seal-plate {
+  fill: var(--paper);
+  stroke: var(--light-ink);
+  stroke-width: 2.5;
+}
+.hero-seal-rule {
+  fill: var(--red);
+  stroke: var(--light-ink);
+  stroke-width: 1.5;
+}
+.hero-seal-ring {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.hero-seal-ring text {
+  fill: var(--light-ink);
+  font-family: var(--mono);
+  font-size: 9.6px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.hero-seal-mark {
+  fill: var(--on-dark);
+  font-family: var(--logo);
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+/* Signature under the intro: "— Cartez" in ink with a red swash. */
+.hero-signature {
+  width: 140px;
+  height: auto;
+  margin: -22px 0 22px;
+  color: var(--ink);
+  opacity: 1;
+}
+.hero-signature path {
+  stroke-width: 2.2;
+}
+.hero-signature path:last-child {
+  stroke: var(--red);
 }
 .floating-note {
   position: absolute;
@@ -371,7 +466,7 @@
   box-shadow: 3px 3px 0 var(--light-ink);
 }
 .floating-note--top {
-  top: 30px;
+  top: 14px;
   right: 20px;
   color: var(--on-dark);
   background: var(--red);
@@ -402,8 +497,10 @@
     min-height: 520px;
     padding: 64px 14px 70px;
   }
-  .hero-card {
+  .hero-stage {
     width: min(340px, calc(100% - 20px));
+  }
+  .hero-card {
     padding: 18px 16px 26px;
     transform: rotate(1.5deg);
   }
@@ -443,6 +540,18 @@
   }
   .hero-visual .mock-stats div {
     padding: 8px 5px;
+  }
+}
+
+@media (max-width: 650px) {
+  .hero-seal {
+    top: 0;
+    width: 80px;
+    height: 80px;
+  }
+  .hero-signature {
+    width: 112px;
+    margin: -16px 0 20px;
   }
 }
 
@@ -489,6 +598,21 @@
   }
   .hero-visual[data-visual-entered] .floating-note {
     animation: note-drift 6s ease-in-out infinite;
+  }
+  .motion .hero-seal-ring {
+    animation: seal-turn 40s linear infinite;
+  }
+  /* The grid fades in and the seal stamps down once the mockup has landed. */
+  .motion
+    .hero-visual:not([data-visual-entered])
+    :is(.hero-blueprint, .hero-seal) {
+    opacity: 0;
+  }
+  .hero-visual[data-visual-entered] .hero-blueprint {
+    animation: hero-fade 600ms var(--ease) both;
+  }
+  .hero-visual[data-visual-entered] .hero-seal {
+    animation: hero-seal-stamp 520ms var(--ease) 150ms both;
   }
   .hero-visual[data-visual-entered] .floating-note--side {
     animation-delay: -2s;
@@ -544,6 +668,24 @@
 @keyframes hero-draw {
   from {
     stroke-dashoffset: 1;
+  }
+}
+@keyframes hero-seal-stamp {
+  0% {
+    opacity: 0;
+    scale: 1.5;
+  }
+  60% {
+    opacity: 1;
+    scale: 0.94;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes seal-turn {
+  to {
+    rotate: 360deg;
   }
 }
 @keyframes note-drift {

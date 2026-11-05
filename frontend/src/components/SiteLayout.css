@@ -1,4 +1,14 @@
-/* Floating pill nav. The header itself is transparent; .header-inner is the pill. */
+/* Floating pill nav. The header itself is transparent; .header-inner is the pill.
+   --header-h is the header's resting height (top padding + pill), so the first
+   section can slide its background up underneath it. */
+:root {
+  --header-h: 86px;
+}
+@media (max-width: 760px) {
+  :root {
+    --header-h: 70px;
+  }
+}
 .header-sentinel {
   position: absolute;
   top: 0;
@@ -53,7 +63,11 @@
   );
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  -webkit-mask-image: linear-gradient(to bottom, var(--light-ink) 60%, transparent);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    var(--light-ink) 60%,
+    transparent
+  );
   mask-image: linear-gradient(to bottom, var(--light-ink) 60%, transparent);
   opacity: 0;
   pointer-events: none;
