@@ -32,7 +32,8 @@ export const portfolio = [
   {
     title: "Clip Culture",
     category: "Barbershop",
-    description: "A modern booking-ready site for a neighborhood barbershop.",
+    description:
+      "A full rebuild for a Sandy Springs barbershop, with online booking, a product shop, and inquiry forms.",
     url: "https://clip-culture.netlify.app/",
     image: clipCultureShot,
     imageSrcSet: `${clipCultureShotSmall} 700w, ${clipCultureShot} 1400w`,

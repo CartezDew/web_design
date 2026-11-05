@@ -71,27 +71,46 @@ export const stories = {
   },
   "clip-culture": {
     type: "Business website",
-    intro: "A digital presence with its own personality.",
+    intro: "A full rebuild for a Sandy Springs barbershop.",
     challenge:
-      "A neighborhood barbershop wanted a website with as much personality as the shop itself, one that also makes it easy to learn about the business.",
+      "Clip Culture has cut hair in Sandy Springs since 2017, but its old website showed only a small part of the business. Founder David Brown also sells his own grooming products and apparel, mentors barbers, speaks at events, and offers advertising, vending, and franchise partnerships. Customers needed a fast way to book, and partners needed a clear way to reach him.",
     approach:
-      "I designed a modern site around the shop’s brand, with clear service information and a simple experience on phones. It’s set up so online booking can be added.",
+      "I rebuilt the site from scratch around the shop’s look and David’s story. Customers can check services and prices, then book with their barber in a couple of taps. Every product and apparel item has its own page, and each opportunity has its own short form. I moved the old pages over so existing links keep working, and set up the hours, prices, and location so Google and AI assistants can answer questions about the shop.",
     included: [
       [
-        "Brand-led design",
-        "Colors, type, and imagery that feel like the shop, not a generic template.",
+        "Full redesign",
+        "Fourteen pages built around the shop’s brand, photos, and founder story.",
       ],
       [
-        "Works on every screen",
-        "Looks and reads right on the phone in a customer’s hand.",
+        "Online booking",
+        "Every Book Now button takes customers straight to their barber’s booking calendar.",
       ],
-      ["Service information", "What the shop offers, at a glance."],
       [
-        "Booking-ready",
-        "Built so customers can book online when the shop is ready.",
+        "Product and apparel pages",
+        "A page for each grooming product and apparel item, plus a gallery of the shop’s work.",
+      ],
+      [
+        "Inquiry forms",
+        "Forms for jobs, franchising, advertising, mentorship, and speaking, each answered with a branded thank-you email.",
+      ],
+      [
+        "Found on Google and AI search",
+        "Hours, prices, and location written so Google and assistants like ChatGPT can answer questions about the shop.",
+      ],
+      [
+        "Old links still work",
+        "Pages from the previous website forward to their new home, so customers and search rankings aren’t lost.",
       ],
     ],
     tools: [
+      [
+        "Squire + Acuity",
+        "The booking apps the barbers already use, linked from every Book Now button.",
+      ],
+      [
+        "EmailJS",
+        "Delivers form messages to the shop and sends each visitor a thank-you email.",
+      ],
       ["Netlify", "The hosting service that keeps the site online and fast."],
     ],
   },
